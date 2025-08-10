@@ -610,8 +610,8 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     // No longer needed here
   }
   ensureClearBtn();
-  if(!messengerToggle) return; // html not loaded yet
-  
+  // On pages without messenger UI (e.g., mobile), skip messenger init but continue app.
+  if(messengerToggle){
   // Make messenger toggle draggable and persist its position
   (function initMessengerToggleDrag(){
     try{
@@ -688,6 +688,7 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
   firebase.auth().onAuthStateChanged(()=>{
     ensureClearBtn();
   });
+  }
   // Draggable messenger button handled by initMessengerToggleDrag()
 
   let msgsUnsub = null;
@@ -1064,15 +1065,19 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     }
   }
 
-  // Event handlers for Facebook Messenger
-  messengerToggle.onclick = () => {
-    showMessenger();
-    messengerToggle.classList.remove('animate__animated','animate__tada');
-  };
-  
-  messengerClose.onclick = hideMessenger;
-  
-  msgSend.onclick = sendMessage;
+  // Event handlers for Facebook Messenger (guarded for pages without messenger UI)
+  if(messengerToggle){
+    messengerToggle.onclick = () => {
+      showMessenger();
+      messengerToggle.classList.remove('animate__animated','animate__tada');
+    };
+  }
+  if(typeof messengerClose !== 'undefined' && messengerClose){
+    messengerClose.onclick = hideMessenger;
+  }
+  if(typeof msgSend !== 'undefined' && msgSend){
+    msgSend.onclick = sendMessage;
+  }
   
   msgInput.addEventListener('keyup', e => {
     if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
