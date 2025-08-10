@@ -2070,6 +2070,7 @@ logoutBtn.style.display   = 'inline-block';
         showApp();
         updateAdminUI();
       subscribeDeepwells();
+      subscribeReforestations();
         if(unsubscribeProjects) unsubscribeProjects();
         unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(snap=>{
           projects = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -2102,6 +2103,7 @@ logoutBtn.style.display   = 'inline-block';
         loadApprovedUsers();
       }
       subscribeDeepwells();
+      subscribeReforestations();
       if(unsubscribeProjects) unsubscribeProjects();
       const legacyKey='construction_projects';
 async function migrateLegacyIfAny(){
@@ -2151,9 +2153,12 @@ unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(async snap => {
       // Clean up any active listeners from previous sessions
       if(unsubscribeProjects){unsubscribeProjects(); unsubscribeProjects=null;}
       if(unsubscribeDeepwells){unsubscribeDeepwells(); unsubscribeDeepwells=null;}
+      if(unsubscribeReforestations){unsubscribeReforestations(); unsubscribeReforestations=null;}
       projects = [];
       deepwells = [];
+      reforestations = [];
       render();
+      renderReforestations();
     }
   });
 
