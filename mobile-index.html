@@ -353,6 +353,366 @@
 
   <!-- All modals from the backup file would go here - truncated for brevity -->
   <!-- The same modals as in the original backup file -->
+  
+  <!-- Project Modal -->
+  <div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="projectModalLabel">Add / Edit Project</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="projectForm">
+          <div class="modal-body">
+            <input type="hidden" id="projectId" name="projectId" />
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="projectName">Project Name *</label>
+                <input type="text" class="form-control" id="projectName" name="projectName" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="implementingAgency">Implementing Agency *</label>
+                <input type="text" class="form-control" id="implementingAgency" name="implementingAgency" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="projectLocation">Project Location *</label>
+                <input type="text" class="form-control" id="projectLocation" name="projectLocation" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="contractor">Contractor *</label>
+                <input type="text" class="form-control" id="contractor" name="contractor" required />
+              </div>
+              <div class="col-md-6" id="contractDocsGroup">
+                <label class="form-label" for="contractDocsLink">Contract Documents Link</label>
+                <input type="url" class="form-control" id="contractDocsLink" name="contractDocsLink" placeholder="https://drive.google.com/..." />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="contractAmount">Contract Amount (PHP) *</label>
+                <input type="number" step="0.01" class="form-control" id="contractAmount" name="contractAmount" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="revisedContractAmount">Revised Contract Amount (PHP)</label>
+                <input type="number" step="0.01" class="form-control" id="revisedContractAmount" name="revisedContractAmount" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="ntpDate">Notice to Proceed *</label>
+                <input type="date" class="form-control" id="ntpDate" name="ntpDate" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="originalDuration">Original Contract Duration (days) *</label>
+                <input type="number" class="form-control" id="originalDuration" name="originalDuration" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="timeExtension">Time Extension (days)</label>
+                <input type="number" class="form-control" id="timeExtension" name="timeExtension" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="originalCompletion">Original Target Completion *</label>
+                <input type="date" class="form-control" id="originalCompletion" name="originalCompletion" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="revisedCompletion">Revised Target Completion</label>
+                <input type="date" class="form-control" id="revisedCompletion" name="revisedCompletion" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="percentAccomplishment">% Accomplishment To Date *</label>
+                <input type="number" class="form-control" id="percentAccomplishment" name="percentAccomplishment" min="0" max="100" step="0.01" value="0" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="percentPrevious">% Accomplishment Previous *</label>
+                <input type="number" class="form-control" id="percentPrevious" name="percentPrevious" min="0" max="100" step="0.01" value="0" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="percentPlanned">% Accomplishment Planned *</label>
+                <input type="number" class="form-control" id="percentPlanned" name="percentPlanned" min="0" max="100" step="0.01" value="0" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label" for="accompDate">As of Date *</label>
+                <input type="date" class="form-control" id="accompDate" name="accompDate" required />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="activities">Ongoing Activities</label>
+                <textarea class="form-control" id="activities" name="activities" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="issues">Issues & Concerns</label>
+                <textarea class="form-control" id="issues" name="issues" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="actionTaken">Action Taken</label>
+                <textarea class="form-control" id="actionTaken" name="actionTaken" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="remarks">Remarks</label>
+                <textarea class="form-control" id="remarks" name="remarks" rows="2"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="otherDetails">Other Project Details</label>
+                <textarea class="form-control" id="otherDetails" name="otherDetails" rows="2"></textarea>
+              </div>
+
+              <!-- Billing Details -->
+              <div class="col-12">
+                <label class="form-label">Billing Details</label>
+                <div id="billingContainer"></div>
+                <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="addBillingBtn">
+                  <i class="fa fa-plus me-1"></i>Add Billing
+                </button>
+              </div>
+              <div class="col-12"></div>
+              <div class="col-12">
+                <label class="form-label">Project Photo 1 (optional)</label>
+                <input type="file" class="form-control mb-2" id="projectPhoto1" accept="image/*" />
+                <label class="form-label">Project Photo 2 (optional)</label>
+                <input type="file" class="form-control mb-2" id="projectPhoto2" accept="image/*" />
+                <label class="form-label">Project Photo 3 (optional)</label>
+                <input type="file" class="form-control" id="projectPhoto3" accept="image/*" />
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="saveBtn" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Deepwell Modal -->
+  <div class="modal fade" id="deepwellModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="deepwellForm">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Deepwell Details</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="deepwellId" name="deepwellId" />
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Deepwell Name</label>
+                <input type="text" class="form-control" id="dwName" name="dwName" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Concessionaire</label>
+                <select class="form-select" id="dwProvider" name="dwProvider" required>
+                  <option value="MWCI">MWCI</option>
+                  <option value="MWSI">MWSI</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">NWRB Permit No.</label>
+                <input type="text" class="form-control" id="dwPermit" name="dwPermit" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <input type="text" class="form-control" id="dwStatus" name="dwStatus" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Rated Yield (cu.m/day)</label>
+                <input type="number" step="0.01" class="form-control" id="dwRatedYield" name="dwRatedYield" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Avg Monthly Prod (cu.m)</label>
+                <input type="number" step="0.01" class="form-control" id="dwAvgProd" name="dwAvgProd" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Total Prod (cu.m)</label>
+                <input type="number" step="0.01" class="form-control" id="dwTotalProd" name="dwTotalProd" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" id="dwLocation" name="dwLocation" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Municipality</label>
+                <input type="text" class="form-control" id="dwMunicipality" name="dwMunicipality" />
+              </div>
+            </div>
+            <hr>
+            <h6>Monthly Production (cu.m)</h6>
+            <div class="table-responsive mb-2">
+              <table class="table table-sm align-middle" id="dwMonthsTable">
+                <thead><tr><th>Month</th><th>Total Production</th><th></th></tr></thead>
+                <tbody id="dwMonthsBody"></tbody>
+              </table>
+            </div>
+            <button type="button" class="btn btn-outline-primary btn-sm" id="addDwMonthBtn"><i class="fa fa-plus me-1"></i>Add Month</button>
+
+            <div id="dwHistoryContainer" class="mt-3"></div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="saveDeepwellBtn" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reforestation Projects Modal -->
+  <div class="modal fade" id="reforestationModal" tabindex="-1" aria-labelledby="reforestationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title" id="reforestationModalLabel">Add / Edit Reforestation Project</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="reforestationForm">
+          <div class="modal-body">
+            <input type="hidden" id="reforestationId" name="reforestationId" />
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label" for="activityName">Project Name *</label>
+                <input type="text" class="form-control" id="activityName" name="activityName" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="activityType">Project Type *</label>
+                <input type="text" class="form-control" id="activityType" name="activityType" placeholder="Enter project type" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="location">Location *</label>
+                <input type="text" class="form-control" id="location" name="location" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="reforestationImplementingAgency">Implementing Agency *</label>
+                <input type="text" class="form-control" id="reforestationImplementingAgency" name="implementingAgency" required />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="targetArea">Target Area (hectares)</label>
+                <input type="number" step="0.01" class="form-control" id="targetArea" name="targetArea" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="treesPlanted">Trees Planted</label>
+                <input type="number" class="form-control" id="treesPlanted" name="treesPlanted" value="0" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="treeSpecies">Tree Species</label>
+                <input type="text" class="form-control" id="treeSpecies" name="treeSpecies" placeholder="e.g., Mahogany, Narra, Bamboo" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="activityStatus">Status *</label>
+                <select class="form-select" id="activityStatus" name="activityStatus" required>
+                  <option value="Planning">Planning</option>
+                  <option value="On-going">On-going</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Monitoring">Monitoring</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="startDate">Start Date</label>
+                <input type="date" class="form-control" id="startDate" name="startDate" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="targetDate">Target Completion Date</label>
+                <input type="date" class="form-control" id="targetDate" name="targetDate" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="budget">Budget (PHP)</label>
+                <input type="number" step="0.01" class="form-control" id="budget" name="budget" />
+              </div>
+              <!-- Initial Survival Rate -->
+              <div class="col-md-6">
+                <label class="form-label" for="initialSurvivalRate">Initial Survival Rate (%)</label>
+                <input type="number" step="0.01" class="form-control" id="initialSurvivalRate" name="initialSurvivalRate" min="0" max="100" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="initialSurvivalDate">Date of Initial Survival Assessment</label>
+                <input type="date" class="form-control" id="initialSurvivalDate" name="initialSurvivalDate" />
+              </div>
+              <!-- Final Survival Rate -->
+              <div class="col-md-6">
+                <label class="form-label" for="finalSurvivalRate">Final Survival Rate (%)</label>
+                <input type="number" step="0.01" class="form-control" id="finalSurvivalRate" name="finalSurvivalRate" min="0" max="100" />
+              </div>
+              <div class="col-md-6">
+                <label class="form-label" for="finalSurvivalDate">Date of Final Survival Assessment</label>
+                <input type="date" class="form-control" id="finalSurvivalDate" name="finalSurvivalDate" />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="description">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Project Photos (max 3)</label>
+                <input type="file" class="form-control mb-2" id="reforestPhoto1" accept="image/*" />
+                <input type="file" class="form-control mb-2" id="reforestPhoto2" accept="image/*" />
+                <input type="file" class="form-control" id="reforestPhoto3" accept="image/*" />
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="kmzFile">Project Boundary (KMZ)</label>
+                <input type="file" class="form-control" id="kmzFile" accept=".kmz" />
+                <div class="form-text">Upload .kmz file delineating project area.</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="remarksReforestation">Remarks</label>
+                <textarea class="form-control" id="remarksReforestation" name="remarksReforestation" rows="2"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="saveReforestationBtn" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Details Modal (View Only) -->
+  <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header bg-secondary text-white">
+          <h5 class="modal-title" id="detailsModalLabel">Project Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="detailsBody" class="container-fluid"></div>
+        </div>
+        <div class="modal-footer" id="detailsFooter">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reforestation Project Details Modal (View Only) -->
+  <div class="modal fade" id="reforestationDetailsModal" tabindex="-1" aria-labelledby="reforestationDetailsLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <div class="modal-header bg-secondary text-white">
+          <h5 class="modal-title" id="reforestationDetailsLabel">Reforestation Project Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div id="reforestationDetailsBody" class="container-fluid"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Photo Viewer Modal -->
+  <div class="modal fade" id="photoViewer" tabindex="-1" aria-hidden="true" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-sm-down">
+      <div class="modal-content bg-transparent border-0 shadow-none">
+        <div class="modal-body p-0 position-relative d-flex align-items-center justify-content-center">
+          <img id="photoViewerImg" src="" alt="Photo" class="img-fluid" style="max-height:85vh; cursor: zoom-out;" />
+          <button id="photoPrev" type="button" class="btn btn-light btn-lg rounded-circle position-absolute start-0 top-50 translate-middle-y d-flex align-items-center justify-content-center" style="width:50px;height:50px; display:none;" aria-label="Previous photo">
+            <i class="fa fa-chevron-left"></i>
+          </button>
+          <button id="photoNext" type="button" class="btn btn-light btn-lg rounded-circle position-absolute end-0 top-50 translate-middle-y d-flex align-items-center justify-content-center" style="width:50px;height:50px; display:none;" aria-label="Next photo">
+            <i class="fa fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Global Page Scroll Buttons -->
   <button id="scrollTopBtn" class="btn btn-primary rounded-circle shadow scroll-btn" title="Scroll to Top">

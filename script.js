@@ -1268,6 +1268,20 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
   // Add listeners for Construction Projects filters
   elements.agencyFilter?.addEventListener('change', render);
   elements.statusFilter?.addEventListener('change', render);
+  // Add Project button (mobile): clear form and open modal
+  const addProjectBtnEl = document.getElementById('addProjectBtn');
+  if (addProjectBtnEl) {
+    addProjectBtnEl.addEventListener('click', () => {
+      // Ensure modal is closed first, then reset and open
+      elements.projectModal.hide();
+      setTimeout(() => {
+        clearForm();
+        const saveBtnEl = document.getElementById('saveBtn');
+        if (saveBtnEl) saveBtnEl.style.display = 'inline-block';
+        elements.projectModal.show();
+      }, 100);
+    });
+  }
 // Deepwell filters
 elements.dwProviderFilter?.addEventListener('change', renderDeepwells);
 elements.dwStatusFilter?.addEventListener('change', renderDeepwells);
