@@ -144,6 +144,7 @@ async function loadApprovedUsers(){
 }
 
 function renderApprovedUsersTable(){
+  if(!elements || !elements.approvedUsersTable){ return; }
   const tbody = elements.approvedUsersTable.querySelector('tbody');
   tbody.innerHTML='';
   approvedUsers.forEach(u=>{
@@ -599,10 +600,12 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     const email = user && user.email ? user.email.trim().toLowerCase() : '';
     const isAdminNow = email === ADMIN_EMAIL_LOWER;
     if(!isAdminNow) return;
-    
-    // Show admin clear button in messenger
-    if(messengerClear){
-      messengerClear.classList.remove('d-none');
+    // Show admin clear button in messenger (null-safe)
+    const clearBtn = (typeof messengerClear !== 'undefined' && messengerClear)
+      ? messengerClear
+      : document.getElementById('messengerClear');
+    if(clearBtn){
+      clearBtn.classList.remove('d-none');
     }
   }
   function attachClearHandler(){
@@ -1079,9 +1082,11 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     msgSend.onclick = sendMessage;
   }
   
-  msgInput.addEventListener('keyup', e => {
-    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
-  });
+  if(msgInput){
+    msgInput.addEventListener('keyup', e => {
+      if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); sendMessage(); }
+    });
+  }
   // Auto-resize textarea height
   function autoResize(){
     if(!msgInput) return;
@@ -1089,7 +1094,9 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     const max = 120; // px max height
     msgInput.style.height = Math.min(max, msgInput.scrollHeight) + 'px';
   }
-  msgInput.addEventListener('input', autoResize);
+  if(msgInput){
+    msgInput.addEventListener('input', autoResize);
+  }
   // Initialize height
   autoResize();
   
@@ -1104,43 +1111,64 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
   // expose for other functions
   window.__refreshChatRecipients = updateContactsList;
 
-  // Show messenger when user logged in & approved
-  function showMessengerBtn(){ messengerToggle.style.display='inline-flex'; }
-  function hideMessengerBtn(){ messengerToggle.style.display='none'; }
+  // Show messenger when user logged in & approved (null-safe for pages without messenger UI)
+  function showMessengerBtn(){ if(!messengerToggle) return; messengerToggle.style.display='inline-flex'; }
+  function hideMessengerBtn(){ if(!messengerToggle) return; messengerToggle.style.display='none'; }
 
   firebase.auth().onAuthStateChanged(user=>{
-    if(user && !user.isAnonymous){
-      showMessengerBtn();
-      startListening();
-      // Resolve admin UID for unread mapping and refresh contacts
-      ensureAdminUid().then(updateContactsList).catch(()=>{});
-      subscribeReforestations();
-    }else{
-      hideMessengerBtn();
-      if(msgsUnsub) msgsUnsub();
+    try{
+      if(user && !user.isAnonymous){
+        showMessengerBtn();
+        if(typeof startListening === 'function'){
+          startListening();
+        }
+        // Resolve admin UID for unread mapping and refresh contacts
+        if(typeof ensureAdminUid === 'function'){
+          ensureAdminUid().then(updateContactsList).catch(()=>{});
+        } else {
+          // Fallback: still try to refresh recipients if available
+          if(typeof updateContactsList === 'function'){
+            updateContactsList();
+          }
+        }
+        // Always subscribe reforestations after login
+        subscribeReforestations();
+      }else{
+        hideMessengerBtn();
+        if(typeof msgsUnsub === 'function') msgsUnsub();
+      }
+    }catch(err){
+      console.warn('Messenger auth listener error (ignored):', err);
+      // Ensure reforestations still subscribe on login
+      if(user && !user.isAnonymous){
+        try{ subscribeReforestations(); }catch(_){/* ignore */}
+      }
     }
   });
   
-  // Admin clear messages functionality
-  if(messengerClear){
-    messengerClear.addEventListener('click', async ()=>{
+  // Admin clear messages functionality (null-safe)
+  (function attachMessengerClearHandler(){
+    const clearBtn = document.getElementById('messengerClear');
+    if(!clearBtn) return;
+    clearBtn.addEventListener('click', async ()=>{
       if(!isAdmin) return;
       if(!confirm('Delete ALL chat messages?')) return;
-      messengerClear.disabled = true;
+      clearBtn.disabled = true;
       try{
         const snap = await db.collection('messages').get();
         const batch = db.batch();
         snap.docs.forEach(doc=>batch.delete(doc.ref));
         await batch.commit();
-        msgContainer.innerHTML='';
+        const msgContainer = document.getElementById('msgContainer');
+        if(msgContainer) msgContainer.innerHTML='';
       }catch(err){
         alert('Failed to clear messages: '+err.message);
         console.error('Clear chat error',err);
       }finally{
-        messengerClear.disabled = false;
+        clearBtn.disabled = false;
       }
     });
-  }
+  })();
 })();
 
   /* Page Scroll & Modal Scroll Buttons */
@@ -1972,29 +2000,30 @@ function subscribeReforestations(){
 
 // ---- End project functions ----
 
-// Signup handler
-  signupForm.addEventListener('submit', e=>{
-    
-    e.preventDefault();
-    const email=document.getElementById('signupEmail').value.trim();
-    const pw1=document.getElementById('signupPassword').value;
-    const pw2=document.getElementById('signupPassword2').value;
-    if(pw1!==pw2){alert('Passwords do not match');return;}
-    firebase.auth().createUserWithEmailAndPassword(email,pw1)
-      .then(cred=>{
-        // mark as unapproved
-        return db.collection('users').doc(cred.user.uid).set({
-          email: cred.user.email,
-          approved: false,
-          createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        }).then(()=>{
-          alert('Account request submitted. An admin will review your request.');
-          firebase.auth().signOut();
-          showLoginForm();
-        });
-      })
-      .catch(err=>alert(err.message));
-  });
+// Signup handler (guard if signup form absent on mobile)
+  if(signupForm){
+    signupForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const email=document.getElementById('signupEmail').value.trim();
+      const pw1=document.getElementById('signupPassword').value;
+      const pw2=document.getElementById('signupPassword2').value;
+      if(pw1!==pw2){alert('Passwords do not match');return;}
+      firebase.auth().createUserWithEmailAndPassword(email,pw1)
+        .then(cred=>{
+          // mark as unapproved
+          return db.collection('users').doc(cred.user.uid).set({
+            email: cred.user.email,
+            approved: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }).then(()=>{
+            alert('Account request submitted. An admin will review your request.');
+            firebase.auth().signOut();
+            showLoginForm();
+          });
+        })
+        .catch(err=>alert(err.message));
+    });
+  }
 
   
   
@@ -2007,19 +2036,21 @@ logoutBtn.style.display   = 'none';
 }
 
 function showSignup(){
-  loginForm.classList.add('d-none');
-  loginLinks.classList.add('d-none');
-  signupForm.classList.remove('d-none');
-  signupLinks.classList.remove('d-none');
-  document.getElementById('loginTitle').textContent='Sign Up';
+  if(loginForm) loginForm.classList.add('d-none');
+  if(loginLinks) loginLinks.classList.add('d-none');
+  if(signupForm) signupForm.classList.remove('d-none');
+  if(signupLinks) signupLinks.classList.remove('d-none');
+  const loginTitle = document.getElementById('loginTitle');
+  if(loginTitle) loginTitle.textContent='Sign Up';
 }
 
 function showLoginForm(){
-  signupForm.classList.add('d-none');
-  signupLinks.classList.add('d-none');
-  loginForm.classList.remove('d-none');
-  loginLinks.classList.remove('d-none');
-  document.getElementById('loginTitle').textContent='Login';
+  if(signupForm) signupForm.classList.add('d-none');
+  if(signupLinks) signupLinks.classList.add('d-none');
+  if(loginForm) loginForm.classList.remove('d-none');
+  if(loginLinks) loginLinks.classList.remove('d-none');
+  const loginTitle = document.getElementById('loginTitle');
+  if(loginTitle) loginTitle.textContent='Login';
 }
 
 // link listeners
@@ -2162,17 +2193,21 @@ unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(async snap => {
     }
   });
 
-  // Handle login form submission
-  loginForm.addEventListener('submit', e => {
-    e.preventDefault();
-    const email = document.getElementById('loginEmail').value.trim();
-    const pw    = document.getElementById('loginPassword').value;
-    firebase.auth().signInWithEmailAndPassword(email, pw)
-      .catch(err => alert(err.message));
-  });
+  // Handle login form submission (guard for mobile if login form missing)
+  if(loginForm){
+    loginForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const pw    = document.getElementById('loginPassword').value;
+      firebase.auth().signInWithEmailAndPassword(email, pw)
+        .catch(err => alert(err.message));
+    });
+  }
 
-  // Handle logout
-  logoutBtn.addEventListener('click', () => firebase.auth().signOut());
+  // Handle logout (guard)
+  if(logoutBtn){
+    logoutBtn.addEventListener('click', () => firebase.auth().signOut());
+  }
   if(loginBtn) loginBtn.addEventListener('click', () => {
     // exit view-only: go back to login page
     isViewOnly = false;
