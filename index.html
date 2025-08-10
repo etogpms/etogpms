@@ -785,47 +785,34 @@
     #detailsModal .modal-content, #detailsModal .modal-content *{visibility:visible!important;}
     #detailsModal{position: absolute; top:0; left:0; width:100%;}
   }
-</style>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyD0VGkytRW3YMqUIgbTrFNtBSDFAtlY-PU",
-    authDomain: "mwss-project-monitoring-system.firebaseapp.com",
-    projectId: "mwss-project-monitoring-system",
-    storageBucket: "mwss-project-monitoring-system.app", // typo from console? check if appspot.com
-    messagingSenderId: "973804039753",
-    appId: "1:973804039753:web:bf26fd271952a7e8669998",
-    measurementId: "G-4C070YCMMT"
-  };
-  firebase.initializeApp(firebaseConfig);
-</script>
-
-  <!-- Existing libs -->
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js"></script>
-  
+  </style>
   <!-- DOCX templating runtime: PizZip is preloaded; Docxtemplater + ImageModule are loaded on-demand by export.js to ensure correct XML engine -->
   <script src="https://unpkg.com/pizzip@3.1.7/dist/pizzip.min.js"></script>
   
-  <!-- Load xmldom 0.6.0 up-front so ImageModule works with a mutable DOM in the browser -->
-  <script src="https://cdn.jsdelivr.net/npm/xmldom@0.6.0/xmldom.min.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0VGkytRW3YMqUIgbTrFNtBSDFAtlY-PU",
+      authDomain: "mwss-project-monitoring-system.firebaseapp.com",
+      projectId: "mwss-project-monitoring-system",
+      storageBucket: "mwss-project-monitoring-system.appspot.com",
+      messagingSenderId: "973804039753",
+      appId: "1:973804039753:web:bf26fd271952a7e8669998",
+      measurementId: "G-4C070YCMMT"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
   
-  <!-- Export module (defines window.exportProjectDocx) -->
-  <!-- Disable images in DOCX export globally -->
-  <script>window.DISABLE_DOCX_IMAGES = false;</script>
-  <script src="assets/vendor/pizzip.min.js"></script>
-  <script src="assets/vendor/docxtemplater.js"></script>
-  <script src="assets/vendor/imagemodule.js"></script>
+  <!-- Export module and app script -->
   <script src="export.js?v=7" defer></script>
-  <!-- Custom Script -->
   <script src="script.js?v=3" defer></script>
   </div> <!-- end mainContent -->
   </div> <!-- end flex -->
-</div> <!-- end appWrapper -->
+  </div> <!-- end appWrapper -->
   <!-- Facebook-Style Messenger -->
   <button id="messengerToggle" class="btn btn-primary rounded-circle" aria-label="Open messenger" aria-controls="messengerSidebar" style="position:fixed;bottom:20px;right:20px;width:50px;height:50px;display:none;z-index:1050;">
     <i class="fa fa-comments"></i>
