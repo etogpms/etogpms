@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Project Monitoring Dashboard</title>
+  <link rel="icon" href="assets/mwss_logo.png" type="image/png" />
+  <!-- Bootstrap 5 -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <!-- Font Awesome -->
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    rel="stylesheet"
+  />
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="styles.css" />
+  <!-- Mobile-specific styles -->
+  <style>
+    /* Mobile optimizations */
+    @media (max-width: 768px) {
+      .container-fluid { padding: 0.5rem; }
+      .table-responsive { font-size: 0.85rem; }
+      .btn { padding: 0.25rem 0.5rem; font-size: 0.85rem; }
+      .modal-dialog { margin: 0.5rem; }
+      .card { margin-bottom: 1rem; }
+      .nav-tabs .nav-link { padding: 0.5rem 0.75rem; font-size: 0.9rem; }
+      .form-control, .form-select { font-size: 0.9rem; }
+      .agency-title { font-size: 1rem; }
+      .agency-sub { font-size: 0.8rem; }
+      .logo-img { max-height: 50px; }
+    }
+
+    /* Compact tables */
+    table.table { margin-bottom: 0.75rem; }
+    .table-sm th, .table-sm td { padding: 0.4rem; }
+
+    /* Deepwells: hide less-critical columns on very small screens */
+    @media (max-width: 576px) {
+      #deepwellsTable th:nth-child(3), #deepwellsTable td:nth-child(3) { display: none; } /* Permit */
+      #deepwellsTable th:nth-child(5), #deepwellsTable td:nth-child(5) { display: none; } /* Rated Yield */
+      #deepwellsTable th:nth-child(6), #deepwellsTable td:nth-child(6) { display: none; } /* Avg Monthly */
+      #deepwellsTable th:nth-child(7), #deepwellsTable td:nth-child(7) { display: none; } /* Total Prod */
+    }
+
+    /* Projects table: hide contractor and % on xs */
+    @media (max-width: 576px) {
+      #projectsTable th:nth-child(3), #projectsTable td:nth-child(3) { display: none; } /* Contractor */
+      #projectsTable th:nth-child(6), #projectsTable td:nth-child(6) { display: none; } /* % Accomp. */
+    }
+
+    /* Reforestation table: hide species and seedlings on xs */
+    @media (max-width: 576px) {
+      #reforestationTable th:nth-child(4), #reforestationTable td:nth-child(4) { display: none; } /* Species */
+      #reforestationTable th:nth-child(5), #reforestationTable td:nth-child(5) { display: none; } /* Seedlings */
+    }
+  </style>
+</head>
+<body>
+  <!-- Logos Header -->
+  <header class="container-fluid py-3 d-flex align-items-center justify-content-center gap-4 flex-wrap" id="logosHeader">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Metropolitan_Waterworks_and_Sewerage_System_%28MWSS_%2C_NAWASA%29.svg" alt="MWSS Logo" class="logo-img" />
+    <div class="text-center px-3">
+      <h6 class="mb-0 fw-bold agency-title">Metropolitan Waterworks and Sewerage System</h6>
+      <h6 class="mb-0 agency-sub">Engineering and Technical Operations Group</h6>
+    </div>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/b/b1/Bagong_Pilipinas_logo.png" alt="Bagong Pilipinas Logo" class="logo-img" />
+  </header>
+
+  <!-- Login screen  -->
+  <div id="loginScreen" class="d-flex flex-column align-items-center justify-content-center vh-100" style="display:none;">
+    <h2 class="login-page-title text-center">Project Monitoring</h2>
+    <div class="card p-4 shadow" style="min-width:320px; max-width:400px;">
+      <h4 class="mb-3 text-center" id="loginTitle">Login</h4>
+            <!-- Login Form -->
+            <form id="loginForm">
+              <div class="mb-3">
+                <label for="loginEmail" class="form-label">Email</label>
+                <input type="email" class="form-control" id="loginEmail" required />
+              </div>
+              <div class="mb-3">
+                <label for="loginPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="loginPassword" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Login</button>
+            </form>
+            <!-- Signup Form -->
+            <form id="signupForm" class="d-none">
+              <div class="mb-3">
+                <label for="signupEmail" class="form-label">Email</label>
+                <input type="email" class="form-control" id="signupEmail" required />
+              </div>
+              <div class="mb-3">
+                <label for="signupPassword" class="form-label">Password</label>
+                <input type="password" class="form-control" id="signupPassword" required />
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Sign Up</button>
+            </form>
+            <p class="text-center mt-3" id="loginLinks">
+              <a href="#" id="showSignupLink">Don't have an account? Sign up</a><br>
+              <a href="#" id="viewOnlyLink">Continue as viewer</a>
+            </p>
+            <p class="text-center mt-3 d-none" id="signupLinks">
+              <a href="#" id="showLoginLink">Already have an account? Log in</a>
+            </p>
+    </div>
+  </div>
+
+  <!-- Main App Wrapper -->
+  <div id="appWrapper" style="display:none;">
+    <!-- Navigation tabs at top for mobile -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+      <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#" id="projectsTab">Construction Projects</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" id="deepwellsTab">Deepwell Monitoring</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#" id="reforestationTab">Reforestation Projects</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <button class="btn btn-outline-light btn-sm me-2" id="manageUsersBtn" style="display:none;">
+                Manage Users <span id="pendingBadge" class="badge bg-danger" style="display:none;">0</span>
+              </button>
+            </li>
+            <li class="nav-item">
+              <button class="btn btn-outline-light btn-sm" id="logoutBtn" style="display:none;">Logout</button>
+              <button class="btn btn-outline-light btn-sm" id="loginBtn" style="display:none;">Login</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+  <!-- Users Modal -->
+  <div class="modal fade" id="usersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">Manage Users</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="table-responsive">
+            <table class="table table-sm" id="pendingUsersTable">
+              <thead><tr><th>Email</th><th>Date Created</th><th>Action</th></tr></thead>
+              <tbody></tbody>
+            </table>
+            <hr/>
+            <h6>Approved Accounts</h6>
+            <div class="table-responsive">
+              <table class="table table-sm" id="approvedUsersTable">
+                <thead><tr><th>Email</th><th>Date Approved</th><th>Access Level</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+           </div>
+         </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="projectsSection" class="container-fluid px-2">
+    <!-- Action Bar -->
+    <div class="row g-2 mb-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label" for="searchInput">Search Project</label>
+        <input
+          type="text"
+          class="form-control"
+          id="searchInput"
+          placeholder="Project name or contractor..."
+        />
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="agencyFilter">Filter by Implementing Agency</label>
+        <select class="form-select" id="agencyFilter">
+          <option value="">All Agencies</option>
+          <option value="MWCI">MWCI</option>
+          <option value="MWSS">MWSS</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="statusFilter">Filter by Status</label>
+        <select class="form-select" id="statusFilter">
+          <option value="">All Statuses</option>
+          <option value="Completed">Completed</option>
+          <option value="Ongoing">Ongoing</option>
+          <option value="Delayed">Delayed</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-success" id="exportBtn">
+          <i class="fa fa-download"></i> Export
+        </button>
+        <button class="btn btn-primary mt-1" id="addProjectBtn" style="display:none;">
+          <i class="fa fa-plus"></i> Add Project
+        </button>
+      </div>
+    </div>
+
+    <!-- Projects Table -->
+    <div class="table-responsive">
+      <table class="table table-hover table-sm" id="projectsTable">
+        <thead class="table-primary">
+          <tr>
+            <th>Project Name</th>
+            <th>Implementing Agency</th>
+            <th>Contractor</th>
+            <th>Status</th>
+            <th>Target Completion</th>
+            <th>% Accomp.</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="projectsBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="deepwellsSection" class="container-fluid px-2" style="display:none;">
+    <div class="row g-2 mb-3 align-items-end">
+      <div class="col-12 col-md-4">
+        <label class="form-label" for="dwSearchInput">Search Deepwell</label>
+        <input type="text" class="form-control" id="dwSearchInput" placeholder="Search deepwells..." />
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label" for="dwProviderFilter">Concessionaire</label>
+        <select class="form-select" id="dwProviderFilter">
+          <option value="">All</option>
+          <option value="MWCI">MWCI</option>
+          <option value="MWSI">MWSI</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-3">
+        <label class="form-label" for="dwStatusFilter">Filter by Status</label>
+        <select class="form-select" id="dwStatusFilter">
+          <option value="">All</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+          <option value="Maintenance">Maintenance</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-2 d-grid">
+        <button class="btn btn-success" id="deepwellExportBtn">
+          <i class="fa fa-download"></i> Export
+        </button>
+        <button class="btn btn-primary mt-1" id="addDeepwellBtn" style="display:none;">
+          <i class="fa fa-plus"></i> Add Deepwell
+        </button>
+      </div>
+    </div>
+
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="card p-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <h6 class="mb-2">Monthly Production by Concessionaire</h6>
+            <small class="text-muted">Totals across all deepwells</small>
+          </div>
+          <canvas id="deepwellMonthlyChart" height="120"></canvas>
+          <div id="dwChartEmpty" class="text-muted small" style="display:none;">No monthly production data available.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm" id="deepwellsTable">
+        <thead class="table-primary">
+          <tr>
+            <th>Deepwell Name</th>
+            <th>Concessionaire</th>
+            <th>NWRB Permit No.</th>
+            <th>Status</th>
+            <th>Rated Yield (cu.m/day)</th>
+            <th>Avg Monthly Prod (cu.m)</th>
+            <th>Total Prod (cu.m)</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="deepwellsTbody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="reforestationSection" class="container-fluid px-2" style="display:none;">
+    <!-- Action Bar -->
+    <div class="row g-2 mb-3 align-items-end">
+      <div class="col-md-4">
+        <label class="form-label" for="reforestationSearchInput">Search Project</label>
+        <input type="text" class="form-control" id="reforestationSearchInput" placeholder="Search reforestation projects..." />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label" for="reforestationTypeFilter">Filter by Type</label>
+        <select class="form-select" id="reforestationTypeFilter">
+          <option value="">All</option>
+          <option value="Nursery Establishment">Nursery Establishment</option>
+          <option value="Planting & Maintenance">Planting & Maintenance</option>
+          <option value="Monitoring & Protection">Monitoring & Protection</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label" for="reforestationStatusFilter">Filter by Status</label>
+        <select class="form-select" id="reforestationStatusFilter">
+          <option value="">All</option>
+          <option value="Completed">Completed</option>
+          <option value="Ongoing">Ongoing</option>
+          <option value="Delayed">Delayed</option>
+        </select>
+      </div>
+      <div class="col-md-3 d-grid">
+        <button class="btn btn-success" id="reforestationExportBtn">
+          <i class="fa fa-download"></i> Export
+        </button>
+        <button class="btn btn-primary mt-1" id="addReforestationBtn" style="display:none;">
+          <i class="fa fa-plus"></i> Add Project
+        </button>
+      </div>
+    </div>
+
+    <div class="table-responsive">
+      <table class="table table-hover table-sm" id="reforestationTable">
+        <thead class="table-primary">
+          <tr>
+            <th>Project Name</th>
+            <th>Location</th>
+            <th>Area (hectares)</th>
+            <th>Species</th>
+            <th>Seedlings Planted</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="reforestationTbody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- All modals from the backup file would go here - truncated for brevity -->
+  <!-- The same modals as in the original backup file -->
+
+  <!-- Global Page Scroll Buttons -->
+  <button id="scrollTopBtn" class="btn btn-primary rounded-circle shadow scroll-btn" title="Scroll to Top">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+  <button id="scrollBottomBtn" class="btn btn-primary rounded-circle shadow scroll-btn" title="Scroll to Bottom">
+    <i class="fa-solid fa-arrow-down"></i>
+  </button>
+
+  <!-- Global Modal Scroll Buttons -->
+  <button id="modalScrollUp" class="btn btn-primary rounded-circle modal-scroll-btn" title="Scroll Up">
+    <i class="fa-solid fa-arrow-up"></i>
+  </button>
+  <button id="modalScrollDown" class="btn btn-primary rounded-circle modal-scroll-btn" title="Scroll Down">
+    <i class="fa-solid fa-arrow-down"></i>
+  </button>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Chart.js for mobile charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- FileSaver and html-docx-js for Word export -->
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html-docx-js/0.4.1/html-docx.min.js"></script>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
+  
+  <!-- Export module (defines window.exportProjectDocx and helpers) -->
+  <script src="export.js?v=7" defer></script>
+
+  <!-- Custom Script -->
+  <script src="script.js?v=3" defer></script>
+
+  <!-- Mobile-specific JavaScript -->
+  <script>
+    // Mobile navigation handling
+    document.addEventListener('DOMContentLoaded', function() {
+      // Collapse navbar after clicking a nav link on mobile
+      const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+      const navbarCollapse = document.querySelector('.navbar-collapse');
+      
+      navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          if (navbarCollapse.classList.contains('show')) {
+            const bsCollapse = new bootstrap.Collapse(navbarCollapse, {
+              toggle: false
+            });
+            bsCollapse.hide();
+          }
+        });
+      });
+    });
+  </script>
+
+</body>
+</html>

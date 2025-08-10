@@ -1,0 +1,320 @@
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+}
+
+.card-project {
+  border: 1px solid #e1e5ea;
+  border-radius: 6px;
+  transition: box-shadow 0.2s ease-in-out;
+}
+
+.card-project:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.navbar.bg-primary {
+  background-color: #003c8f !important;
+}
+
+.project-header {
+  background-color: #003c8f;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  font-weight: 600;
+  font-size: 1rem;
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+.project-body {
+  padding: 1rem;
+}
+
+.project-body .row + .row {
+  margin-top: 0.5rem;
+}
+
+.label-bold {
+  font-weight: 600;
+  color: #495057;
+}
+
+.modal-dialog-scrollable .modal-footer {
+  position: sticky;
+  bottom: 0;
+  background-color: #fff;
+  border-top: 1px solid #dee2e6;
+  z-index: 2;
+}
+
+.modal-dialog-scrollable .modal-body {
+  max-height: 60vh;
+  overflow-y: auto !important;
+}
+
+/* Custom scrollbar for WebKit */
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar {
+  width: 10px;
+}
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-track {
+  background: #e9ecef;
+}
+.modal-dialog-scrollable .modal-body::-webkit-scrollbar-thumb {
+  background-color: #6c757d;
+  border-radius: 8px;
+  border: 2px solid #e9ecef;
+}
+
+/* Firefox */
+.modal-dialog-scrollable .modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: #6c757d #e9ecef;
+}
+
+#loginScreen{
+  justify-content:flex-start;
+  padding-top:0.25rem;
+}
+
+/* Responsive tweaks */
+.scroll-btn {
+  position: fixed;
+  right: 1.5rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1030;
+}
+
+#scrollTopBtn {
+  bottom: 6rem;
+}
+#scrollBottomBtn {
+  bottom: 3rem;
+}
+
+.modal-scroll-btn {
+  position: fixed;
+  right: 1rem; /* generic default; script.js may reposition via left */
+  left: auto;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1055;
+}
+#modalScrollUp {
+  top: 6rem;
+}
+#modalScrollDown {
+  top: 10rem;
+}
+
+
+.login-page-title{
+  font-weight:700;
+  font-size:2rem;
+  letter-spacing:.6px;
+  margin-bottom:1.5rem;
+  text-transform:uppercase;
+}
+
+/* Logo Header */
+.agency-sub {
+  font-family: Garamond,'EB Garamond','Garamond Premier Pro','Times New Roman',Times,serif;
+  font-weight: 600;
+  letter-spacing: .3px;
+  color:#003c8f;
+}
+.agency-title {
+  font-family: Garamond,'EB Garamond','Garamond Premier Pro','Times New Roman',Times,serif;
+  font-size: 1.25rem;
+  letter-spacing: .5px;
+  font-variant: small-caps;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+#logosHeader {
+  background: linear-gradient(90deg,#ffffff 0%,#f0f6ff 100%);
+  border-bottom: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0,0,0,.04);
+}
+.logo-img {
+  height: 80px;
+  max-width: 140px;
+  object-fit: contain;
+  width: auto;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.1));
+}
+
+@media (max-width: 575.98px) {
+  .navbar-brand {
+    font-size: 1rem;
+  }
+}
+
+/* --- Details Modal Adjustments --- */
+#detailsModal th.percent-col,
+#detailsModal td.percent-col{
+  text-align:center;
+}
+/* Date column width */
+#detailsModal th.date-col,
+#detailsModal td.date-col{
+  white-space:nowrap;
+  min-width:110px;
+}
+/* 20% width utility */
+#detailsModal .w-20{width:18%;}
+#detailsModal .modal-dialog {
+  max-width: 95%; /* nearly full width on desktops */
+}
+#detailsModal .modal-content {
+  font-size: 0.9rem; /* slightly smaller text for professional look */
+}
+@media (min-width: 992px) {
+  #detailsModal .modal-dialog {
+    max-width: 1200px; /* slightly wider for new columns */
+  }
+}
+
+/* --- Project Details: Consistent Photo Grid --- */
+#detailsModal .photo-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+#detailsModal .photo-tile{
+  position: relative;
+  aspect-ratio: 4 / 3; /* consistent tile shape */
+  width: 100%;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #f3f4f6;
+  box-shadow: 0 2px 4px rgba(0,0,0,.04);
+}
+#detailsModal .photo-img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* unify visual size; crops excess */
+  display: block;
+}
+@media (max-width: 575.98px){
+  #detailsModal .photo-grid{
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+}
+
+/* --- Mobile Optimizations --- */
+@media (max-width: 575.98px) {
+  /* Stack header logos vertically */
+  #logosHeader {
+    flex-direction: column !important;
+    gap: 1rem;
+    padding: 1rem 0;
+    text-align: center;
+  }
+  .logo-img {
+    height: 60px;
+    max-width: 100px;
+  }
+
+  /* Reduce title sizes */
+  .agency-title {
+    font-size: 1rem;
+  }
+  .agency-sub {
+    font-size: 0.875rem;
+  }
+  .login-page-title {
+    font-size: 1.5rem;
+  }
+
+  /* Table font size & horizontal scrolling hint */
+  .table th,
+  .table td {
+    font-size: 0.75rem;
+    white-space: nowrap;
+  }
+
+  /* Buttons full width in action bar */
+  #addProjectBtn,
+  #exportBtn {
+    width: 100%;
+  }
+
+  /* Make filters full width */
+  #searchInput,
+  #agencyFilter,
+  #statusFilter {
+    width: 100%;
+  }
+}
+
+/* --- Photo Viewer: full-screen image scaling --- */
+#photoViewer .modal-body {
+  background: #000;
+  position: relative; /* for nav buttons positioning */
+}
+#photoViewerImg {
+  max-width: 100vw;
+  max-height: 100vh;
+  object-fit: contain;
+  cursor: zoom-out;
+}
+
+/* --- Project Details: photo thumbnails grid --- */
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 0.5rem;
+}
+.photo-tile {
+  position: relative;
+  width: 100%;
+  padding-top: 75%; /* 4:3 aspect ratio */
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+  border-radius: 0.25rem;
+  background: #f8f9fa;
+}
+.photo-tile .photo-img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.photo-tile .photo-img:hover {
+  filter: brightness(0.95);
+}
+
+/* --- Photo Viewer: navigation controls --- */
+.photo-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+.photo-nav:hover {
+  background: rgba(0, 0, 0, 0.65);
+}
+.photo-prev { left: 1rem; }
+.photo-next { right: 1rem; }
