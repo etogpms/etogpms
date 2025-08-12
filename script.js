@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     if(!modalUp || !modalDown) return;
     // Hide modal/page scroll arrows for selected modals
     const shown = document.querySelector('.modal.show');
-    const suppressed = shown && ['detailsModal','deepwellModal','reforestationModal','reforestationDetailsModal'].includes(shown.id);
+    const suppressed = shown && ['detailsModal','deepwellModal','reforestationModal','reforestationDetailsModal','usersModal'].includes(shown.id);
     if(suppressed){
       modalUp.style.display='none';
       modalDown.style.display='none';
