@@ -12,9 +12,11 @@
   const PROJECTS_COL = 'projects';
   const DEEPWELLS_COL = 'deepwells';
   const REFORESTATION_COL = 'reforestations';
+  const SERVICE_UPDATES_COL = 'service_updates';
   let unsubscribeProjects = null;
   let unsubscribeDeepwells = null;
   let unsubscribeReforestations = null;
+  let unsubscribeServiceUpdates = null;
 
   const ADMIN_EMAIL = "johnlowel.fradejas@mwss.gov.ph"; // change to your address
   const ADMIN_EMAIL_LOWER = ADMIN_EMAIL.toLowerCase();
@@ -68,6 +70,21 @@
     // Reforestation details modal
     reforestationDetailsBody: document.getElementById('reforestationDetailsBody'),
     reforestationDetailsModal: (function(){ const el = document.getElementById('reforestationDetailsModal'); return el ? new bootstrap.Modal(el) : { show(){}, hide(){} }; })(),
+    // Service Update Report
+    serviceUpdateTab: document.getElementById('serviceUpdateTab'),
+    serviceUpdateSection: document.getElementById('serviceUpdateSection'),
+    serviceStartDateFilter: document.getElementById('serviceStartDateFilter'),
+    serviceEndDateFilter: document.getElementById('serviceEndDateFilter'),
+    serviceProviderFilter: document.getElementById('serviceProviderFilter'),
+    serviceUpdatesTbody: document.getElementById('serviceUpdatesTbody'),
+    addServiceUpdateBtn: document.getElementById('addServiceUpdateBtn'),
+    serviceUpdateModal: (function(){ const el = document.getElementById('serviceUpdateModal'); return el ? new bootstrap.Modal(el) : { show(){}, hide(){} }; })(),
+    serviceUpdateForm: document.getElementById('serviceUpdateForm'),
+    serviceUpdateDetailsModal: (function(){ const el = document.getElementById('serviceUpdateDetailsModal'); return el ? new bootstrap.Modal(el) : { show(){}, hide(){} }; })(),
+    // Service Update chart elements
+    surChartCanvas: document.getElementById('surChart'),
+    surChartEmpty: document.getElementById('surChartEmpty'),
+    surChartView: document.getElementById('surChartView'),
   };
 
   // convenient references
@@ -83,11 +100,13 @@
   let projects = [];
   let deepwells = [];
   let reforestations = [];
+  let serviceUpdates = [];
   let isViewOnly = false;
   let isLevel2 = false; // accessLevel 2 users
   let elevatedAccess = false; // isAdmin || isLevel2
   let pendingUsers = [];
   let dwMonthlyChart = null; // Chart.js instance for deepwells monthly totals
+  let surChart = null; // Chart.js instance for Service Update (Inflows vs Supply)
   let approvedUsers = [];
   function updatePendingBadge(){
     const badge = document.getElementById('pendingBadge');
@@ -96,7 +115,175 @@
     if(cnt>0){badge.textContent=cnt;badge.style.display='inline-block';}
     else {badge.style.display='none';}
   }
-  
+
+// ---- Service Update Chart: Raw Inflows (line) vs Net Supply (stacked bars: Production + Augment) ----
+function buildSurDailyAggregation(list){
+  // Aggregate by plantsDate (preferred) or previous day of report date
+  const byDate = {};
+  list.forEach(s=>{
+    const dateKey = (s.plantsDate || prevDateStr(s.date) || s.date || '').trim();
+    if(!dateKey) return;
+    const inflow = Number(s.inflows||0) || 0;
+    const prod   = Number(s.production||0) || 0;
+    const aug    = Number(s.supplyAug||0) || 0;
+    const prov   = (s.provider||'').toUpperCase();
+    if(!byDate[dateKey]) byDate[dateKey] = { inflows: 0, production: 0, productionMWCI: 0, productionMWSI: 0, augment: 0 };
+    byDate[dateKey].inflows    += inflow;
+    byDate[dateKey].production += prod;
+    if(prov==='MWCI') byDate[dateKey].productionMWCI += prod;
+    else if(prov==='MWSI') byDate[dateKey].productionMWSI += prod;
+    byDate[dateKey].augment    += aug;
+  });
+  const dates = Object.keys(byDate).sort();
+  return {
+    labels: dates,
+    inflows: dates.map(d=>byDate[d].inflows),
+    production: dates.map(d=>byDate[d].production),
+    productionMWCI: dates.map(d=>byDate[d].productionMWCI),
+    productionMWSI: dates.map(d=>byDate[d].productionMWSI),
+    augment: dates.map(d=>byDate[d].augment),
+    hasData: dates.length>0
+  };
+}
+
+function monthLabel(ymd){
+  if(!ymd) return '';
+  const [y,m] = ymd.split('-');
+  if(!y||!m) return ymd;
+  const d = new Date(Number(y), Number(m)-1, 1);
+  return isNaN(d.getTime()) ? `${y}-${m}` : d.toLocaleString('en-US',{month:'short',year:'numeric'});
+}
+
+function buildSurMonthlyFromDaily(daily){
+  // daily: {labels: [YYYY-MM-DD], inflows[], production[], productionMWCI[], productionMWSI[], augment[]}
+  const byMonth = {};
+  daily.labels.forEach((d,idx)=>{
+    const key = (d||'').slice(0,7); // YYYY-MM
+    if(!key) return;
+    if(!byMonth[key]) byMonth[key] = { inflows:0, production:0, productionMWCI:0, productionMWSI:0, augment:0, days:0 };
+    byMonth[key].inflows        += Number(daily.inflows[idx]||0);
+    byMonth[key].production     += Number(daily.production[idx]||0);
+    byMonth[key].productionMWCI += Number(daily.productionMWCI?.[idx]||0);
+    byMonth[key].productionMWSI += Number(daily.productionMWSI?.[idx]||0);
+    byMonth[key].augment        += Number(daily.augment[idx]||0);
+    byMonth[key].days += 1; // count unique days already consolidated
+  });
+  const months = Object.keys(byMonth).sort();
+  return {
+    labels: months.map(monthLabel),
+    inflows: months.map(k=> byMonth[k].days ? +(byMonth[k].inflows/byMonth[k].days).toFixed(2) : 0),
+    production: months.map(k=> byMonth[k].days ? +(byMonth[k].production/byMonth[k].days).toFixed(2) : 0),
+    productionMWCI: months.map(k=> byMonth[k].days ? +(byMonth[k].productionMWCI/byMonth[k].days).toFixed(2) : 0),
+    productionMWSI: months.map(k=> byMonth[k].days ? +(byMonth[k].productionMWSI/byMonth[k].days).toFixed(2) : 0),
+    augment: months.map(k=> byMonth[k].days ? +(byMonth[k].augment/byMonth[k].days).toFixed(2) : 0),
+    hasData: months.length>0
+  };
+}
+
+function getFilteredServiceUpdatesForChart(){
+  let list = serviceUpdates.slice();
+  const start = elements.serviceStartDateFilter?.value || '';
+  const end   = elements.serviceEndDateFilter?.value || '';
+  const prov  = elements.serviceProviderFilter?.value || '';
+  if(start) list = list.filter(s=> (s.date||'') >= start);
+  if(end)   list = list.filter(s=> (s.date||'') <= end);
+  if(prov)  list = list.filter(s=> (s.provider||'') === prov);
+  return list;
+}
+
+function renderSurChart(){
+  const canvas = elements.surChartCanvas;
+  const emptyEl = elements.surChartEmpty;
+  if(!canvas) return;
+  const list = getFilteredServiceUpdatesForChart();
+  const daily = buildSurDailyAggregation(list);
+  const view = elements.surChartView?.value || 'daily';
+  const series = (view==='monthly') ? buildSurMonthlyFromDaily(daily) : daily;
+  if(!series.hasData){
+    if(emptyEl) emptyEl.style.display='block';
+    canvas.style.display='none';
+    if(surChart){ surChart.destroy(); surChart=null; }
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  canvas.style.display='block';
+  const data = {
+    labels: series.labels,
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Treatment Production - MWCI',
+        data: series.productionMWCI || series.production,
+        backgroundColor: 'rgba(0,51,102,0.7)', // navy blue
+        borderColor: '#003366',
+        borderWidth: 1,
+        stack: 'supply',
+        yAxisID: 'y',
+      },
+      {
+        type: 'bar',
+        label: 'Treatment Production - MWSI',
+        data: series.productionMWSI || series.production,
+        backgroundColor: 'rgba(116,192,252,0.7)', // light blue
+        borderColor: '#74C0FC',
+        borderWidth: 1,
+        stack: 'supply',
+        yAxisID: 'y',
+      },
+      {
+        type: 'bar',
+        label: 'Supply Augmentation',
+        data: series.augment,
+        backgroundColor: 'rgba(255,193,7,0.6)',
+        borderColor: '#ffc107',
+        borderWidth: 1,
+        stack: 'supply',
+        yAxisID: 'y',
+      },
+      {
+        type: 'line',
+        label: 'Raw Inflows',
+        data: series.inflows,
+        borderColor: '#198754',
+        backgroundColor: 'rgba(25,135,84,0.2)',
+        tension: 0.25,
+        yAxisID: 'y',
+      }
+    ]
+  };
+  const opts = {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: (ctx)=> `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)} MLD`,
+          footer: (items)=>{
+            try{
+              const supplySum = items
+                .filter(i=> i.dataset.stack === 'supply')
+                .reduce((sum,i)=> sum + (i.parsed?.y || 0), 0);
+              return `Net Supply: ${fmtNum(supplySum)} MLD`;
+            }catch(_){ return ''; }
+          }
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: (elements.surChartView?.value==='monthly' ? 'Month' : 'Date (Plants Date)') }, stacked: true },
+      y: { title: { display: true, text: 'MLD' }, beginAtZero: true, stacked: true }
+    }
+  };
+  if(surChart){
+    surChart.data = data;
+    surChart.options = opts;
+    surChart.update();
+  }else{
+    const ctx = canvas.getContext('2d');
+    surChart = new Chart(ctx, { type: 'bar', data, options: opts });
+  }
+}
 
   // Load config for signups
   async function loadConfig(){
@@ -1188,7 +1375,7 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
     if(!modalUp || !modalDown) return;
     // Hide modal/page scroll arrows for selected modals
     const shown = document.querySelector('.modal.show');
-    const suppressed = shown && ['detailsModal','deepwellModal','reforestationModal','reforestationDetailsModal','usersModal'].includes(shown.id);
+    const suppressed = shown && ['detailsModal','deepwellModal','reforestationModal','reforestationDetailsModal','usersModal','serviceUpdateModal'].includes(shown.id);
     if(suppressed){
       modalUp.style.display='none';
       modalDown.style.display='none';
@@ -1254,6 +1441,7 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
         isViewOnly = true;
         showApp();
         subscribeDeepwells();
+        subscribeServiceUpdates();
         if(unsubscribeProjects) unsubscribeProjects();
         unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(snap=>{
           projects = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1290,6 +1478,11 @@ elements.dwSearchInput?.addEventListener('input', renderDeepwells);
 elements.reforestationTypeFilter?.addEventListener('change', renderReforestations);
 elements.reforestationStatusFilter?.addEventListener('change', renderReforestations);
 elements.reforestationSearchInput?.addEventListener('input', renderReforestations);
+// Service Update filters
+elements.serviceStartDateFilter?.addEventListener('change', ()=>{ renderServiceUpdates(); renderSurChart(); });
+elements.serviceEndDateFilter?.addEventListener('change', ()=>{ renderServiceUpdates(); renderSurChart(); });
+elements.serviceProviderFilter?.addEventListener('change', ()=>{ renderServiceUpdates(); renderSurChart(); });
+elements.surChartView?.addEventListener('change', ()=>{ renderSurChart(); });
 
 // ---- Utility ----
 // Compress image using canvas to keep Firestore doc size small (<1MB total)
@@ -1709,6 +1902,7 @@ function showProjectsSection(){
   elements.projectsSection.style.display='block';
   elements.deepwellsSection.style.display='none';
   elements.reforestationSection.style.display='none';
+  if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
 }
 function showDeepwellsSection(){
   elements.projectsTab.classList.remove('active');
@@ -1716,6 +1910,7 @@ function showDeepwellsSection(){
   elements.projectsSection.style.display='none';
   elements.deepwellsSection.style.display='block';
   elements.reforestationSection.style.display='none';
+  if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
   renderDeepwells();
   renderDeepwellMonthlyChart();
 }
@@ -1730,10 +1925,25 @@ function showReforestationSection(){
   elements.projectsSection.style.display='none';
   elements.deepwellsSection.style.display='none';
   elements.reforestationSection.style.display='block';
+  if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
   renderReforestations();
 }
 
 elements.reforestationTab?.addEventListener('click',e=>{e.preventDefault();showReforestationSection();});
+
+function showServiceUpdateSection(){
+  elements.projectsTab.classList.remove('active');
+  elements.deepwellsTab.classList.remove('active');
+  elements.reforestationTab.classList.remove('active');
+  if(elements.serviceUpdateTab) elements.serviceUpdateTab.classList.add('active');
+  elements.projectsSection.style.display='none';
+  elements.deepwellsSection.style.display='none';
+  elements.reforestationSection.style.display='none';
+  if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='block';
+  if(typeof renderServiceUpdates==='function') try{ renderServiceUpdates(); }catch(_){/*noop*/}
+  if(typeof renderSurChart==='function') try{ renderSurChart(); }catch(_){/*noop*/}
+}
+elements.serviceUpdateTab?.addEventListener('click',e=>{e.preventDefault();showServiceUpdateSection();});
 
 // Add Reforestation button opens modal with cleared form
 if(elements.addReforestationBtn){
@@ -1979,6 +2189,455 @@ function subscribeReforestations(){
   });
 }
 
+// ---- Service Update Report CRUD & Rendering ----
+// Plant lists by concessionaire (exclude Supply Augment which is tracked separately)
+const MWCI_PLANTS = [
+  'Balara WTP 1',
+  'Balara WTP 2',
+  'East LMTP',
+  'Luzon WTP',
+  'Cardona WTP',
+  'Calawis TP',
+  'East Bay TP'
+];
+const MWSI_PLANTS = [
+  'La Mesa WTP 1',
+  'La Mesa WTP 2',
+  'Putatan WTP 1',
+  'Putatan WTP 2',
+  'PQE New Water',
+  'Cross-Border Flow'
+];
+
+function getProviderPlants(provider){
+  return (provider||'MWCI')==='MWCI' ? MWCI_PLANTS : MWSI_PLANTS;
+}
+
+function renderSurPlantTable(provider, plantsData){
+  const container = document.getElementById('surPlantTableContainer');
+  if(!container) return;
+  const list = getProviderPlants(provider);
+  // build rows
+  let html = '';
+  html += '<div class="table-responsive">';
+  html += '<table class="table table-sm align-middle mb-2">';
+  html += '<thead><tr class="table-light"><th>Plant</th><th style="width:160px">Raw Inflows (MLD)</th><th style="width:200px">Daily Production (MLD)</th></tr></thead><tbody>';
+  for(let i=0;i<list.length;i++){
+    const name = list[i];
+    const existing = Array.isArray(plantsData) ? (plantsData.find(p=>p.name===name) || {}) : {};
+    const inflow = typeof existing.inflow==='number' ? existing.inflow : 0;
+    const prod = typeof existing.production==='number' ? existing.production : 0;
+    html += `<tr>`
+      + `<td class="small">${name}</td>`
+      + `<td><input type="number" step="0.01" class="form-control form-control-sm" data-role="inflow" data-plant="${name}" value="${inflow}"></td>`
+      + `<td><input type="number" step="0.01" class="form-control form-control-sm" data-role="production" data-plant="${name}" value="${prod}"></td>`
+      + `</tr>`;
+  }
+  html += '</tbody></table>';
+  html += '</div>';
+  container.innerHTML = html;
+  // attach input listener for auto-sum
+  container.addEventListener('input', updateSurTotals);
+  // compute initial totals
+  updateSurTotals();
+}
+
+function toYmdLocal(date){
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function prevDateStr(ymdStr){
+  if(!ymdStr) return '';
+  const parts = ymdStr.split('-').map(n=>parseInt(n,10));
+  if(parts.length!==3 || parts.some(isNaN)) return '';
+  const dt = new Date(parts[0], parts[1]-1, parts[2]);
+  dt.setDate(dt.getDate()-1);
+  return toYmdLocal(dt);
+}
+
+function updateSurPlantsDateLabel(){
+  const label = document.getElementById('surPlantsDateLabel');
+  if(!label) return;
+  const dateEl = document.getElementById('surDate');
+  const v = dateEl ? dateEl.value : '';
+  label.textContent = v ? prevDateStr(v) : '';
+}
+
+function updateSurDamDateLabel(){
+  const label = document.getElementById('surDamDateLabel');
+  if(!label) return;
+  const dateEl = document.getElementById('surDate');
+  const v = dateEl ? dateEl.value : '';
+  label.textContent = v || '';
+}
+
+function updateSurDateLabels(){
+  updateSurPlantsDateLabel();
+  updateSurDamDateLabel();
+}
+
+function readSurPlantData(){
+  const container = document.getElementById('surPlantTableContainer');
+  if(!container) return [];
+  const rows = [];
+  const inflowInputs = Array.from(container.querySelectorAll('input[data-role="inflow"]'));
+  inflowInputs.forEach(input=>{
+    const name = input.getAttribute('data-plant');
+    const inflow = parseFloat(input.value)||0;
+    const prodInput = container.querySelector(`input[data-role="production"][data-plant="${CSS.escape(name)}"]`);
+    const production = parseFloat(prodInput?.value)||0;
+    rows.push({name, inflow, production});
+  });
+  return rows;
+}
+
+function updateSurTotals(){
+  const plants = readSurPlantData();
+  const inflowTotal = plants.reduce((sum,p)=>sum + (p.inflow||0), 0);
+  const prodTotal = plants.reduce((sum,p)=>sum + (p.production||0), 0);
+  const inflowEl = document.getElementById('surInflows');
+  const prodEl = document.getElementById('surProduction');
+  if(inflowEl) inflowEl.value = (Math.round(inflowTotal*100)/100).toFixed(2);
+  if(prodEl)   prodEl.value   = (Math.round(prodTotal*100)/100).toFixed(2);
+}
+
+// --- Read-only details rendering for Service Update Report ---
+function renderSurPlantDetailsTable(plants){
+  const container = document.getElementById('surDetPlantTableContainer');
+  if(!container) return;
+  const list = Array.isArray(plants) ? plants : [];
+  if(list.length === 0){
+    container.innerHTML = '<div class="text-muted small">No per-plant metrics recorded.</div>';
+    return;
+  }
+  function fmt2(n){ return (Math.round((n||0)*100)/100).toFixed(2); }
+  let html = '';
+  html += '<div class="table-responsive">';
+  html += '<table class="table table-sm align-middle mb-2">';
+  html += '<thead><tr class="table-light"><th>Plant</th><th style="width:160px">Raw Inflows (MLD)</th><th style="width:200px">Daily Production (MLD)</th></tr></thead><tbody>';
+  list.forEach(p=>{
+    html += '<tr>'
+      + `<td class="small">${p.name||''}</td>`
+      + `<td>${fmt2(p.inflow)}</td>`
+      + `<td>${fmt2(p.production)}</td>`
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function viewServiceUpdateDetails(id){
+  const s = serviceUpdates.find(x=>x.id===id);
+  if(!s) return;
+  // Fill basic fields
+  const el = (id)=>document.getElementById(id);
+  if(el('surDetDate')) el('surDetDate').textContent = s.date || '';
+  if(el('surDetProvider')) el('surDetProvider').textContent = s.provider || '';
+  if(el('surDetDamDate')) el('surDetDamDate').textContent = s.date || '';
+  if(el('surDetDamAsOf')) el('surDetDamAsOf').textContent = s.damAsOf ? `(${s.damAsOf})` : '';
+  if(el('surDetPlantsDate')) el('surDetPlantsDate').textContent = s.plantsDate || prevDateStr(s.date||'');
+  // Plants table
+  const plantsData = Array.isArray(s.plants) ? s.plants : [];
+  renderSurPlantDetailsTable(plantsData);
+  // Totals and dams
+  const sumIn = (Array.isArray(plantsData)?plantsData:[]).reduce((a,p)=>a+(p.inflow||0),0);
+  const sumPr = (Array.isArray(plantsData)?plantsData:[]).reduce((a,p)=>a+(p.production||0),0);
+  const inflows = (typeof s.inflows==='number') ? s.inflows : sumIn;
+  const production = (typeof s.production==='number') ? s.production : sumPr;
+  const fmt2 = (n)=> (Math.round((n||0)*100)/100).toFixed(2);
+  if(el('surDetInflows')) el('surDetInflows').textContent = fmt2(inflows);
+  if(el('surDetProduction')) el('surDetProduction').textContent = fmt2(production);
+  if(el('surDetSupplyAug')) el('surDetSupplyAug').textContent = fmt2(s.supplyAug||0);
+  if(el('surDetAngat')) el('surDetAngat').textContent = fmt2(s.angat||0);
+  if(el('surDetIpo')) el('surDetIpo').textContent = fmt2(s.ipo||0);
+  if(el('surDetLaMesa')) el('surDetLaMesa').textContent = fmt2(s.laMesa||0);
+  if(el('surDetRemarks')) el('surDetRemarks').textContent = s.remarks || '';
+  // Show read-only modal
+  if(elements.serviceUpdateDetailsModal) elements.serviceUpdateDetailsModal.show();
+}
+function serviceUpdateRowHtml(s){
+  let actionsHtml = elevatedAccess ? `<button class="btn btn-sm btn-primary me-1" title="Edit" onclick="editServiceUpdate('${s.id}', true)"><i class="fa fa-pencil"></i></button>` : '';
+  if(isAdmin){
+    actionsHtml += `<button class="btn btn-sm btn-danger" title="Delete" onclick="deleteServiceUpdate('${s.id}')"><i class="fa fa-trash"></i></button>`;
+  }
+  return `<tr data-id="${s.id}">`
+    + `<td>${s.date||''}</td>`
+    + `<td>${s.provider||''}</td>`
+    + `<td>${(Array.isArray(s.plants)?s.plants.length:0)}</td>`
+    + `<td>${fmtNum(s.inflows||0)}</td>`
+    + `<td>${fmtNum(s.production||0)}</td>`
+    + `<td>${fmtNum(s.supplyAug||0)}</td>`
+    + `<td>${fmtNum(s.angat||0)}</td>`
+    + `<td>${fmtNum(s.ipo||0)}</td>`
+    + `<td>${fmtNum(s.laMesa||0)}</td>`
+    + `<td>${s.damAsOf||''}</td>`
+    + `<td class="d-flex gap-1">${actionsHtml}</td>`
+    + `</tr>`;
+}
+
+function renderServiceUpdates(){
+  if(elements.addServiceUpdateBtn){
+    elements.addServiceUpdateBtn.style.display = (elevatedAccess && firebase.auth().currentUser && !isViewOnly) ? 'inline-block' : 'none';
+  }
+  let list = serviceUpdates.slice();
+  const start = elements.serviceStartDateFilter?.value || '';
+  const end   = elements.serviceEndDateFilter?.value || '';
+  const prov  = elements.serviceProviderFilter?.value || '';
+  if(start) list = list.filter(s=> (s.date||'') >= start);
+  if(end)   list = list.filter(s=> (s.date||'') <= end);
+  if(prov)  list = list.filter(s=> (s.provider||'') === prov);
+  // sort by date desc, then provider
+  list.sort((a,b)=>{
+    const ad = a.date||''; const bd = b.date||'';
+    if(ad!==bd) return ad>bd? -1: 1;
+    return (a.provider||'').localeCompare(b.provider||'');
+  });
+  const tbody = elements.serviceUpdatesTbody;
+  if(!tbody) return;
+  tbody.innerHTML = list.map(serviceUpdateRowHtml).join('');
+  // row click to edit (excluding buttons)
+  Array.from(tbody.querySelectorAll('tr')).forEach(tr=>{
+    tr.style.cursor='pointer';
+    tr.addEventListener('click', e=>{
+      if(e.target.closest('button')) return;
+      // Open read-only details modal on row click
+      viewServiceUpdateDetails(tr.dataset.id);
+    });
+  });
+}
+
+function clearServiceUpdateForm(){
+  const f = elements.serviceUpdateForm;
+  if(!f) return;
+  f.reset();
+  if(f.surId) f.surId.value='';
+  // render empty per-plant table for current provider
+  const prov = f.surProvider?.value || 'MWCI';
+  renderSurPlantTable(prov, []);
+  updateSurDateLabels();
+  // Try to prefill dam elevations from counterpart if available
+  prefillDamFromCounterpart();
+}
+
+async function prefillDamFromCounterpart(){
+  const f = elements.serviceUpdateForm;
+  if(!f) return;
+  const date = f.surDate?.value || '';
+  const provider = f.surProvider?.value || 'MWCI';
+  if(!date) return;
+  const otherProvider = provider==='MWCI' ? 'MWSI' : 'MWCI';
+  try{
+    const snap = await db.collection(SERVICE_UPDATES_COL)
+      .where('date','==', date)
+      .where('provider','==', otherProvider)
+      .limit(1)
+      .get();
+    if(snap.empty) return;
+    const other = snap.docs[0].data();
+    const otherHasDam = (Number(other.angat)>0 || Number(other.ipo)>0 || Number(other.laMesa)>0);
+    if(!otherHasDam) return;
+    const hasCurrDam = (Number(f.surAngat?.value||0)>0 || Number(f.surIpo?.value||0)>0 || Number(f.surLaMesa?.value||0)>0);
+    if(hasCurrDam) return; // don't override user-entered
+    if(f.surAngat) f.surAngat.value = other.angat||0;
+    if(f.surIpo) f.surIpo.value = other.ipo||0;
+    if(f.surLaMesa) f.surLaMesa.value = other.laMesa||0;
+    if(f.surDamAsOf && !f.surDamAsOf.value) f.surDamAsOf.value = other.damAsOf||date;
+  }catch(err){ console.warn('prefillDamFromCounterpart failed', err); }
+}
+
+async function saveServiceUpdate(s){
+  const userEmail = firebase.auth().currentUser?.email || 'viewer';
+  // 1) Find counterpart doc for same date (other provider)
+  const otherProvider = s.provider === 'MWCI' ? 'MWSI' : 'MWCI';
+  let otherDoc = null;
+  try{
+    const q = await db.collection(SERVICE_UPDATES_COL)
+      .where('date','==', s.date)
+      .where('provider','==', otherProvider)
+      .limit(1)
+      .get();
+    if(!q.empty){
+      const d = q.docs[0];
+      otherDoc = { id: d.id, ...d.data() };
+    }
+  }catch(err){ console.warn('Lookup counterpart failed', err); }
+
+  // 2) If creating new and current has no dam elevations but counterpart has, copy theirs before saving
+  const sHasDam = (Number(s.angat)>0 || Number(s.ipo)>0 || Number(s.laMesa)>0);
+  const oHasDam = otherDoc && (Number(otherDoc.angat)>0 || Number(otherDoc.ipo)>0 || Number(otherDoc.laMesa)>0);
+  if(!s.id && !sHasDam && oHasDam){
+    s.angat = otherDoc.angat||0;
+    s.ipo = otherDoc.ipo||0;
+    s.laMesa = otherDoc.laMesa||0;
+    if(!s.damAsOf && otherDoc.damAsOf) s.damAsOf = otherDoc.damAsOf;
+  }
+
+  // 3) Append edit history and save this document
+  const existingHistory = s.id ? ((await db.collection(SERVICE_UPDATES_COL).doc(s.id).get()).data()?.history||[]) : [];
+  const actionLabel = s.id ? 'edit' : 'create';
+  s.history = [...existingHistory, {email:userEmail,timestamp:new Date().toISOString(),action:actionLabel}];
+  const data = { ...s };
+  if(!data.id) delete data.id;
+  let savedId = s.id;
+  if(s.id){
+    await db.collection(SERVICE_UPDATES_COL).doc(s.id).set(data);
+  }else{
+    const ref = await db.collection(SERVICE_UPDATES_COL).add(data);
+    savedId = ref.id;
+  }
+
+  // 4) Ensure counterpart matches current (always keep same for same date)
+  if(otherDoc){
+    const needsSync = (
+      Number(otherDoc.angat||0) !== Number(s.angat||0) ||
+      Number(otherDoc.ipo||0) !== Number(s.ipo||0) ||
+      Number(otherDoc.laMesa||0) !== Number(s.laMesa||0) ||
+      ((otherDoc.damAsOf||'') !== (s.damAsOf||''))
+    );
+    if(needsSync){
+      try{
+        const otherHist = Array.isArray(otherDoc.history) ? otherDoc.history : [];
+        await db.collection(SERVICE_UPDATES_COL).doc(otherDoc.id).set({
+          angat: Number(s.angat)||0,
+          ipo: Number(s.ipo)||0,
+          laMesa: Number(s.laMesa)||0,
+          damAsOf: s.damAsOf||otherDoc.damAsOf||'',
+          history: [...otherHist, {email:userEmail,timestamp:new Date().toISOString(),action:'sync_dam'}]
+        }, { merge: true });
+      }catch(err){ console.warn('Sync counterpart failed', err); }
+    }
+  }
+}
+
+function gatherServiceUpdateForm(){
+  const f = elements.serviceUpdateForm;
+  const plants = readSurPlantData();
+  const inflowTotal = plants.reduce((sum,p)=>sum + (p.inflow||0), 0);
+  const prodTotal = plants.reduce((sum,p)=>sum + (p.production||0), 0);
+  return {
+    id: f.surId.value || undefined,
+    date: f.surDate.value,
+    provider: f.surProvider.value,
+    damAsOf: f.surDamAsOf.value,
+    inflows: Math.round(inflowTotal*100)/100,
+    production: Math.round(prodTotal*100)/100,
+    supplyAug: parseFloat(f.surSupplyAug.value)||0,
+    angat: parseFloat(f.surAngat.value)||0,
+    ipo: parseFloat(f.surIpo.value)||0,
+    laMesa: parseFloat(f.surLaMesa.value)||0,
+    plants,
+    plantsDate: prevDateStr(f.surDate.value),
+    remarks: f.surRemarks.value,
+    timestamp: Date.now()
+  };
+}
+
+function onSaveServiceUpdate(e){
+  e.preventDefault();
+  if(!elevatedAccess){ alert('Only admin/level2 can save'); return; }
+  const saveBtn = document.getElementById('saveServiceUpdateBtn');
+  if(saveBtn) saveBtn.disabled = true;
+  const data = gatherServiceUpdateForm();
+  // Close modal quickly for UX
+  elements.serviceUpdateModal.hide();
+  saveServiceUpdate(data)
+    .catch(err=>alert(err.message))
+    .finally(()=>{ if(saveBtn) saveBtn.disabled=false; });
+}
+
+window.editServiceUpdate = (id, edit=true)=>{
+  const s = serviceUpdates.find(x=>x.id===id);
+  if(!s) return;
+  const f = elements.serviceUpdateForm;
+  f.surId.value = s.id;
+  f.surDate.value = s.date||'';
+  f.surProvider.value = s.provider||'';
+  f.surDamAsOf.value = s.damAsOf||'';
+  // Render plant table with existing data and compute totals
+  const plantsData = Array.isArray(s.plants)?s.plants:[];
+  renderSurPlantTable(f.surProvider.value, plantsData);
+  // If no per-plant data exists but totals are present, seed first row with totals to preserve values
+  if((!plantsData || plantsData.length===0) && (s.inflows || s.production)){
+    const container = document.getElementById('surPlantTableContainer');
+    const firstInflow = container?.querySelector('input[data-role="inflow"]');
+    const firstProd = container?.querySelector('input[data-role="production"]');
+    if(firstInflow){ firstInflow.value = s.inflows||0; }
+    if(firstProd){ firstProd.value = s.production||0; }
+    updateSurTotals();
+  }
+  updateSurDateLabels();
+  f.surSupplyAug.value = s.supplyAug||'';
+  f.surAngat.value = s.angat||'';
+  f.surIpo.value = s.ipo||'';
+  f.surLaMesa.value = s.laMesa||'';
+  f.surRemarks.value = s.remarks||'';
+  // Toggle readonly/disabled and Save visibility
+  Array.from(f.elements).forEach(el=>{
+    if(el.tagName==='INPUT' || el.tagName==='SELECT' || el.tagName==='TEXTAREA'){
+      el.readOnly = !edit;
+      el.disabled = !edit && (el.tagName==='SELECT');
+    }
+  });
+  const saveBtn = document.getElementById('saveServiceUpdateBtn');
+  if(saveBtn) saveBtn.style.display = edit? 'inline-block':'none';
+  elements.serviceUpdateModal.show();
+};
+
+window.deleteServiceUpdate = async (id)=>{
+  if(!isAdmin){ alert('Only admin can delete'); return; }
+  if(!confirm('Delete this report?')) return;
+  try{
+    await db.collection(SERVICE_UPDATES_COL).doc(id).delete();
+  }catch(err){ alert(err.message); }
+};
+
+function subscribeServiceUpdates(){
+  if(unsubscribeServiceUpdates) unsubscribeServiceUpdates();
+  unsubscribeServiceUpdates = db.collection(SERVICE_UPDATES_COL).onSnapshot(snap=>{
+    serviceUpdates = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderServiceUpdates();
+    if(typeof renderSurChart==='function') try{ renderSurChart(); }catch(_){/*noop*/}
+  });
+}
+
+// Attach listeners
+if(elements.serviceUpdateForm){
+  elements.serviceUpdateForm.addEventListener('submit', onSaveServiceUpdate);
+  const provEl = document.getElementById('surProvider');
+  if(provEl){
+    provEl.addEventListener('change', ()=>{
+      renderSurPlantTable(provEl.value, []);
+      prefillDamFromCounterpart();
+    });
+  }
+  const dateEl = document.getElementById('surDate');
+  if(dateEl){ dateEl.addEventListener('change', ()=>{ updateSurDateLabels(); prefillDamFromCounterpart(); }); }
+}
+if(elements.addServiceUpdateBtn){
+  elements.addServiceUpdateBtn.addEventListener('click', ()=>{
+    clearServiceUpdateForm();
+    elements.serviceUpdateModal.show();
+  });
+}
+
+// Service Update filters and chart view listeners (desktop/mobile)
+if(elements.serviceStartDateFilter){
+  elements.serviceStartDateFilter.addEventListener('change', ()=>{ try{ renderServiceUpdates(); }catch(_){} try{ renderSurChart(); }catch(_){} });
+}
+if(elements.serviceEndDateFilter){
+  elements.serviceEndDateFilter.addEventListener('change', ()=>{ try{ renderServiceUpdates(); }catch(_){} try{ renderSurChart(); }catch(_){} });
+}
+if(elements.serviceProviderFilter){
+  elements.serviceProviderFilter.addEventListener('change', ()=>{ try{ renderServiceUpdates(); }catch(_){} try{ renderSurChart(); }catch(_){} });
+}
+if(elements.surChartView){
+  elements.surChartView.addEventListener('change', ()=>{ try{ renderSurChart(); }catch(_){} });
+}
+
 // ---- End project functions ----
 
 // Signup handler
@@ -2085,6 +2744,7 @@ logoutBtn.style.display   = 'inline-block';
         updateAdminUI();
       subscribeDeepwells();
       subscribeReforestations();
+      subscribeServiceUpdates();
         if(unsubscribeProjects) unsubscribeProjects();
         unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(snap=>{
           projects = snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -2118,6 +2778,7 @@ logoutBtn.style.display   = 'inline-block';
       }
       subscribeDeepwells();
       subscribeReforestations();
+      subscribeServiceUpdates();
       if(unsubscribeProjects) unsubscribeProjects();
       const legacyKey='construction_projects';
 async function migrateLegacyIfAny(){
@@ -2168,11 +2829,14 @@ unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(async snap => {
       if(unsubscribeProjects){unsubscribeProjects(); unsubscribeProjects=null;}
       if(unsubscribeDeepwells){unsubscribeDeepwells(); unsubscribeDeepwells=null;}
       if(unsubscribeReforestations){unsubscribeReforestations(); unsubscribeReforestations=null;}
+      if(unsubscribeServiceUpdates){unsubscribeServiceUpdates(); unsubscribeServiceUpdates=null;}
       projects = [];
       deepwells = [];
       reforestations = [];
+      serviceUpdates = [];
       render();
       renderReforestations();
+      if(typeof renderServiceUpdates==='function') { try{ renderServiceUpdates(); }catch(_){ /* noop */ } }
     }
   });
 

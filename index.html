@@ -98,6 +98,9 @@
           <li class="nav-item">
             <a class="nav-link fw-semibold fs-5 px-3" href="#" id="reforestationTab">Reforestation Projects</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link fw-semibold fs-5 px-3" href="#" id="serviceUpdateTab">Service Update Report</a>
+          </li>
         </ul>
       <div class="mt-auto w-100 d-grid gap-2 sidebar-actions">
         <button class="btn btn-outline-info position-relative" id="manageUsersBtn" style="display:none;">
@@ -318,6 +321,220 @@
       </div>
   </div>
 
+  </div>
+  
+  <!-- Service Update Report Section -->
+  <div id="serviceUpdateSection" class="container-fluid px-4" style="display:none;">
+    <div class="card p-3 mb-4 shadow-sm">
+      <!-- Action Bar -->
+      <div class="row g-2 mb-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label mb-0 small" for="serviceStartDateFilter">Start Date</label>
+          <input type="date" id="serviceStartDateFilter" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-3">
+          <label class="form-label mb-0 small" for="serviceEndDateFilter">End Date</label>
+          <input type="date" id="serviceEndDateFilter" class="form-control form-control-sm" />
+        </div>
+        <div class="col-md-2">
+          <label class="form-label mb-0 small" for="serviceProviderFilter">Concessionaire</label>
+          <select id="serviceProviderFilter" class="form-select form-select-sm">
+            <option value="">All</option>
+            <option value="MWCI">MWCI</option>
+            <option value="MWSI">MWSI</option>
+          </select>
+        </div>
+        <div class="col-md-3 text-md-end ms-auto d-grid gap-2">
+          <button class="btn btn-primary" id="addServiceUpdateBtn" data-bs-toggle="modal" data-bs-target="#serviceUpdateModal">
+            <i class="fa-solid fa-plus me-1"></i>Add Report
+          </button>
+        </div>
+      </div>
+      <!-- Inflows vs Supply Chart -->
+      <div class="mb-3">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <h6 class="mb-0">Raw Inflows vs Net Supply</h6>
+          <div class="d-flex align-items-center gap-2">
+            <label for="surChartView" class="form-label small mb-0">View</label>
+            <select id="surChartView" class="form-select form-select-sm" style="width: 150px;">
+              <option value="daily" selected>Daily</option>
+              <option value="monthly">Monthly</option>
+            </select>
+          </div>
+        </div>
+        <canvas id="surChart" height="90"></canvas>
+        <div id="surChartEmpty" class="text-muted small" style="display:none;">No data available for the selected filters.</div>
+        <div class="form-text small text-muted">Bars: Treatment Production + Supply Augmentation (stacked). Line: Raw Inflows. Dates reflect plant metrics date (previous day of report).</div>
+      </div>
+      <!-- Reports List -->
+      <div class="alert alert-info py-2 small">
+        <i class="fa-regular fa-circle-question me-1"></i>
+        Note: Plant Metrics (per-plant inflows and production) reflect data from the previous day of the report date. Dam elevations are as of the report date.
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle" id="serviceUpdatesTable">
+          <thead class="table-primary">
+            <tr>
+              <th>Date</th>
+              <th>Concessionaire</th>
+              <th>Plants</th>
+              <th>Raw Inflows (MLD)</th>
+              <th>Treatment Prod (MLD)</th>
+              <th>Supply Aug (MLD)</th>
+              <th>Angat (masl)</th>
+              <th>Ipo (masl)</th>
+              <th>La Mesa (masl)</th>
+              <th>As of</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="serviceUpdatesTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Service Update Modal -->
+  <div class="modal fade" id="serviceUpdateModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <form id="serviceUpdateForm">
+          <div class="modal-header bg-primary text-white">
+            <h5 class="modal-title">Service Update Report</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" id="surId" name="surId" />
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Date</label>
+                <input type="date" class="form-control" id="surDate" name="surDate" required />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Concessionaire</label>
+                <select class="form-select" id="surProvider" name="surProvider" required>
+                  <option value="MWCI">MWCI</option>
+                  <option value="MWSI">MWSI</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Dam Levels As of</label>
+                <input type="time" class="form-control" id="surDamAsOf" name="surDamAsOf" />
+                <div class="form-text">Dam elevations date: <span id="surDamDateLabel"></span> (same as report date)</div>
+              </div>
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-body p-2">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <h6 class="mb-0">Per-Plant Metrics</h6>
+                      <small class="text-muted">Enter Raw Inflows and Daily Production per plant</small>
+                    </div>
+                    <div class="text-muted small mb-2">Plant metrics date: <span id="surPlantsDateLabel"></span> (previous day of report date)</div>
+                    <div id="surPlantTableContainer"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Total Raw Water Inflows (MLD)</label>
+                <input type="number" step="0.01" class="form-control" id="surInflows" name="surInflows" readonly />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Total Daily Treatment Production (MLD)</label>
+                <input type="number" step="0.01" class="form-control" id="surProduction" name="surProduction" readonly />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Supply Augmentation (MLD)</label>
+                <input type="number" step="0.01" class="form-control" id="surSupplyAug" name="surSupplyAug" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Angat Dam (masl)</label>
+                <input type="number" step="0.01" class="form-control" id="surAngat" name="surAngat" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Ipo Dam (masl)</label>
+                <input type="number" step="0.01" class="form-control" id="surIpo" name="surIpo" />
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">La Mesa Dam (masl)</label>
+                <input type="number" step="0.01" class="form-control" id="surLaMesa" name="surLaMesa" />
+              </div>
+              <div class="col-12">
+                <label class="form-label">Remarks (optional)</label>
+                <textarea class="form-control" id="surRemarks" name="surRemarks" rows="2"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" id="saveServiceUpdateBtn" class="btn btn-primary">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <!-- Service Update Details Modal (Read-only) -->
+  <div class="modal fade" id="serviceUpdateDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header bg-secondary text-white">
+          <h5 class="modal-title">Service Update Report - Details</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2 mb-2">
+            <div class="col-md-4">
+              <div class="small text-muted">Date</div>
+              <div id="surDetDate" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">Concessionaire</div>
+              <div id="surDetProvider" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">Dam Levels As of</div>
+              <div><span id="surDetDamDate"></span> <span id="surDetDamAsOf" class="ms-1"></span></div>
+            </div>
+          </div>
+          <div class="alert alert-info py-2 small">
+            Plant metrics date: <span id="surDetPlantsDate"></span> (previous day of report date)
+          </div>
+          <div id="surDetPlantTableContainer" class="mb-3"></div>
+          <div class="row g-2">
+            <div class="col-md-4">
+              <div class="small text-muted">Total Raw Water Inflows (MLD)</div>
+              <div id="surDetInflows" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">Total Daily Treatment Production (MLD)</div>
+              <div id="surDetProduction" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">Supply Augmentation (MLD)</div>
+              <div id="surDetSupplyAug" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">Angat Dam (masl)</div>
+              <div id="surDetAngat" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">Ipo Dam (masl)</div>
+              <div id="surDetIpo" class="fw-semibold"></div>
+            </div>
+            <div class="col-md-4">
+              <div class="small text-muted">La Mesa Dam (masl)</div>
+              <div id="surDetLaMesa" class="fw-semibold"></div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="small text-muted">Remarks</div>
+            <div id="surDetRemarks" class="border rounded p-2 bg-light"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
   <!-- Deepwell Modal -->
   <div class="modal fade" id="deepwellModal" tabindex="-1" aria-hidden="true">
