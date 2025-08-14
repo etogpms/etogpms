@@ -276,6 +276,9 @@
         <div class="collapse navbar-collapse" id="navbarNav">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
+              <a class="nav-link" href="#" id="dashboardTab"><i class="fa-solid fa-chart-line me-1"></i>Dashboard</a>
+            </li>
+            <li class="nav-item">
               <a class="nav-link active" href="#" id="projectsTab">Construction Projects</a>
             </li>
             <li class="nav-item">
@@ -327,6 +330,75 @@
             </div>
            </div>
          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Section (Mobile) -->
+  <div id="dashboardSection" class="container-fluid px-2" style="display:none;">
+    <div class="row g-2 mb-2">
+      <div class="col-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body py-2">
+            <div class="text-muted small">Projects</div>
+            <div class="h3 mb-0 fw-bold" id="dashProjectsTotal">—</div>
+            <div class="small text-muted mt-1">By agency</div>
+            <div class="small">
+              MWCI: <span class="fw-semibold" id="dashProjectsMWCI">—</span>
+              <span class="mx-2">·</span>
+              MWSI: <span class="fw-semibold" id="dashProjectsMWSI">—</span>
+              <span class="mx-2">·</span>
+              MWSS: <span class="fw-semibold" id="dashProjectsMWSS">—</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body py-2">
+            <div class="text-muted small">Deepwells</div>
+            <div class="h3 mb-0 fw-bold" id="dashDeepwellsTotal">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body py-2">
+            <div class="text-muted small">Reforestation</div>
+            <div class="h3 mb-0 fw-bold" id="dashReforestationsTotal">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body py-2">
+            <div class="text-muted small">Net Supply (MLD)</div>
+            <div class="h3 mb-0 fw-bold" id="dashSurNetSupply">—</div>
+            <div class="text-muted small">Latest day</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-2">
+      <div class="col-12">
+        <div class="card p-2 shadow-sm h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <h6 class="mb-0">Inflows vs Net Supply</h6>
+            <small class="text-muted">Service Update overview</small>
+          </div>
+          <canvas id="surChartDash" height="120"></canvas>
+          <div id="dashSurChartEmpty" class="text-muted small" style="display:none;">No data available.</div>
+        </div>
+      </div>
+      <div class="col-12">
+        <div class="card p-2 shadow-sm h-100">
+          <div class="d-flex align-items-center justify-content-between mb-1">
+            <h6 class="mb-0">Deepwell Monthly Production</h6>
+            <small class="text-muted">Totals by concessionaire</small>
+          </div>
+          <canvas id="dwMonthlyChartDash" height="120"></canvas>
+          <div id="dashDwChartEmpty" class="text-muted small" style="display:none;">No data available.</div>
+        </div>
       </div>
     </div>
   </div>
@@ -998,12 +1070,14 @@
       const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
       const navbarCollapse = document.querySelector('.navbar-collapse');
       const tabs = {
+        dashboardTab: document.getElementById('dashboardTab'),
         projectsTab: document.getElementById('projectsTab'),
         deepwellsTab: document.getElementById('deepwellsTab'),
         reforestationTab: document.getElementById('reforestationTab'),
         serviceUpdateTab: document.getElementById('serviceUpdateTab'),
       };
       const sections = {
+        dashboardSection: document.getElementById('dashboardSection'),
         projectsSection: document.getElementById('projectsSection'),
         deepwellsSection: document.getElementById('deepwellsSection'),
         reforestationSection: document.getElementById('reforestationSection'),
@@ -1017,7 +1091,11 @@
       }
       function showSection(sectionEl){
         Object.values(sections).forEach(s=>{ if(s) s.style.display='none'; });
-        if(sectionEl) sectionEl.style.display='block';
+        if(sectionEl) {
+          sectionEl.style.display='block';
+          // Scroll to top to ensure the newly shown section is visible on mobile
+          try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch(_) {}
+        }
       }
       function handleNav(tabKey, sectionKey){
         const t = tabs[tabKey];
@@ -1025,6 +1103,7 @@
         if(!t || !s) return;
         t.addEventListener('click', (e)=>{
           e.preventDefault();
+          try { console.debug('[mobile] nav click', { tabKey, sectionKey }); } catch(_) {}
           activateTab(t);
           showSection(s);
           // Close navbar if open
@@ -1035,14 +1114,24 @@
         });
       }
 
+      handleNav('dashboardTab','dashboardSection');
       handleNav('projectsTab','projectsSection');
       handleNav('deepwellsTab','deepwellsSection');
       handleNav('reforestationTab','reforestationSection');
       handleNav('serviceUpdateTab','serviceUpdateSection');
 
+      // Ensure render on Dashboard tab open
+      if (tabs.dashboardTab) {
+        tabs.dashboardTab.addEventListener('click', ()=>{
+          try { console.debug('[mobile] dashboardTab clicked: renderDashboard()'); } catch(_) {}
+          try { renderDashboard(); } catch(e) {}
+        });
+      }
+
       // Ensure render on Service Update tab open
       if (tabs.serviceUpdateTab) {
         tabs.serviceUpdateTab.addEventListener('click', ()=>{
+          try { console.debug('[mobile] serviceUpdateTab clicked: renderServiceUpdates() & renderSurChart()'); } catch(_) {}
           try { renderServiceUpdates(); } catch(e) {}
           try { renderSurChart(); } catch(e) {}
         });

@@ -90,6 +90,9 @@
       
         <ul class="navbar-nav flex-lg-column w-100">
           <li class="nav-item">
+            <a class="nav-link fw-semibold fs-5 px-3" href="#" id="dashboardTab"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a>
+          </li>
+          <li class="nav-item">
             <a class="nav-link active fw-semibold fs-5 px-3" href="#" id="projectsTab">Construction Projects</a>
           </li>
           <li class="nav-item">
@@ -137,6 +140,90 @@
             </div>
            </div>
          </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashboardSection" class="container-fluid px-4" style="display:none;">
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <div class="text-muted small">Projects</div>
+            <div class="display-6 fw-bold" id="dashProjectsTotal">—</div>
+            <div class="mt-2">
+              <div class="text-muted small mb-0">On-going</div>
+              <div class="fw-semibold" id="dashProjectsOngoing">—</div>
+              <div class="text-muted small mt-2 mb-0">Completed</div>
+              <div class="fw-semibold" id="dashProjectsCompleted">—</div>
+              <hr class="my-2" />
+              <div class="text-muted small mb-0">By agency</div>
+              <div class="small">
+                <span class="me-3">MWCI: <span class="fw-semibold" id="dashProjectsMWCI">—</span></span>
+                <span class="me-3">MWSI: <span class="fw-semibold" id="dashProjectsMWSI">—</span></span>
+                <span>MWSS: <span class="fw-semibold" id="dashProjectsMWSS">—</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <div class="text-muted small">Deepwells</div>
+            <div class="display-6 fw-bold" id="dashDeepwellsTotal">—</div>
+            <div class="mt-2">
+              <div class="text-muted small mb-0">Active</div>
+              <div class="fw-semibold" id="dashDeepwellsActive">—</div>
+              <div class="text-muted small mt-2 mb-0">Inactive</div>
+              <div class="fw-semibold" id="dashDeepwellsInactive">—</div>
+              <div class="text-muted small mt-2 mb-0">Standby</div>
+              <div class="fw-semibold" id="dashDeepwellsStandby">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <div class="text-muted small">Reforestation</div>
+            <div class="display-6 fw-bold" id="dashReforestationsTotal">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="card shadow-sm border-0 h-100">
+          <div class="card-body">
+            <div class="text-muted small">Dam Elevation (Today)</div>
+            <div class="small mt-2">Angat: <span class="fw-semibold" id="dashAngat">—</span> m</div>
+            <div class="small">Ipo: <span class="fw-semibold" id="dashIpo">—</span> m</div>
+            <div class="small">La Mesa: <span class="fw-semibold" id="dashLaMesa">—</span> m</div>
+            <div class="text-muted small mt-1" id="dashDamAsOf"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-12 col-lg-6">
+        <div class="card p-3 shadow-sm h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h6 class="mb-0">Inflows vs Net Supply</h6>
+            <small class="text-muted">Service Update overview</small>
+          </div>
+          <canvas id="surChartDash" height="120"></canvas>
+          <div id="dashSurChartEmpty" class="text-muted small" style="display:none;">No data available.</div>
+        </div>
+      </div>
+      <div class="col-12 col-lg-6">
+        <div class="card p-3 shadow-sm h-100">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h6 class="mb-0">Deepwell Monthly Production</h6>
+            <small class="text-muted">Totals by concessionaire</small>
+          </div>
+          <canvas id="dwMonthlyChartDash" height="120"></canvas>
+          <div id="dashDwChartEmpty" class="text-muted small" style="display:none;">No data available.</div>
+        </div>
       </div>
     </div>
   </div>

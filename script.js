@@ -85,6 +85,32 @@
     surChartCanvas: document.getElementById('surChart'),
     surChartEmpty: document.getElementById('surChartEmpty'),
     surChartView: document.getElementById('surChartView'),
+    // Dashboard (desktop/mobile)
+    dashboardTab: document.getElementById('dashboardTab'),
+    dashboardSection: document.getElementById('dashboardSection'),
+    dashProjectsTotal: document.getElementById('dashProjectsTotal'),
+    dashDeepwellsTotal: document.getElementById('dashDeepwellsTotal'),
+    dashReforestationsTotal: document.getElementById('dashReforestationsTotal'),
+    // Dashboard breakdowns
+    dashProjectsOngoing: document.getElementById('dashProjectsOngoing'),
+    dashProjectsCompleted: document.getElementById('dashProjectsCompleted'),
+    dashProjectsMWCI: document.getElementById('dashProjectsMWCI'),
+    dashProjectsMWSI: document.getElementById('dashProjectsMWSI'),
+    dashProjectsMWSS: document.getElementById('dashProjectsMWSS'),
+    dashDeepwellsActive: document.getElementById('dashDeepwellsActive'),
+    dashDeepwellsInactive: document.getElementById('dashDeepwellsInactive'),
+    dashDeepwellsStandby: document.getElementById('dashDeepwellsStandby'),
+    // Dam elevations (today/latest)
+    dashAngat: document.getElementById('dashAngat'),
+    dashIpo: document.getElementById('dashIpo'),
+    dashLaMesa: document.getElementById('dashLaMesa'),
+    dashDamAsOf: document.getElementById('dashDamAsOf'),
+    // Deprecated (card removed): keep for backward safety if present
+    dashSurNetSupply: document.getElementById('dashSurNetSupply'),
+    surChartDashCanvas: document.getElementById('surChartDash'),
+    dashSurChartEmpty: document.getElementById('dashSurChartEmpty'),
+    dwMonthlyChartDashCanvas: document.getElementById('dwMonthlyChartDash'),
+    dashDwChartEmpty: document.getElementById('dashDwChartEmpty'),
   };
 
   // convenient references
@@ -107,6 +133,8 @@
   let pendingUsers = [];
   let dwMonthlyChart = null; // Chart.js instance for deepwells monthly totals
   let surChart = null; // Chart.js instance for Service Update (Inflows vs Supply)
+  let dashDwMonthlyChart = null; // Dashboard deepwells chart instance
+  let dashSurChart = null; // Dashboard SUR chart instance
   let approvedUsers = [];
   function updatePendingBadge(){
     const badge = document.getElementById('pendingBadge');
@@ -115,6 +143,49 @@
     if(cnt>0){badge.textContent=cnt;badge.style.display='inline-block';}
     else {badge.style.display='none';}
   }
+
+// Build monthly totals (sum per month) for a specific year (Jan..Dec)
+function buildSurMonthlyTotalsForYear(daily, yearStr){
+  if(!daily || !Array.isArray(daily.labels) || daily.labels.length===0){
+    const yr = parseInt(String(yearStr||'').slice(0,4),10) || new Date().getFullYear();
+    const monthsKeys = Array.from({length:12}, (_,i)=> `${yr}-${String(i+1).padStart(2,'0')}`);
+    return {
+      labels: monthsKeys.map(monthLabel), inflows: Array(12).fill(0), production: Array(12).fill(0),
+      productionMWCI: Array(12).fill(0), productionMWSI: Array(12).fill(0), augment: Array(12).fill(0), hasData: false
+    };
+  }
+  let yr = parseInt(String(yearStr||'').slice(0,4),10);
+  if(isNaN(yr)){
+    const last = daily.labels[daily.labels.length-1]||'';
+    yr = parseInt(last.slice(0,4),10);
+    if(isNaN(yr)) yr = new Date().getFullYear();
+  }
+  const monthsKeys = Array.from({length:12}, (_,i)=> `${yr}-${String(i+1).padStart(2,'0')}`);
+  const sums = monthsKeys.map(()=>({ inflows:0, production:0, productionMWCI:0, productionMWSI:0, augment:0 }));
+  for(let i=0;i<daily.labels.length;i++){
+    const d = daily.labels[i]||'';
+    if(d.slice(0,4) === String(yr)){
+      const mIdx = parseInt(d.slice(5,7),10)-1;
+      if(mIdx>=0 && mIdx<12){
+        sums[mIdx].inflows += Number(daily.inflows[i]||0);
+        sums[mIdx].production += Number(daily.production[i]||0);
+        sums[mIdx].productionMWCI += Number(daily.productionMWCI?.[i]||0);
+        sums[mIdx].productionMWSI += Number(daily.productionMWSI?.[i]||0);
+        sums[mIdx].augment += Number(daily.augment[i]||0);
+      }
+    }
+  }
+  const hasYearData = daily.labels.some(d=> (d||'').slice(0,4) === String(yr));
+  return {
+    labels: monthsKeys.map(monthLabel),
+    inflows: sums.map(s=> +s.inflows.toFixed(2)),
+    production: sums.map(s=> +s.production.toFixed(2)),
+    productionMWCI: sums.map(s=> +s.productionMWCI.toFixed(2)),
+    productionMWSI: sums.map(s=> +s.productionMWSI.toFixed(2)),
+    augment: sums.map(s=> +s.augment.toFixed(2)),
+    hasData: hasYearData
+  };
+}
 
 // ---- Service Update Chart: Raw Inflows (line) vs Net Supply (stacked bars: Production + Augment) ----
 function buildSurDailyAggregation(list){
@@ -180,6 +251,34 @@ function buildSurMonthlyFromDaily(daily){
   };
 }
 
+// Limit a daily series to a single month (30/31 days) based on a target date string (YYYY-MM-DD)
+function restrictSurDailyToMonth(daily, endDateStr){
+  if(!daily || !Array.isArray(daily.labels) || daily.labels.length===0) return daily;
+  const monthKey = (endDateStr||'').slice(0,7) || (daily.labels[daily.labels.length-1]||'').slice(0,7);
+  if(!monthKey) return daily;
+  const labels=[]; const inflows=[]; const production=[]; const productionMWCI=[]; const productionMWSI=[]; const augment=[];
+  for(let i=0;i<daily.labels.length;i++){
+    const d = daily.labels[i]||'';
+    if(d.slice(0,7)===monthKey){
+      labels.push(d);
+      inflows.push(daily.inflows[i]);
+      production.push(daily.production[i]);
+      productionMWCI.push(daily.productionMWCI?.[i]||0);
+      productionMWSI.push(daily.productionMWSI?.[i]||0);
+      augment.push(daily.augment[i]);
+    }
+  }
+  return {
+    labels,
+    inflows,
+    production,
+    productionMWCI,
+    productionMWSI,
+    augment,
+    hasData: labels.length>0
+  };
+}
+
 function getFilteredServiceUpdatesForChart(){
   let list = serviceUpdates.slice();
   const start = elements.serviceStartDateFilter?.value || '';
@@ -196,9 +295,18 @@ function renderSurChart(){
   const emptyEl = elements.surChartEmpty;
   if(!canvas) return;
   const list = getFilteredServiceUpdatesForChart();
+  const prov = elements.serviceProviderFilter?.value || '';
   const daily = buildSurDailyAggregation(list);
   const view = elements.surChartView?.value || 'daily';
-  const series = (view==='monthly') ? buildSurMonthlyFromDaily(daily) : daily;
+  let series = null;
+  if(view==='monthly'){
+    const endDate = elements.serviceEndDateFilter?.value || daily.labels[daily.labels.length-1] || elements.serviceStartDateFilter?.value || '';
+    const yearStr = (endDate||'').slice(0,4);
+    series = buildSurMonthlyTotalsForYear(daily, yearStr);
+  }else{
+    const endDate = elements.serviceEndDateFilter?.value || daily.labels[daily.labels.length-1] || '';
+    series = restrictSurDailyToMonth(daily, endDate);
+  }
   if(!series.hasData){
     if(emptyEl) emptyEl.style.display='block';
     canvas.style.display='none';
@@ -219,12 +327,167 @@ function renderSurChart(){
         borderWidth: 1,
         stack: 'supply',
         yAxisID: 'y',
+        hidden: prov==='MWSI',
       },
       {
         type: 'bar',
         label: 'Treatment Production - MWSI',
         data: series.productionMWSI || series.production,
         backgroundColor: 'rgba(116,192,252,0.7)', // light blue
+        borderColor: '#74C0FC',
+        borderWidth: 1,
+        stack: 'supply',
+        yAxisID: 'y',
+        hidden: prov==='MWCI',
+      },
+      {
+        type: 'bar',
+        label: 'Supply Augmentation',
+        data: series.augment,
+        backgroundColor: 'rgba(255,193,7,0.6)',
+        borderColor: '#ffc107',
+        borderWidth: 1,
+        stack: 'supply',
+        yAxisID: 'y',
+      },
+      {
+        type: 'line',
+        label: 'Raw Inflows',
+        data: series.inflows,
+        borderColor: '#198754',
+        backgroundColor: 'rgba(25,135,84,0.2)',
+        tension: 0.25,
+        yAxisID: 'y',
+      }
+    ]
+  };
+  const xTicks = (view==='monthly') ? { autoSkip: false, maxRotation: 0, minRotation: 0 } : { autoSkip: false, maxRotation: 85, minRotation: 85 };
+  const opts = {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: {
+        callbacks: {
+          label: (ctx)=> `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)} MLD`,
+          footer: (items)=>{
+            try{
+              const supplySum = items
+                .filter(i=> i.dataset.stack === 'supply')
+                .reduce((sum,i)=> sum + (i.parsed?.y || 0), 0);
+              return `Net Supply: ${fmtNum(supplySum)} MLD`;
+            }catch(_){ return ''; }
+          }
+        }
+      }
+    },
+    scales: {
+      x: { title: { display: true, text: (elements.surChartView?.value==='monthly' ? 'Month' : 'Date (Plants Date)') }, stacked: true, ticks: xTicks },
+      y: { title: { display: true, text: 'MLD' }, beginAtZero: true, stacked: true }
+    }
+  };
+  if(surChart){
+    surChart.data = data;
+    surChart.options = opts;
+    surChart.update();
+  }else{
+    const ctx = canvas.getContext('2d');
+    surChart = new Chart(ctx, { type: 'bar', data, options: opts });
+  }
+}
+
+// ---- Dashboard rendering ----
+function renderDeepwellMonthlyChartDash(){
+  const canvas = elements.dwMonthlyChartDashCanvas;
+  const emptyEl = elements.dashDwChartEmpty;
+  if(!canvas) return; // dashboard not present
+  const agg = aggregateDeepwellMonthlyTotals();
+  if(!agg.hasData){
+    if(emptyEl) emptyEl.style.display='block';
+    canvas.style.display='none';
+    if(dashDwMonthlyChart){ dashDwMonthlyChart.destroy(); dashDwMonthlyChart=null; }
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  canvas.style.display='block';
+  const data = {
+    labels: agg.labels,
+    datasets: [
+      {
+        label: 'MWCI',
+        data: agg.mwci,
+        borderColor: '#0d6efd',
+        backgroundColor: 'rgba(13,110,253,0.15)',
+        tension: 0.25,
+        fill: true,
+      },
+      {
+        label: 'MWSI',
+        data: agg.mwsi,
+        borderColor: '#198754',
+        backgroundColor: 'rgba(25,135,84,0.15)',
+        tension: 0.25,
+        fill: true,
+      }
+    ]
+  };
+  const opts = {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top' },
+      tooltip: { callbacks: { label: (ctx)=>`${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)}` } },
+    },
+    scales: {
+      x: { title: { display: true, text: 'Month' } },
+      y: { title: { display: true, text: 'Production (cu.m)' }, beginAtZero: true }
+    }
+  };
+  if(dashDwMonthlyChart){
+    dashDwMonthlyChart.data = data;
+    dashDwMonthlyChart.options = opts;
+    dashDwMonthlyChart.update();
+  }else{
+    const ctx = canvas.getContext('2d');
+    dashDwMonthlyChart = new Chart(ctx, { type: 'line', data, options: opts });
+  }
+}
+
+function renderSurChartDash(){
+  const canvas = elements.surChartDashCanvas;
+  const emptyEl = elements.dashSurChartEmpty;
+  if(!canvas) return;
+  const daily = buildSurDailyAggregation(serviceUpdates||[]);
+  // Monthly totals for the latest year from data
+  const last = daily.labels[daily.labels.length-1] || '';
+  const yearStr = last ? last.slice(0,4) : String(new Date().getFullYear());
+  const series = buildSurMonthlyTotalsForYear(daily, yearStr);
+  if(!series.hasData){
+    if(emptyEl) emptyEl.style.display='block';
+    canvas.style.display='none';
+    if(dashSurChart){ dashSurChart.destroy(); dashSurChart=null; }
+    return;
+  }
+  if(emptyEl) emptyEl.style.display='none';
+  canvas.style.display='block';
+  const data = {
+    labels: series.labels,
+    datasets: [
+      {
+        type: 'bar',
+        label: 'Treatment Production - MWCI',
+        data: series.productionMWCI || series.production,
+        backgroundColor: 'rgba(0,51,102,0.7)',
+        borderColor: '#003366',
+        borderWidth: 1,
+        stack: 'supply',
+        yAxisID: 'y',
+      },
+      {
+        type: 'bar',
+        label: 'Treatment Production - MWSI',
+        data: series.productionMWSI || series.production,
+        backgroundColor: 'rgba(116,192,252,0.7)',
         borderColor: '#74C0FC',
         borderWidth: 1,
         stack: 'supply',
@@ -254,35 +517,90 @@ function renderSurChart(){
   const opts = {
     responsive: true,
     interaction: { mode: 'index', intersect: false },
-    plugins: {
-      legend: { position: 'top' },
-      tooltip: {
-        callbacks: {
-          label: (ctx)=> `${ctx.dataset.label}: ${fmtNum(ctx.parsed.y)} MLD`,
-          footer: (items)=>{
-            try{
-              const supplySum = items
-                .filter(i=> i.dataset.stack === 'supply')
-                .reduce((sum,i)=> sum + (i.parsed?.y || 0), 0);
-              return `Net Supply: ${fmtNum(supplySum)} MLD`;
-            }catch(_){ return ''; }
-          }
-        }
-      }
-    },
+    plugins: { legend: { position: 'top' } },
     scales: {
-      x: { title: { display: true, text: (elements.surChartView?.value==='monthly' ? 'Month' : 'Date (Plants Date)') }, stacked: true },
+      x: { title: { display: true, text: 'Month' }, stacked: true },
       y: { title: { display: true, text: 'MLD' }, beginAtZero: true, stacked: true }
     }
   };
-  if(surChart){
-    surChart.data = data;
-    surChart.options = opts;
-    surChart.update();
+  if(dashSurChart){
+    dashSurChart.data = data;
+    dashSurChart.options = opts;
+    dashSurChart.update();
   }else{
     const ctx = canvas.getContext('2d');
-    surChart = new Chart(ctx, { type: 'bar', data, options: opts });
+    dashSurChart = new Chart(ctx, { type: 'bar', data, options: opts });
   }
+}
+
+function renderDashboard(){
+  // Update metric cards
+  if(elements.dashProjectsTotal) elements.dashProjectsTotal.textContent = fmtNum(projects.length);
+  if(elements.dashDeepwellsTotal) elements.dashDeepwellsTotal.textContent = fmtNum(deepwells.length);
+  if(elements.dashReforestationsTotal) elements.dashReforestationsTotal.textContent = fmtNum(reforestations.length);
+  // Projects breakdown: Ongoing (includes Delayed) and Completed
+  try{
+    const pStatuses = projects.map(p=> (typeof getProjectStatus==='function') ? getProjectStatus(p) : (p.status||''));
+    const ongoing = pStatuses.filter(s=> s==='On-going' || s==='Delayed').length;
+    const completed = pStatuses.filter(s=> s==='Completed').length;
+    if(elements.dashProjectsOngoing) elements.dashProjectsOngoing.textContent = fmtNum(ongoing);
+    if(elements.dashProjectsCompleted) elements.dashProjectsCompleted.textContent = fmtNum(completed);
+    // By Implementing Agency (MWCI/MWSI/MWSS)
+    const agencyNorm = a => (a||'').toString().trim().toUpperCase();
+    const cntMWCI = projects.filter(p => agencyNorm(p.implementingAgency) === 'MWCI').length;
+    const cntMWSI = projects.filter(p => agencyNorm(p.implementingAgency) === 'MWSI').length;
+    const cntMWSS = projects.filter(p => agencyNorm(p.implementingAgency) === 'MWSS').length;
+    if(elements.dashProjectsMWCI) elements.dashProjectsMWCI.textContent = fmtNum(cntMWCI);
+    if(elements.dashProjectsMWSI) elements.dashProjectsMWSI.textContent = fmtNum(cntMWSI);
+    if(elements.dashProjectsMWSS) elements.dashProjectsMWSS.textContent = fmtNum(cntMWSS);
+  }catch(_){/* noop */}
+
+  // Deepwell breakdown by status (Active/Inactive)
+  try{
+    const norm = s => (s||'').toString().trim().toLowerCase();
+    const canon = s => norm(s).replace(/[^a-z0-9]/g,''); // normalize for variant matching
+    const dwActive = deepwells.filter(dw=> norm(dw.status)==='active').length;
+    const dwInactive = deepwells.filter(dw=> norm(dw.status)==='inactive').length;
+    const standbyCodes = new Set(['rto','rfo','ud']); // exact short-codes
+    const dwStandby = deepwells.filter(dw=>{
+      const st = norm(dw.status);
+      const c  = canon(dw.status);
+      if(!c) return false;
+      if(standbyCodes.has(c)) return true;
+      if(st.includes('standby') || c.includes('standby')) return true; // "stand by", "stand-by" variations
+      // ready + operate/operation/ops
+      if(st.includes('ready') && (st.includes('operate') || st.includes('operation') || st.includes('ops'))) return true;
+      // under + dev variants
+      if((st.includes('under') || st.includes('u/')) && (st.includes('dev') || st.includes('devel') || st.includes('devt'))) return true;
+      return false;
+    }).length;
+    if(elements.dashDeepwellsActive) elements.dashDeepwellsActive.textContent = fmtNum(dwActive);
+    if(elements.dashDeepwellsInactive) elements.dashDeepwellsInactive.textContent = fmtNum(dwInactive);
+    if(elements.dashDeepwellsStandby) elements.dashDeepwellsStandby.textContent = fmtNum(dwStandby);
+  }catch(_){/* noop */}
+
+  // Today's dam elevations (or latest available) from Service Updates
+  try{
+    const list = (serviceUpdates||[]).slice().filter(s=> (
+      Number(s.angat)||Number(s.ipo)||Number(s.laMesa)
+    ));
+    if(list.length){
+      list.sort((a,b)=> new Date(b.date||b.timestamp||b.createdAt||0) - new Date(a.date||a.timestamp||a.createdAt||0));
+      const latest = list[0]||{};
+      if(elements.dashAngat) elements.dashAngat.textContent = fmt2(Number(latest.angat)||0);
+      if(elements.dashIpo) elements.dashIpo.textContent = fmt2(Number(latest.ipo)||0);
+      if(elements.dashLaMesa) elements.dashLaMesa.textContent = fmt2(Number(latest.laMesa)||0);
+      if(elements.dashDamAsOf) elements.dashDamAsOf.textContent = latest.damAsOf ? `as of ${latest.damAsOf}` : (latest.date ? `as of ${latest.date}` : '');
+    }else{
+      if(elements.dashAngat) elements.dashAngat.textContent = '—';
+      if(elements.dashIpo) elements.dashIpo.textContent = '—';
+      if(elements.dashLaMesa) elements.dashLaMesa.textContent = '—';
+      if(elements.dashDamAsOf) elements.dashDamAsOf.textContent = '';
+    }
+  }catch(_){/* noop */}
+  // Render dashboard charts
+  try{ renderSurChartDash(); }catch(_){/*noop*/}
+  try{ renderDeepwellMonthlyChartDash(); }catch(_){/*noop*/}
 }
 
   // Load config for signups
@@ -1446,6 +1764,7 @@ document.addEventListener('DOMContentLoaded',cleanDeepwellDuplicates);
         unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(snap=>{
           projects = snap.docs.map(d=>({id:d.id,...d.data()}));
           render();
+          try{ renderDashboard(); }catch(_){ /* noop */ }
         });
       }
     });
@@ -1478,11 +1797,6 @@ elements.dwSearchInput?.addEventListener('input', renderDeepwells);
 elements.reforestationTypeFilter?.addEventListener('change', renderReforestations);
 elements.reforestationStatusFilter?.addEventListener('change', renderReforestations);
 elements.reforestationSearchInput?.addEventListener('input', renderReforestations);
-// Service Update filters
-elements.serviceStartDateFilter?.addEventListener('change', ()=>{ renderServiceUpdates(); renderSurChart(); });
-elements.serviceEndDateFilter?.addEventListener('change', ()=>{ renderServiceUpdates(); renderSurChart(); });
-elements.serviceProviderFilter?.addEventListener('change', ()=>{ renderServiceUpdates(); renderSurChart(); });
-elements.surChartView?.addEventListener('change', ()=>{ renderSurChart(); });
 
 // ---- Utility ----
 // Compress image using canvas to keep Firestore doc size small (<1MB total)
@@ -1897,28 +2211,54 @@ window.deleteDeepwell = async id=>{
 
 // Tab switching
 function showProjectsSection(){
+  if(elements.dashboardTab) elements.dashboardTab.classList.remove('active');
   elements.projectsTab.classList.add('active');
   elements.deepwellsTab.classList.remove('active');
   elements.projectsSection.style.display='block';
   elements.deepwellsSection.style.display='none';
   elements.reforestationSection.style.display='none';
   if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
+  if(elements.dashboardSection) elements.dashboardSection.style.display='none';
 }
 function showDeepwellsSection(){
+  if(elements.dashboardTab) elements.dashboardTab.classList.remove('active');
   elements.projectsTab.classList.remove('active');
   elements.deepwellsTab.classList.add('active');
   elements.projectsSection.style.display='none';
   elements.deepwellsSection.style.display='block';
   elements.reforestationSection.style.display='none';
   if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
+  if(elements.dashboardSection) elements.dashboardSection.style.display='none';
   renderDeepwells();
   renderDeepwellMonthlyChart();
 }
 
+ // Show Dashboard section
+ function showDashboardSection(){
+   // set active tab state
+   if(elements.dashboardTab) elements.dashboardTab.classList.add('active');
+   elements.projectsTab.classList.remove('active');
+   elements.deepwellsTab.classList.remove('active');
+   elements.reforestationTab.classList.remove('active');
+   if(elements.serviceUpdateTab) elements.serviceUpdateTab.classList.remove('active');
+
+   // toggle sections
+   if(elements.dashboardSection) elements.dashboardSection.style.display='block';
+   elements.projectsSection.style.display='none';
+   elements.deepwellsSection.style.display='none';
+   elements.reforestationSection.style.display='none';
+   if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
+
+   // render dashboard widgets/charts
+   try{ renderDashboard(); }catch(_){ /* noop */ }
+ }
+
 elements.projectsTab?.addEventListener('click',e=>{e.preventDefault();showProjectsSection();});
 elements.deepwellsTab?.addEventListener('click',e=>{e.preventDefault();showDeepwellsSection();});
+elements.dashboardTab?.addEventListener('click',e=>{e.preventDefault();showDashboardSection();});
 
 function showReforestationSection(){
+  if(elements.dashboardTab) elements.dashboardTab.classList.remove('active');
   elements.projectsTab.classList.remove('active');
   elements.deepwellsTab.classList.remove('active');
   elements.reforestationTab.classList.add('active');
@@ -1926,12 +2266,14 @@ function showReforestationSection(){
   elements.deepwellsSection.style.display='none';
   elements.reforestationSection.style.display='block';
   if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='none';
+  if(elements.dashboardSection) elements.dashboardSection.style.display='none';
   renderReforestations();
 }
 
 elements.reforestationTab?.addEventListener('click',e=>{e.preventDefault();showReforestationSection();});
 
 function showServiceUpdateSection(){
+  if(elements.dashboardTab) elements.dashboardTab.classList.remove('active');
   elements.projectsTab.classList.remove('active');
   elements.deepwellsTab.classList.remove('active');
   elements.reforestationTab.classList.remove('active');
@@ -1940,6 +2282,7 @@ function showServiceUpdateSection(){
   elements.deepwellsSection.style.display='none';
   elements.reforestationSection.style.display='none';
   if(elements.serviceUpdateSection) elements.serviceUpdateSection.style.display='block';
+  if(elements.dashboardSection) elements.dashboardSection.style.display='none';
   if(typeof renderServiceUpdates==='function') try{ renderServiceUpdates(); }catch(_){/*noop*/}
   if(typeof renderSurChart==='function') try{ renderSurChart(); }catch(_){/*noop*/}
 }
@@ -1963,6 +2306,7 @@ function subscribeDeepwells(){
     deepwells = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderDeepwells();
     renderDeepwellMonthlyChart();
+    try{ renderDashboard(); }catch(_){/*noop*/}
   });
 }
 
@@ -2186,6 +2530,7 @@ function subscribeReforestations(){
   unsubscribeReforestations = db.collection(REFORESTATION_COL).onSnapshot(snap=>{
     reforestations = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderReforestations();
+    try{ renderDashboard(); }catch(_){/*noop*/}
   });
 }
 
@@ -2206,6 +2551,9 @@ const MWSI_PLANTS = [
   'Putatan WTP 1',
   'Putatan WTP 2',
   'PQE New Water',
+  'Anabu WTP',
+  'Poblacion WTP',
+  'Nanostone',
   'Cross-Border Flow'
 ];
 
@@ -2236,8 +2584,8 @@ function renderSurPlantTable(provider, plantsData){
   html += '</tbody></table>';
   html += '</div>';
   container.innerHTML = html;
-  // attach input listener for auto-sum
-  container.addEventListener('input', updateSurTotals);
+  // attach input listener for auto-sum (guard to prevent duplicates across re-renders)
+  if(!container.__wired){ container.addEventListener('input', updateSurTotals); container.__wired = true; }
   // compute initial totals
   updateSurTotals();
 }
@@ -2601,6 +2949,7 @@ function subscribeServiceUpdates(){
     serviceUpdates = snap.docs.map(d=>({id:d.id,...d.data()}));
     renderServiceUpdates();
     if(typeof renderSurChart==='function') try{ renderSurChart(); }catch(_){/*noop*/}
+    try{ renderDashboard(); }catch(_){/*noop*/}
   });
 }
 
@@ -2749,6 +3098,7 @@ logoutBtn.style.display   = 'inline-block';
         unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(snap=>{
           projects = snap.docs.map(d=>({id:d.id,...d.data()}));
           render();
+          try{ renderDashboard(); }catch(_){ /* noop */ }
         });
         return;
       }
@@ -2818,6 +3168,7 @@ unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(async snap => {
           }catch(err){console.warn('Legacy migration failed',err);}
         }
         render();
+        try{ renderDashboard(); }catch(_){ /* noop */ }
       });
     } else {
       // No user signed in: stay on the login screen until the user authenticates.
@@ -2837,6 +3188,7 @@ unsubscribeProjects = db.collection(PROJECTS_COL).onSnapshot(async snap => {
       render();
       renderReforestations();
       if(typeof renderServiceUpdates==='function') { try{ renderServiceUpdates(); }catch(_){ /* noop */ } }
+      try{ renderDashboard(); }catch(_){ /* noop */ }
     }
   });
 
