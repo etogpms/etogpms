@@ -195,11 +195,72 @@
       <div class="col-6 col-md-3">
         <div class="card shadow-sm border-0 h-100">
           <div class="card-body">
-            <div class="text-muted small">Dam Elevation (Today)</div>
-            <div class="small mt-2">Angat: <span class="fw-semibold" id="dashAngat">—</span> m</div>
-            <div class="small">Ipo: <span class="fw-semibold" id="dashIpo">—</span> m</div>
-            <div class="small">La Mesa: <span class="fw-semibold" id="dashLaMesa">—</span> m</div>
-            <div class="text-muted small mt-1" id="dashDamAsOf"></div>
+            <div class="d-flex justify-content-between align-items-center">
+              <div class="text-muted small">Dam Elevations</div>
+              <div class="text-muted small" id="dashDamAsOf"></div>
+            </div>
+
+            <div class="row text-center mt-2">
+              <div class="col-4">
+                <div class="small text-muted">Angat</div>
+                <div class="fs-5 fw-semibold"><span id="dashAngat">—</span> <span class="text-muted">m</span></div>
+              </div>
+              <div class="col-4">
+                <div class="small text-muted">Ipo</div>
+                <div class="fs-5 fw-semibold"><span id="dashIpo">—</span> <span class="text-muted">m</span></div>
+              </div>
+              <div class="col-4">
+                <div class="small text-muted">La Mesa</div>
+                <div class="fs-5 fw-semibold"><span id="dashLaMesa">—</span> <span class="text-muted">m</span></div>
+              </div>
+            </div>
+
+            <hr class="my-2" />
+            <div class="text-muted small mb-1">YTD High / Low</div>
+            <table class="table table-sm mb-0 align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th class="small">Dam</th>
+                  <th class="small text-center">High</th>
+                  <th class="small text-center">Low</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="small">Angat</td>
+                  <td class="small text-center">
+                    <span class="badge bg-success"><span id="dashAngatYtdHiVal">—</span> m</span>
+                    <div class="text-muted small" id="dashAngatYtdHiDate"></div>
+                  </td>
+                  <td class="small text-center">
+                    <span class="badge bg-danger"><span id="dashAngatYtdLoVal">—</span> m</span>
+                    <div class="text-muted small" id="dashAngatYtdLoDate"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="small">Ipo</td>
+                  <td class="small text-center">
+                    <span class="badge bg-success"><span id="dashIpoYtdHiVal">—</span> m</span>
+                    <div class="text-muted small" id="dashIpoYtdHiDate"></div>
+                  </td>
+                  <td class="small text-center">
+                    <span class="badge bg-danger"><span id="dashIpoYtdLoVal">—</span> m</span>
+                    <div class="text-muted small" id="dashIpoYtdLoDate"></div>
+                  </td>
+                </tr>
+                <tr>
+                  <td class="small">La Mesa</td>
+                  <td class="small text-center">
+                    <span class="badge bg-success"><span id="dashLaMesaYtdHiVal">—</span> m</span>
+                    <div class="text-muted small" id="dashLaMesaYtdHiDate"></div>
+                  </td>
+                  <td class="small text-center">
+                    <span class="badge bg-danger"><span id="dashLaMesaYtdLoVal">—</span> m</span>
+                    <div class="text-muted small" id="dashLaMesaYtdLoDate"></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1109,7 +1170,7 @@
   
   <!-- Export module and app script -->
   <script src="export.js?v=7" defer></script>
-  <script src="script.js?v=3" defer></script>
+  <script src="script.js?v=4" defer></script>
   </div> <!-- end mainContent -->
   </div> <!-- end flex -->
   </div> <!-- end appWrapper -->

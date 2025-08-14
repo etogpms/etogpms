@@ -105,6 +105,23 @@
     dashIpo: document.getElementById('dashIpo'),
     dashLaMesa: document.getElementById('dashLaMesa'),
     dashDamAsOf: document.getElementById('dashDamAsOf'),
+    // Dam elevations YTD highs/lows (new detailed layout)
+    dashAngatYtdHiVal: document.getElementById('dashAngatYtdHiVal'),
+    dashAngatYtdHiDate: document.getElementById('dashAngatYtdHiDate'),
+    dashAngatYtdLoVal: document.getElementById('dashAngatYtdLoVal'),
+    dashAngatYtdLoDate: document.getElementById('dashAngatYtdLoDate'),
+    dashIpoYtdHiVal: document.getElementById('dashIpoYtdHiVal'),
+    dashIpoYtdHiDate: document.getElementById('dashIpoYtdHiDate'),
+    dashIpoYtdLoVal: document.getElementById('dashIpoYtdLoVal'),
+    dashIpoYtdLoDate: document.getElementById('dashIpoYtdLoDate'),
+    dashLaMesaYtdHiVal: document.getElementById('dashLaMesaYtdHiVal'),
+    dashLaMesaYtdHiDate: document.getElementById('dashLaMesaYtdHiDate'),
+    dashLaMesaYtdLoVal: document.getElementById('dashLaMesaYtdLoVal'),
+    dashLaMesaYtdLoDate: document.getElementById('dashLaMesaYtdLoDate'),
+    // Backward-compat (old single-line YTD fields, if present)
+    dashAngatYtd: document.getElementById('dashAngatYtd'),
+    dashIpoYtd: document.getElementById('dashIpoYtd'),
+    dashLaMesaYtd: document.getElementById('dashLaMesaYtd'),
     // Deprecated (card removed): keep for backward safety if present
     dashSurNetSupply: document.getElementById('dashSurNetSupply'),
     surChartDashCanvas: document.getElementById('surChartDash'),
@@ -581,22 +598,146 @@ function renderDashboard(){
 
   // Today's dam elevations (or latest available) from Service Updates
   try{
-    const list = (serviceUpdates||[]).slice().filter(s=> (
-      Number(s.angat)||Number(s.ipo)||Number(s.laMesa)
-    ));
+    const toNum = v => {
+      if(v===null||v===undefined) return NaN;
+      const n = parseFloat(v.toString().replace(/,/g,''));
+      return Number.isFinite(n) ? n : NaN;
+    };
+    const toDateObj = v => {
+      if(!v) return null;
+      try{
+        if(typeof v?.toDate === 'function') return v.toDate();
+        if(typeof v === 'object' && typeof v.seconds === 'number') return new Date(v.seconds*1000);
+        const d = new Date(v);
+        return isFinite(d.getTime()) ? d : null;
+      }catch(_){ return null; }
+    };
+    const ymd = d => {
+      if(!d) return '';
+      const yy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${yy}-${mm}-${dd}`;
+    };
+    const list = (serviceUpdates||[]).slice().filter(s=> (s.angat!=null || s.ipo!=null || s.laMesa!=null));
+    try{ console.debug('[Dashboard] serviceUpdates:', (serviceUpdates||[]).length, 'filtered (has dam any):', list.length); }catch(_){ }
     if(list.length){
-      list.sort((a,b)=> new Date(b.date||b.timestamp||b.createdAt||0) - new Date(a.date||a.timestamp||a.createdAt||0));
-      const latest = list[0]||{};
-      if(elements.dashAngat) elements.dashAngat.textContent = fmt2(Number(latest.angat)||0);
-      if(elements.dashIpo) elements.dashIpo.textContent = fmt2(Number(latest.ipo)||0);
-      if(elements.dashLaMesa) elements.dashLaMesa.textContent = fmt2(Number(latest.laMesa)||0);
-      if(elements.dashDamAsOf) elements.dashDamAsOf.textContent = latest.damAsOf ? `as of ${latest.damAsOf}` : (latest.date ? `as of ${latest.date}` : '');
+      const sorted = list.slice().sort((a,b)=>{
+        const bd = toDateObj(b.date||b.timestamp||b.createdAt);
+        const ad = toDateObj(a.date||a.timestamp||a.createdAt);
+        return (bd?bd.getTime():0) - (ad?ad.getTime():0);
+      });
+      const latest = sorted.find(s=>{
+        const a = toNum(s.angat), i = toNum(s.ipo), l = toNum(s.laMesa);
+        return Number.isFinite(a) || Number.isFinite(i) || Number.isFinite(l);
+      }) || sorted[0] || {};
+      try{ console.debug('[Dashboard] Latest dam doc:', { date: latest?.date||latest?.timestamp||latest?.createdAt, damAsOf: latest?.damAsOf, angat: latest?.angat, ipo: latest?.ipo, laMesa: latest?.laMesa }); }catch(_){ }
+      const setDam = (el, v)=>{
+        if(!el) return;
+        const n = toNum(v);
+        if(Number.isFinite(n)) el.textContent = fmt2(n);
+        else if(v!=null && v!=='' ) el.textContent = v;
+        else el.textContent = '—';
+      };
+      setDam(elements.dashAngat, latest.angat);
+      setDam(elements.dashIpo, latest.ipo);
+      setDam(elements.dashLaMesa, latest.laMesa);
+      if(elements.dashDamAsOf){
+        const d = toDateObj(latest.date||latest.timestamp||latest.createdAt);
+        elements.dashDamAsOf.textContent = latest.damAsOf ? `as of ${latest.damAsOf}` : (d ? `as of ${ymd(d)}` : '');
+      }
     }else{
       if(elements.dashAngat) elements.dashAngat.textContent = '—';
       if(elements.dashIpo) elements.dashIpo.textContent = '—';
       if(elements.dashLaMesa) elements.dashLaMesa.textContent = '—';
       if(elements.dashDamAsOf) elements.dashDamAsOf.textContent = '';
     }
+  }catch(_){/* noop */}
+
+  // YTD High/Low for each dam (prefer current year; fallback to latest data year)
+  try{
+    const toNum = v => {
+      if(v===null||v===undefined) return NaN;
+      const n = parseFloat(v.toString().replace(/,/g,''));
+      return Number.isFinite(n) ? n : NaN;
+    };
+    const toDateObj = v => {
+      if(!v) return null;
+      try{
+        if(typeof v?.toDate === 'function') return v.toDate();
+        if(typeof v === 'object' && typeof v.seconds === 'number') return new Date(v.seconds*1000);
+        const d = new Date(v);
+        return isFinite(d.getTime()) ? d : null;
+      }catch(_){ return null; }
+    };
+    const getYear = (v)=>{
+      const d = toDateObj(v);
+      return d ? d.getFullYear() : NaN;
+    };
+    const ymd = d => {
+      if(!d) return '';
+      const yy = d.getFullYear();
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const dd = String(d.getDate()).padStart(2,'0');
+      return `${yy}-${mm}-${dd}`;
+    };
+    // Build a list with valid dam measurements and dates
+    const damList = (serviceUpdates||[]).filter(s=> {
+      const a = toNum(s.angat); const i = toNum(s.ipo); const l = toNum(s.laMesa);
+      return (Number.isFinite(a)||Number.isFinite(i)||Number.isFinite(l)) && (s.date||s.timestamp||s.createdAt);
+    });
+    let targetYear = new Date().getFullYear();
+    const hasCurrent = damList.some(s=> getYear(s.date||s.timestamp||s.createdAt) === targetYear);
+    if(!hasCurrent && damList.length){
+      damList.sort((a,b)=>{
+        const bd = toDateObj(b.date||b.timestamp||b.createdAt);
+        const ad = toDateObj(a.date||a.timestamp||a.createdAt);
+        return (bd?bd.getTime():0) - (ad?ad.getTime():0);
+      });
+      targetYear = getYear(damList[0].date||damList[0].timestamp||damList[0].createdAt);
+    }
+    const inYear = (dstr)=> getYear(dstr) === targetYear;
+    const computeStat = (field)=>{
+      let hiVal = -Infinity, hiDate = '';
+      let loVal = +Infinity, loDate = '';
+      damList.forEach(s=>{
+        const raw = toNum(s[field]);
+        const dateAny = (s.date||s.timestamp||s.createdAt||'');
+        if(!Number.isFinite(raw)) return;
+        if(!inYear(dateAny)) return;
+        const d = toDateObj(dateAny);
+        const dStr = ymd(d);
+        if(raw > hiVal){ hiVal = raw; hiDate = dStr; }
+        if(raw < loVal){ loVal = raw; loDate = dStr; }
+      });
+      if(hiVal===-Infinity || loVal===+Infinity) return null;
+      return { hiVal, hiDate, loVal, loDate };
+    };
+    const setYtd = (prefix, stat)=>{
+      const hiValEl = elements[`${prefix}HiVal`];
+      const hiDateEl = elements[`${prefix}HiDate`];
+      const loValEl = elements[`${prefix}LoVal`];
+      const loDateEl = elements[`${prefix}LoDate`];
+      if(hiValEl||hiDateEl||loValEl||loDateEl){
+        // New detailed layout present
+        if(hiValEl) hiValEl.textContent = stat? fmt2(stat.hiVal) : '—';
+        if(hiDateEl) hiDateEl.textContent = stat? stat.hiDate : '';
+        if(loValEl) loValEl.textContent = stat? fmt2(stat.loVal) : '—';
+        if(loDateEl) loDateEl.textContent = stat? stat.loDate : '';
+      }else{
+        // Fallback to old single-line field if exists
+        const lineEl = elements[prefix.replace('Ytd','Ytd')];
+        if(lineEl){
+          if(!stat) lineEl.textContent = '—';
+          else lineEl.textContent = `High ${fmt2(stat.hiVal)} m (${stat.hiDate}) • Low ${fmt2(stat.loVal)} m (${stat.loDate})`;
+        }
+      }
+    };
+
+    setYtd('dashAngatYtd', computeStat('angat'));
+    setYtd('dashIpoYtd', computeStat('ipo'));
+    setYtd('dashLaMesaYtd', computeStat('laMesa'));
+    try{ console.debug('[Dashboard] YTD targetYear:', targetYear, '| list size:', damList.length); }catch(_){ }
   }catch(_){/* noop */}
   // Render dashboard charts
   try{ renderSurChartDash(); }catch(_){/*noop*/}
@@ -1834,6 +1975,14 @@ reader.readAsDataURL(file);
 function fmtNum(val){
 const num = Number(val);
 return isNaN(num)? (val||'') : num.toLocaleString();
+}
+
+// Format number to 2 decimals consistently (global helper)
+function fmt2(n){
+  if(n===null || n===undefined) return '0.00';
+  const num = (typeof n === 'number') ? n : parseFloat(n.toString().replace(/,/g,''));
+  if(!Number.isFinite(num)) return '0.00';
+  return (Math.round(num*100)/100).toFixed(2);
 }
 
 // ---- Deepwell CRUD & Rendering ----
