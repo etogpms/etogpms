@@ -1,0 +1,82 @@
+<!-- OPCR Standalone Form Section -->
+<div id="opcrFormSection" class="container-fluid px-4 bg-white" style="display:none; min-height: 100vh;">
+    <div class="d-flex align-items-center py-3 border-bottom mb-4">
+        <button class="btn btn-outline-secondary me-3" onclick="showOpcrSection()">
+            <i class="fa-solid fa-arrow-left me-2"></i>Back to Dashboard
+        </button>
+        <h5 class="mb-0 fw-bold">Office Performance Commitment and Review (OPCR)</h5>
+        <div class="ms-auto">
+            <span class="badge bg-warning text-dark me-2" id="formOpcrStatusBadge">Draft</span>
+            <button class="btn btn-primary" onclick="saveOpcrForm()">
+                <i class="fa-solid fa-save me-2"></i>Save Changes
+            </button>
+        </div>
+    </div>
+
+    <!-- Form Header -->
+    <div class="opcr-paper p-4 mx-auto shadow-sm border" style="max-width: 1400px;">
+        <div class="text-center mb-4">
+            <h5 class="fw-bold text-uppercase">Office Performance Commitment and Review (OPCR)</h5>
+            <p class="mb-0">Please indicate corresponding accomplishments for the targets set.</p>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <p><strong>I. I certify that I discussed with the employee the assessment of his/her
+                        performance.</strong></p>
+                <div class="mt-5 border-top border-dark pt-1 w-50 text-center">
+                    <strong>PATRICK JAMES B. DIZON</strong><br>
+                    <small>Acting Deputy Administrator, Engineering and Tech Ops</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Date</strong></p>
+                <div class="mt-5 border-top border-dark pt-1">
+                </div>
+            </div>
+            <div class="col-md-3">
+                <p><strong>Approved by</strong></p>
+                <div class="mt-5 border-top border-dark pt-1 text-center">
+                    <strong>LEONOR C. CLEOFAS, CESO IV</strong><br>
+                    <small>Administrator</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered align-top opcr-form-table" id="opcrFormTable">
+                <thead class="table-light text-center align-middle">
+                    <tr>
+                        <th rowspan="2" style="width: 20%;">MFO / PPA</th>
+                        <th rowspan="2" style="width: 20%;">SUCCESS INDICATORS<br>(TARGETS) + MEASURES</th>
+                        <th rowspan="2" style="width: 15%;">RESPONSIBLE PERSON</th>
+                        <th colspan="4">RATING</th>
+                        <th rowspan="2" style="width: 25%;">ACTUAL ACCOMPLISHMENTS<br>(Success Indicators)</th>
+                        <th rowspan="2" style="width: 5%;">Action</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 50px;">Q</th>
+                        <th style="width: 50px;">E</th>
+                        <th style="width: 50px;">T</th>
+                        <th style="width: 50px;">Ave</th>
+                    </tr>
+                </thead>
+                <tbody id="opcrFormTbody">
+                    <!-- Dynamic rows will go here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+            <button class="btn btn-outline-primary" onclick="addOpcrRow()">
+                <i class="fa-solid fa-plus me-1"></i> Add Row
+            </button>
+        </div>
+
+        <div class="mt-5">
+            <p><strong>Rating Scale:</strong> 5 - Outstanding, 4 - Very Satisfactory, 3 - Satisfactory, 2 -
+                Unsatisfactory, 1 - Poor</p>
+        </div>
+    </div>
+</div>

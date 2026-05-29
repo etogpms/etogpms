@@ -1,0 +1,145 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "service_updates",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "date",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "date",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_notices",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_outgoing",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_incoming",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_memoranda",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_office_orders",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_travel_orders",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "docreg_minutes",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "docDate",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "docDate",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "notifications",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "recipientUid",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "createdAt",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "calendar_activities",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "ownerUid",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "startDate",
+                    "order": "ASCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

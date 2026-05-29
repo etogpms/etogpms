@@ -1,0 +1,510 @@
+WATER SERVICE UPDATE REPORT
+Date: March 2 9 , 2026
+WATER SUPPLY UPDATE
+23 - Mar 24 - Mar 25 - Mar 26 - Mar 2 7 - Mar 2 8 - Mar 2 9 - Mar
+RAW WATER INFLOWS (MLD)
+La Mesa Water Treatment Plant 1* 1351.760 1375.531 1402.488 1398.524 1411.398 1399.594
+La Me sa Water Treatment Plant 2* 824.940 844.776 847.283 839.360 857.745 864.19
+Putatan 1 24.04 31.47 32.59 36.77 39.58 37.12
+Putatan 2 0.00 0.00 5.30 0.00 0.00 1.58
+Poblacion WTP 176.74 171.21 183.32 169.41 184.24 178.5
+PQE New Water 5.77 7.26 8.03 8 .02 6.97 5.57
+Anabu 11.53 12.12 12.08 11.91 12.12 15.79
+Note: *Unofficial data.
+* *D ata to follow, waiting for official reading.
+DAILY PRODUCTION (MLD)
+La Mesa Water Treatment Plant 1 1251.53 * 1273.84 * 1269.99 * 1274.46 * 1281.06 * 1281.68 *
+La Mesa Water Treatment Plant 2 764.65 785.98 787.45 780.13 773.05 804.19
+Putatan 1 18.58 24.88 25.56 29.70 30.96 27.12
+Putatan 2 0.00 0.00 0.00 0.00 0.00 0
+Poblacion 144.96 145.01 159.46 160.22 154.01 160.92
+Nanostone 13.16 12.92 12.38 15.26 17. 55 18.41
+PQE New Water 4.97 6.18 7.04 7.06 6.16 4.96
+Anabu 8.12 8.47 8.30 8.13 8.87 12.02
+Deepwell 1.734 1.730 1.691 1.698 1.703 1.96
+CROSS - BORDER FLOW (MLD)
+Aurora Blvd. 0.00 0.00 0.00 0.00 0.00 0.00
+San Martin de Porres 1.67 ** ** ** ** **
+BF Mapayapa 0.00 0.00 0.00 0.00 0.00 0.00
+A. Francisco 0.00 0.00 0.00 0.00 0.00 0.00
+East La Mesa 0.00 0.00 0.00 0.00 0.00 0.00
+Note: *Unofficial data.
+* *D ata to follow, waiting for official reading.
+WATER AVAILABILITY
+SUPPLY (%)
+23 - M ar 24 - Mar 25 - Mar 26 - Mar 27 - Mar 28 - Mar 29 - Mar
+below 8 hrs
+1.46% 0.85% 1.30% 0.80% ** **
+9 to 16 hrs
+5.64% 3.91% 3.00% 2.03% ** **
+17 to 19 hrs
+1.83% 4.22% 2.52% 1.73% ** **
+20 to 23hrs
+7.59% 10.05% 9.97% 9.42% ** **
+24hrs
+83.48% 80.97% 83.22% 86.02% ** **
+
+--- PAGE BREAK ---
+
+BUSINESS AREA
+NCAL
+100% 100% 100% 100% ** **
+MVAL
+91% 90% 93% 92% ** **
+NQC
+100% 100% 100% 100% ** **
+NSCAL
+100% 100% 100% 100% ** **
+SQC
+100% 100% 100% 100% ** **
+MNL
+96% 95% 98% 98% ** **
+PPM
+77% 78 % 79% 90% ** **
+MLP
+83% 82% 94% 100% ** **
+ECAV
+60% 60% 54% 61% ** **
+WCAV
+98% 100% 98% 100% ** **
+WATER SERVICE INTERRUPTIONS
+AREA AFFECTED ACTUAL/
+BUSINESS WSC
+ACTIVITY NATURE TIME STARTED TARGET TIME
+BRGY &
+AREA AFFECTED
+DMA
+COMPLETED
+CITY/MUN
+Brgys. 32, 53, 385
+to 389, 402, 416,
+Network Maintenance 3/28/2026 10 :00 3/29/2026 4:00
+SMNL Planned 888 21 - SAM09C 637, 640, 641 and
+Activity PM AM
+644 to 646,
+Manila
+Brgys. Anabu I - B
+to Anabu I - F,
+Bayan Luma I,
+Bayan Luma II,
+33 - CAV02K, 33 - Bukandala V,
+CAV03B, 33 - Carsadang Bago I,
+CAV03E, 33 - Carsadang Bago II,
+3/28/2026 5:00 3/29/2026 12 :00
+CAV High Water Demand Unplanned 11,464 CAV03K, 33 - Malagasang I - A to
+AM AM
+CAV03L, 33 - Malagasang I - D,
+CAV04R, 33 - Malagasang I - G,
+CAV3AB, Medicion I - B,
+Poblacion III - B,
+Poblacion IV - B and
+Poblacion IV - D,
+Imus City
+Brgys. Alapan I - C,
+Bukandala I to
+33 - CAV03I, 33 -
+Bukandala V,
+CAV03J, 33 - 3/28/2026 7:00 3/29/2026 12 :00
+CAV High Water Demand Unplanned 4,010 Carsadang Bago II
+CAV03O, 33 - AM AM
+and Malagasang I -
+CAV03Z ,
+A to Malagasang
+I - C, Imus City
+33 - CAV02H,33 -
+CAV02I,33 -
+Brgys. Anabu I - A
+CAV02J,33 -
+to Anabu I - C,
+CAV02O,33 -
+Bayan Luma III to
+CAV02P,33 -
+Bayan Luma IX,
+CAV03A,33 -
+Bukandala I to 3/28 /2026 7:00 3/29/2026 10 :00
+CAV High Water Demand Unplanned 13,213 CAV03F, 33 -
+Bukandala III, AM PM
+CAV03G,33 -
+Carsadang Bago I,
+CAV03H,33 -
+Carsadang Bago II
+CAV03S,33 -
+and Tanzang
+CAV03T,33 -
+Luma VI, Imus City
+CAV03U,33 -
+CAV03V,33 -
+CAV03W,33 -
+
+--- PAGE BREAK ---
+
+CAV3AA,33 -
+CAV3AC,
+33 - CAV02Q,33 - Brgys. Anabu I - B,
+CAV02R,33 - Anabu I - D to
+3/28/2026 9:00 3/29/2026 :00
+CAV High Water Demand Unplanned 828 CAV02S,33 - Anabu I - F, Anabu
+AM PM
+CAV02T,33 - II - A and Anabu II -
+CAV02U, C, Imus City
+Brgys. Anabu II - B
+3/28/2026 12:01 3/29/2026 12 :00
+CAV High Water Demand Unplanned 1,068 33 - CAV02Y to Anabu II - D,
+PM AM
+Imus City
+33 - CAV02L,33 -
+CAV02W,33 - Brgys. Anabu II - C
+CAV02X,33 - to Anabu II - F,
+CAV02Z,33 - Malagasang I - D to
+CAV03M,33 - Malagasang I - G 3/28/2026 12:01 3/29/2026 5:00
+CAV High Water Demand Unplanned 6,278
+CAV03N,33 - and Malagasang PM AM
+CAV03P,33 - II - A to
+CAV03Q,33 - Malagasang II - F,
+CAV03R,33 - Imus City
+CAV2AA,
+Brgys.
+Malagasang II - C
+33 - CAV3AH,33 - 3/28/2026 12:01 3/29/2026 6:00
+CAV High Water Demand Unplanned 579 to Malagasang II -
+CAV3AI, PM AM
+E and Malagasang
+II - G, Imus City
+26 - MLP07A,26 -
+MLP07D,26 -
+MLP07E,26 -
+Brgy. Almanza
+MLP07F,26 -
+Dos, Las Pinas
+MLP07G,26 - 3/28/2026 12:00 3/28/2026 7 :00
+MLP Raw Water Quality Issue Unplanned 10,901 City; Brgy.
+MLP07H,26 - PM PM
+Poblacion,
+MLP07I,26 -
+Muntinlupa City
+MLP07J,26 -
+MLP07L,30 -
+CLP05A,
+26 - MUN01O,28 -
+CAV01V,28 -
+CAV01W,28 -
+CAV01X,28 -
+CAV02B,34 - Brgys. Molino I to
+CAV01B,34 - IV, Molino VII,
+CAV01C,34 - Queens Row
+CAV01D,34 - Central, Queens
+CAV01F,34 - Row East, Queens
+3/28/2026 12:00 3/28/2026 11 :59
+CAV Raw Water Quality Issue Unplanned 17,249 CAV01G,34 - Row West and San
+PM PM
+CAV01J,34 - Nicholas III,
+CAV01L,34 - Bacoor City;
+CAV01M,34 - Pasong Buaya I
+CAV01N,34 - and Pasong Buaya
+CAV01O,34 - II, Imus City
+CAV01P,34 -
+CAV01Q,34 -
+CAV01R,34 -
+CAV03C,
+
+--- PAGE BREAK ---
+
+32 - CLP05S,32 -
+CLP05T,32 - Brgys. Talon Uno
+3/28/2026 8:00 3/28/2026 11 :59
+MLP Raw Water Quality Issue Unplanned 8,018 CLP05U,32 - and Talon Singko,
+AM PM
+CLP05W,32 - Las Pinas City
+CLP05Y,
+2 5 - CLP05C,25 -
+CLP05G,25 -
+MLP05G,32 -
+CLP05A,32 -
+CLP05H,32 -
+CLP05L,32 - Brgys. Pamplona
+CLP05M,32 - Dos, Pamplona
+3/28/2026 8:00 3/28/2026 11 :59
+MLP Raw Water Quality Issue Unplanned 5,613 MLP05N,32 - Tres, Pulanglupa
+AM PM
+MLP05O,32 - Dos, and Talon
+MLP07B,Directly Dos, Las Pinas City
+tapped to
+Primary sm
+lp,Directly
+tapped to
+Primary UPHS,
+Brgys. 310, 466,
+3/28/2026 10 :00 3/29/2026 4:00
+NMNL Network Repair Activity Unplanned 1,784 18 - SAM02G 492 and 512 to
+PM AM
+520, Manila
+Brgy. 176, 3/28/2026 3/28/2026 6:00
+NCAL Pipe Breakage Unplanned 572 01 - CAN08D
+Caloocan City Ongoing AM
+05 - FRV02J, 05 - Brgys. Bagbag,
+FRV02F, 05 - Nagkaisang
+3/28/2026 3/28/2026 6:00
+SQC Pipe Breakage Unplanned 6,748 FRV02A, 05 - Nayon and San
+Extended AM
+FRV02H, 05 - Bartolome,
+FRV02B Quezon City
+05 - FRV02J, 05 - Brgys. Bagbag,
+FRV02F, 05 - Nagkaisang
+3/28/2026 3/28/2026 12:00
+SQC Pipe Breakage Unplanned 6,748 FRV02A, 05 - Nayon and San
+Extended PM
+FRV02H, 05 - Bartolome,
+FRV02B Quezon City
+05 - FRV02J, 05 - Brgys. Bagbag,
+FRV02F, 05 - Nagkaisang
+3/28/2026 3/28/2026 6 :00
+SQC Pipe Breakage Unplanned 6,748 FRV02A, 05 - Nayon and San
+Extended PM
+FRV02H, 05 - Bartolome,
+FRV02B Quezon City
+Brgys. 18, 20, 103,
+16 - TDO03A , 3/28/2026 3/28/2026 8 :00
+NMNL Pipe Breakage Unplanned 4,036 275 and 598,
+16TDO03B Ongoing PM
+Manila
+Brgys. 187, 310
+3/28/2026 3/29/2026 3:00
+NMNL Pipe Breakage Unplanned 1,547 18 - SAM01G and 315 to 325,
+Ongoing AM
+Manila
+
+--- PAGE BREAK ---
+
+Brgys. 396 to 404,
+Network Maintenance 21 - SAM08B,21 - 3/23/2026 12 :01 3/29/2026 3:00
+SMNL Planned 2,354 430, 457 and 460,
+Activity SAM08D, AM AM
+Manila
+Brgys. 147 to 149,
+Network Maintenance 16 - TDO05H, 16 - 151, 15 2, 163 and 3/23/2026 12 :01 3/29/2026 3:00
+NMNL Planned 2,442
+Activity TDO05K, 169 to 171, AM AM
+Manila
+Brgys. 36, 39, 189
+Network Maintenance to 191, 193, 194 3/22/2026 11:01 3/29/2026 3:00
+NMNL Planned 2,597 13 - CAS05K,
+Activity and 196, Caloocan PM AM
+City
+17 - TDO07B,17 - Brgys. 292, 294 to
+Network Maintenance 3/22/2026 11:01 3/29/2026 3:00
+SMNL Planned 1,525 TDO07I,17 - 301 and 303 to
+Activit y PM AM
+TDO07J, 305, Manila
+17 - TDO06A,17 -
+TDO06B,17 -
+TDO06C,17 -
+Brgys. 198 to 207,
+TDO06D,17 -
+Network Maintenance 209 to 211, 213, 3/22/2026 11:01 3/29/2026 3:00
+NMNL Planned 6,806 TDO06E,17 -
+Activity 216, 217, 219 and PM AM
+TDO06G,17 -
+220, Manila
+TDO06H,17 -
+TDO0 6M,17 -
+TDO06Q,
+22 - SMA04D,22 -
+Network Maintenance Brgys. 835 to 840 3/22/2026 11:01 3/29 /2026 3:00
+SMNL Planned 2,312 SMA04E,22 -
+Activity and 865, Manila PM AM
+SMA04J,
+17 - TDO04G,17 -
+TDO04H,17 -
+TDO06F,17 -
+TDO06J,17 - Brgys. 48, 50 to
+TDO06K,17 - 53, 55, 155, 221 to
+TDO06L,17 - 225, 227 to 22 9,
+Network Maintenance TDO06N,17 - 231, 232, 353 to 3/22/2026 11:01 3/29/2026 3:00
+NMNL Planned 12,406
+Activity TDO06P,17 - 356, 359, 360, 363 PM AM
+TDO06R,18 - to 369, 373, 374,
+SAM02A,18 - 377, 378, 380, 382
+SAM02B,18 - and 492, Manila
+SAM02C,18 -
+SAM02D,18 -
+SAM02I,
+Brgys. 524, 525,
+Network Maintenance 3/22/2026 11:01 3 /29/2026 3:00
+SMNL Planned 1,596 20 - SAM05B, 529, 532, 533 and
+Activity PM AM
+535, Manila
+Brgys. 310, 311,
+Network Maintenance 17 - TDO04A, 17 - 3/22/2026 11:01 3/29/2026 3:00
+NMNL Planned 1,182 313 and 315,
+Activity TDO04J, PM AM
+Manila
+Network Maintenance Brgys. 306 to 309, 3/22/2026 11:01 3/29/2026 3:00
+SMNL Planned 832 17 - TDO07A,
+Activity Manila PM AM
+
+--- PAGE BREAK ---
+
+12 - CAS01H, 12 -
+CAS01I, 12 -
+CAS01J, 12 -
+CAS01K, 12 -
+CAS01L, 12 -
+Brgys. 32, 34, 35,
+CAS01M, 12 -
+42, 45, 46, 77, 81
+CAS01N, 16 -
+to 83, 86, 87, 9 to
+Network Maintenance TDO01J, 16 - 3/22/2026 11:01 3/29/2026 3:00
+NMNL Planned 13,011 93, 124, 128, 131
+Activity TDO01L, 16 - PM AM
+to 136, 138 to
+TDO03I, 16 -
+140, 146 and 177
+TDO03J, 16 -
+to 183, Manila
+TDO05A, 16 -
+T DO05B, 16 -
+TDO05C, 16 -
+TDO05D, 16 -
+TDO05E,
+Network Maintenance 22 - SMA01A, 22 - 3/22/2026 11:01 3/29/2026 3:00
+SMNL P lanned 3,521 Brgy. 649, Manila
+Activity SMA01D, PM AM
+33 - CAV02Z 33 -
+Brgys. Anabu II - E,
+CAV03S 33 -
+Not 24hours due to Bucandala I,
+CAV03Z
+ECAV pending capex project N/A 3,170 Bucandala III, - -
+implementation Carsadang Bago II
+33 - CAV2AA
+Imus City
+26 - MLP07A
+26 - MLP07D
+26 - MLP07H
+Brgys. Poblac ion,
+26 - MLP07I
+Tunasan
+26 - MLP07J
+Not 24hours due to Muntinlupa City
+26 - MLP07K
+MLP pending capex project N/A 8,620 and Almanza Dos, - -
+26 - MLP07L
+implementation Almanza Uno,
+26 - MLP08A
+Pilar, Las Piñas
+City
+30 - CLP05A
+22 - SMA04N Brgys. 849,
+22 - SMA04O 850,852, 841, 842,
+Not 24hours due to
+22 - SMA04S 850, 826, 82 7,
+MNL pending capex project N/A 3,165 - -
+828, 821, 825
+implementation
+Manila City
+22 - SMA04U
+Brgys. MAPULANG
+LUPA
+03 - NOV05P UGONG
+03 - NOV05S GEN. T. DE LEON
+Not 24hours due to
+04 - VAL02D KARUHATAN
+MVAL pending capex project N/A 7,090 - -
+GEN. T. DE LEON
+implementation
+MARULAS
+04 - VAL02G
+Valenzuela City
+02 - CAN01B
+Brgys. 166 Quezon
+02 - CAN01E 02 -
+City and Brgys.
+CAN01F
+166, 174, 172,
+02 - CAN02E
+171, 173, 170,
+Not 24hours due to 02 - CAN02H
+168, 165,
+NCAL pending capex project N/A 12,877 02 - CAN03C 02 - - -
+BAGBAGUIN
+implementation CAN09B
+02 - CAN09H 02 -
+CAN09Q Caloocan City
+02 - CAN09V
+02 - CAN09W
+
+--- PAGE BREAK ---
+
+02 - CAN09Y
+03 - NOV04C
+03 - NOV04G
+03 - NOV04H
+02 - CAN03C Brgys.
+05 - FRV05A Kaligayahan,
+05 - FRV06N Great er Fairview,
+Not 24hours due to
+06 - COM01C
+NQC pending capex project N/A 25,786 - -
+implementation North Fairview,
+06 - COM04A Payatas,
+06 - COM04B Commonwealth,
+06 - COM07C Batasan Hills, Holy
+06 - COM07F Spirit, Bagong
+06 - COM08C Silangan Quezon
+06 - COM08G City
+Brgys 51,57, 63,
+23 - PAM02I 64, 65, 66 ,67,
+23 - PAM03H 120, 122, 123,125,
+25 - PaM04G 126, 128, 130,
+25 - PaM04I 131, 133, 135,
+26 - PQE02B 136, 137, Bangkal,
+26 - PQE02L 159, 161, 162,
+26 - PQE02N 163, 165, 166,
+26 - PQE02R 169, 171, 172, 173
+Not 24hours due to
+26 - PQE02S Pasay City and
+PPM pending capex project N/A 19,38 3 - -
+26 - PQE02U Brgys. Sun Valley,
+implementation
+26 - PQE02V Don Bosco,
+29 - PQE03AG San Antonio,
+29 - PQE03E BF Homes,
+29 - PQE03P San Isidro,
+Marcelo Green,
+29 - PQE04R
+Parañaque City
+03 - NOV01C Brgys. STA.
+03 - NOV01E MONICA,
+03 - NOV01F NOVA PROPER,
+03 - NOV01K 03 - SAN AGUSTIN,
+NOV01R GULOD,
+03 - NOV01T NAGKAISANG
+03 - NOV01U NAYON,
+Not 24hours due to
+03 - NOV02A Del Monte,
+SQC pending capex project N/A 11,878 - -
+03 - NOV02B Bagbag,
+implementatio n
+03 - NOV02E San Bartolome,
+03 - NOV03A A Samson,
+03 - NOV05S
+Santo Domingo,
+05 - FRV01F Quezon City
+Brgys. Salcedo I,
+Sta. Rosa I,
+27 - CAV03D Tejeros
+Not 24hours due to
+Convention,
+WCAV pending capex project N/A 1,527 - -
+27 - CAV03Q
+implementation
+San Antonio I,
+Noveleta
+
+--- PAGE BREAK ---
+
+OTHER ACTIONS DONE:
+
+--- PAGE BREAK ---
+

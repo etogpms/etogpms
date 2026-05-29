@@ -1,0 +1,3797 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>OPCR Form Tracker - MWSS</title>
+    <link rel="icon" href="assets/mwss_logo.png" type="image/png" />
+    <!-- iOS Home Screen Icon -->
+    <link rel="apple-touch-icon" href="assets/mwss_logo.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/mwss_logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/mwss_logo.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="assets/mwss_logo.png" />
+    <!-- Web App Capable (PWA) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+
+        @media print {
+            @page {
+                size: landscape;
+                margin: 5mm 5mm 5mm 5mm;
+                /* top right bottom left - top and bottom now match */
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .print-fit {
+                width: 100%;
+                font-size: 9px;
+            }
+
+            /* Prevent page breaks within signature sections */
+            .signature-section {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Keep Section II footer signatures together */
+            .footer-signatures {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-before: auto;
+            }
+
+            /* Prevent orphaned elements */
+            .border-x.border-b {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+
+            /* Keep legend and Section II header together with signatures */
+            .legend-section {
+                page-break-after: avoid !important;
+            }
+
+            /* Hide dropdowns and inputs when printing, show plain text */
+            .print-hide {
+                display: none !important;
+            }
+
+            .print-only {
+                display: inline !important;
+            }
+
+            select,
+            input[type="number"] {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                border: none !important;
+                background: transparent !important;
+            }
+
+            /* Hide textareas and inputs inside table body when printing, so we can display mirror elements instead */
+            textarea,
+            #opcrTbody input {
+                display: none !important;
+            }
+
+            /* Make table cells expand to fit content and align to top */
+            .opcr-data-row td {
+                height: auto !important;
+                min-height: unset !important;
+                overflow: visible !important;
+                vertical-align: top !important;
+            }
+
+            /* Remove any fixed heights on accomplishment cells */
+            .accomplishment-cell {
+                height: auto !important;
+                min-height: unset !important;
+                overflow: visible !important;
+            }
+
+            /* Quarter boxes should maintain minimum size but expand if content is larger */
+            .quarter-box {
+                min-height: 20px !important;
+                height: auto !important;
+                overflow: visible !important;
+                padding: 2px 4px !important;
+            }
+
+            /* Ensure acc-text spans wrap and show all content */
+            .acc-text {
+                white-space: pre-wrap !important;
+                word-break: break-word !important;
+                overflow: visible !important;
+                display: block !important;
+            }
+
+            /* Input fields also auto-fit */
+            input[type="text"] {
+                height: auto !important;
+                min-height: unset !important;
+                overflow: visible !important;
+                white-space: pre-wrap !important;
+            }
+
+            /* Hide scrollbars completely */
+            ::-webkit-scrollbar {
+                display: none !important;
+                width: 0 !important;
+                height: 0 !important;
+            }
+
+            * {
+                scrollbar-width: none !important;
+                -ms-overflow-style: none !important;
+            }
+        }
+
+        .accomplishment-cell {
+            min-height: 100px;
+        }
+
+        .quarter-box {
+            min-height: 25px;
+            transition: background 0.2s;
+            overflow: visible;
+            position: relative;
+        }
+
+        .quarter-box:hover {
+            background: #eff6ff;
+        }
+
+        /* Ensure line breaks in accomplishment text are displayed */
+        .acc-text {
+            white-space: pre-wrap !important;
+            word-break: break-word !important;
+            display: block !important;
+            overflow: visible !important;
+        }
+
+        /* Make acc paragraph elements flexible */
+        .acc-q1,
+        .acc-q2,
+        .acc-q3,
+        .acc-q4 {
+            margin: 0;
+            padding-right: 15px;
+            white-space: pre-wrap !important;
+            /* Space for Q label */
+        }
+
+        [contenteditable]:focus {
+            outline: 2px solid #3b82f6;
+            background: #fefce8;
+        }
+
+        .rating-cell {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .rating-cell:hover {
+            background: #fef9c3;
+        }
+
+        /* Right-click Comment Feature Styles */
+        .opcr-context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            padding: 4px;
+            z-index: 9999;
+            min-width: 160px;
+            display: none;
+        }
+
+        .opcr-context-menu.visible {
+            display: block;
+            animation: menuFadeIn 0.15s ease-out;
+        }
+
+        @keyframes menuFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .opcr-context-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #334155;
+            transition: all 0.15s ease;
+        }
+
+        .opcr-context-menu-item:hover {
+            background: #f1f5f9;
+        }
+
+        .opcr-context-menu-item i {
+            width: 14px;
+            color: #64748b;
+        }
+
+        .opcr-context-menu-item.delete-comment {
+            color: #dc2626;
+        }
+
+        .opcr-context-menu-item.delete-comment i {
+            color: #dc2626;
+        }
+
+        .opcr-context-menu-item.delete-comment:hover {
+            background: #fef2f2;
+        }
+
+        /* Comment icon container */
+        .comment-icon-wrapper {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            z-index: 10;
+        }
+
+        .comment-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        .comment-icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+        }
+
+        .comment-icon i {
+            font-size: 8px;
+            color: white;
+        }
+
+        /* Make textareas and inputs position relative for comment icon positioning */
+        .opcr-data-row td {
+            position: relative;
+        }
+
+        .opcr-section td,
+        .opcr-subsection1 td,
+        .opcr-subsection2 td {
+            position: relative;
+        }
+
+        /* Comment Modal - For adding new comments */
+        .comment-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .comment-modal.visible {
+            display: flex;
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .comment-modal-content {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            width: 380px;
+            max-width: 90%;
+        }
+
+        .comment-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .comment-modal-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comment-modal-header h3 i {
+            color: #f59e0b;
+        }
+
+        .comment-modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #94a3b8;
+            font-size: 16px;
+            transition: color 0.15s;
+        }
+
+        .comment-modal-close:hover {
+            color: #64748b;
+        }
+
+        .comment-modal textarea {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 12px;
+            resize: vertical;
+            min-height: 80px;
+            margin-bottom: 16px;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .comment-modal textarea:focus {
+            border-color: #f59e0b;
+        }
+
+        .comment-modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .comment-modal-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+        }
+
+        .comment-modal-btn.cancel {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .comment-modal-btn.cancel:hover {
+            background: #e2e8f0;
+        }
+
+        .comment-modal-btn.save {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+
+        .comment-modal-btn.save:hover {
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.4);
+        }
+
+        /* Comment Detail Panel - Shows when clicking comment icon */
+        .comment-detail-panel {
+            position: fixed;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            width: 320px;
+            max-width: 90vw;
+            z-index: 9998;
+            display: none;
+            overflow: hidden;
+        }
+
+        .comment-detail-panel.visible {
+            display: block;
+            animation: panelSlideIn 0.2s ease-out;
+        }
+
+        @keyframes panelSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .comment-detail-header {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .comment-detail-header h4 {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .comment-detail-close {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            opacity: 0.8;
+            transition: opacity 0.15s;
+        }
+
+        .comment-detail-close:hover {
+            opacity: 1;
+        }
+
+        .comment-detail-body {
+            padding: 16px;
+        }
+
+        .comment-detail-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .comment-author-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .comment-author-info {
+            flex: 1;
+        }
+
+        .comment-author-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .comment-timestamp {
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .comment-detail-text {
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .comment-detail-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .comment-resolve-btn {
+            flex: 1;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .comment-resolve-btn:hover {
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Hide comments when printing */
+        @media print {
+
+            .comment-icon-wrapper,
+            .opcr-context-menu,
+            .comment-modal,
+            .comment-detail-panel,
+            .saving-overlay {
+                display: none !important;
+            }
+        }
+
+        /* Fullscreen saving overlay */
+        .saving-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .saving-overlay.visible {
+            display: flex;
+            animation: overlayFadeIn 0.2s ease-out;
+        }
+
+        @keyframes overlayFadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .saving-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .saving-text {
+            color: white;
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        /* Save button states */
+        .save-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #2563eb;
+            color: white;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .save-btn:hover:not(:disabled) {
+            background: #1d4ed8;
+        }
+
+        .save-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .save-btn .btn-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .save-btn.saving .btn-spinner {
+            display: inline-block;
+        }
+
+        .save-btn.saving .btn-icon {
+            display: none;
+        }
+
+        /* Employee Modal Styles */
+        .employee-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99998;
+        }
+
+        .employee-modal.visible {
+            display: flex;
+            animation: modalFadeIn 0.25s ease-out;
+        }
+
+        .employee-modal-content {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            width: 600px;
+            max-width: 95%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .employee-modal-header {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .employee-modal-header h3 {
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+        }
+
+        .employee-modal-close {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .employee-modal-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+
+        .employee-modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .employee-table-wrapper {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .employee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .employee-table thead {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+        }
+
+        .employee-table th {
+            padding: 12px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #334155;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        .employee-table tbody tr {
+            border-bottom: 1px solid #e2e8f0;
+            transition: background 0.15s;
+        }
+
+        .employee-table tbody tr:last-child {
+            border-bottom: none;
+        }
+
+        .employee-table tbody tr:hover {
+            background: #f8fafc;
+        }
+
+        .employee-table td {
+            padding: 10px 16px;
+        }
+
+        .employee-table input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 13px;
+            transition: all 0.15s;
+        }
+
+        .employee-table input:focus {
+            outline: none;
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.1);
+        }
+
+        .employee-action-btns {
+            display: flex;
+            gap: 6px;
+        }
+
+        .employee-edit-btn,
+        .employee-delete-btn,
+        .employee-save-row-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            border: none;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .employee-edit-btn {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .employee-edit-btn:hover {
+            background: #bfdbfe;
+        }
+
+        .employee-save-row-btn {
+            background: #d1fae5;
+            color: #047857;
+        }
+
+        .employee-save-row-btn:hover {
+            background: #a7f3d0;
+        }
+
+        .employee-delete-btn {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .employee-delete-btn:hover {
+            background: #fecaca;
+        }
+
+        .add-employee-btn {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            background: transparent;
+            color: #64748b;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .add-employee-btn:hover {
+            border-color: #059669;
+            color: #059669;
+            background: #f0fdf4;
+        }
+
+        .employee-modal-footer {
+            padding: 16px 20px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .employee-cancel-btn,
+        .employee-save-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .employee-cancel-btn {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .employee-cancel-btn:hover {
+            background: #cbd5e1;
+        }
+
+        .employee-save-btn {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .employee-save-btn:hover {
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
+            transform: translateY(-1px);
+        }
+
+        .employee-empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+
+        .employee-empty-state i {
+            font-size: 40px;
+            margin-bottom: 12px;
+            color: #cbd5e1;
+        }
+
+        /* Copy/Import Roster Styles */
+        .smart-copy-banner {
+            background-color: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            animation: slideDown 0.3s ease-out;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .import-panel {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin-top: 16px;
+        }
+        
+        .import-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .import-panel-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #334155;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .import-panel-content {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #e2e8f0;
+        }
+        
+        .import-select-wrapper {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .import-select {
+            flex: 1;
+            font-size: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 6px 10px;
+            outline: none;
+            background-color: white;
+            color: #334155;
+            transition: border-color 0.15s;
+        }
+        
+        .import-select:focus {
+            border-color: #059669;
+        }
+        
+        .import-action-btn {
+            background-color: #1e293b;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.15s;
+        }
+        
+        .import-action-btn:hover {
+            background-color: #334155;
+        }
+        
+        .import-radio-group {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .import-radio-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: #475569;
+            cursor: pointer;
+        }
+        
+        .import-radio-input {
+            accent-color: #059669;
+            cursor: pointer;
+        }
+
+        /* Signature Field Styles */
+        .signature-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            transition: all 0.2s ease-in-out;
+        }
+        .signature-box:hover {
+            border-color: #93c5fd;
+            background-color: #f0f7ff;
+        }
+        @media print {
+            .signature-box {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                height: 32px !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+            .signature-box[data-signed="false"] .signature-status {
+                display: none !important;
+            }
+            .signature-box[data-signed="true"] .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-slate-900">
+
+    <!-- Fullscreen Saving Overlay -->
+    <div id="savingOverlay" class="saving-overlay no-print">
+        <div class="saving-spinner"></div>
+        <div class="saving-text">Saving OPCR...</div>
+    </div>
+
+    <!-- Employee Management Modal -->
+    <div id="employeeModal" class="employee-modal no-print">
+        <div class="employee-modal-content">
+            <div class="employee-modal-header">
+                <h3><i class="fa-solid fa-users"></i> OPCR Employee Management</h3>
+                <button class="employee-modal-close" onclick="window.closeEmployeeModal()">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div class="employee-modal-body">
+                <!-- Smart Copy Suggestion Banner -->
+                <div id="smartCopyBanner" class="smart-copy-banner" style="display: none;">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        </div>
+                        <div>
+                            <h4 class="m-0 text-xs font-semibold text-emerald-800">Use past employee roster?</h4>
+                            <p class="m-0 text-[10.5px] text-emerald-600">Found <strong id="smartCopyCount">0</strong> employees from the <span id="smartCopyYear">2025</span> roster for this department.</p>
+                        </div>
+                    </div>
+                    <button onclick="window.applySmartCopy()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg text-[11px] shadow-sm transition-all duration-200 flex items-center gap-1">
+                        <i class="fa-solid fa-copy"></i> Copy Roster
+                    </button>
+                </div>
+
+                <div class="employee-table-wrapper">
+                    <table class="employee-table" id="employeeTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50%;">Name</th>
+                                <th style="width: 30%;">Abbreviation</th>
+                                <th style="width: 20%;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTbody">
+                            <!-- Employee rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+                <button class="add-employee-btn" onclick="window.addNewEmployeeRow()">
+                    <i class="fa-solid fa-plus"></i> Add New Employee
+                </button>
+
+                <!-- Advanced Import Panel -->
+                <div class="import-panel no-print">
+                    <div class="import-panel-header" onclick="window.toggleImportSection()">
+                        <span class="import-panel-title">
+                            <i class="fa-solid fa-file-import text-slate-500"></i> Import employees from another OPCR
+                        </span>
+                        <i id="importChevron" class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform duration-200"></i>
+                    </div>
+                    <div id="importCollapseSection" class="import-panel-content" style="display: none;">
+                        <div class="import-select-wrapper">
+                            <select id="importOpcrSelect" class="import-select">
+                                <option value="">Loading available OPCRs...</option>
+                            </select>
+                            <button onclick="window.importSelectedEmployees()" class="import-action-btn">
+                                Import
+                            </button>
+                        </div>
+                        <div class="import-radio-group">
+                            <label class="import-radio-label">
+                                <input type="radio" name="importMode" value="replace" checked class="import-radio-input" />
+                                Replace current list
+                            </label>
+                            <label class="import-radio-label">
+                                <input type="radio" name="importMode" value="merge" class="import-radio-input" />
+                                Merge (add new)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="employee-modal-footer">
+                <button class="employee-cancel-btn" onclick="window.closeEmployeeModal()">Cancel</button>
+                <button class="employee-save-btn" onclick="window.saveEmployees()">
+                    <i class="fa-solid fa-save"></i> Save
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="max-w-[1500px] mx-auto mb-4 p-4 flex justify-between items-center no-print">
+        <div>
+            <button onclick="window.close(); window.opener && window.opener.focus();"
+                class="px-4 py-2 text-slate-600 hover:text-slate-800">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Back to Dashboard
+            </button>
+        </div>
+        <div>
+            <h1 class="text-xl font-bold text-slate-800">OPCR Digital Tracker</h1>
+        </div>
+        <div class="flex gap-3">
+            <button id="employeeBtn" onclick="window.openEmployeeModal()"
+                class="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 transition-colors shadow-sm">
+                <i class="fa-solid fa-users"></i> Employee
+            </button>
+            <button id="saveOpcrBtn" onclick="window.saveOpcrData()" class="save-btn">
+                <span class="btn-spinner"></span>
+                <i class="fa-solid fa-save btn-icon"></i>
+                <span class="btn-text">Save</span>
+            </button>
+            <button onclick="window.printForm()"
+                class="flex items-center gap-2 px-4 py-2 bg-slate-800 text-white rounded hover:bg-slate-700 transition-colors shadow-sm">
+                <i class="fa-solid fa-print"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Document -->
+    <div class="max-w-[1500px] mx-auto bg-white shadow-lg print:shadow-none p-6 print:p-2 mb-8 print-fit">
+
+        <!-- Header Section - Matching Original Template -->
+        <div class="border border-black mb-0 text-[8px]">
+            <!-- Top Header Row: Logos | Title | Rating Period -->
+            <div class="grid grid-cols-12">
+                <!-- Left: Agency Info with Logos (wider to align with MFOs + Budget columns) -->
+                <div class="col-span-4 border-r border-black p-1 flex items-center justify-between">
+                    <img src="assets/mwss_logo.png" alt="MWSS Logo" class="h-14 w-auto flex-shrink-0" />
+                    <div class="text-center leading-tight flex-1 px-2">
+                        <p class="text-[7px] italic">Republic of the Philippines</p>
+                        <p class="text-[7px] whitespace-nowrap">PANGASIWAAN NG TUBIG AT ALKANTARILYA SA METRO MANILA</p>
+                        <p class="text-[7px] font-bold">Metropolitan Waterworks and Sewerage System</p>
+                        <p class="text-[6px] italic">Katipunan Road, Balara, Quezon City</p>
+                    </div>
+                    <img src="assets/Bagong Pilipinas Logo.png" alt="Bagong Pilipinas" class="h-14 w-auto flex-shrink-0"
+                        onerror="this.style.display='none'" />
+                </div>
+                <!-- Center: Title and Department -->
+                <div class="col-span-5 border-r border-black p-2 flex items-center justify-center flex-col">
+                    <h2 class="font-bold text-sm uppercase">OFFICE PERFORMANCE COMMITMENT AND REVIEW (OPCR)</h2>
+                    <input type="text" id="opcrDepartment"
+                        class="text-[10px] font-bold text-center w-full max-w-md border-b border-gray-400 focus:border-blue-500 outline-none mt-1 py-0.5 bg-transparent no-print"
+                        placeholder="Enter Department Name" value="Field Operations Management Department">
+                    <div id="opcrDepartmentPrint" class="text-[10px] font-bold text-center hidden print:block">Field Operations Management Department</div>
+                </div>
+                <!-- Right: Rating Period -->
+                <div class="col-span-3 p-2 flex items-center justify-center flex-col">
+                    <p class="font-bold text-[9px] mb-1">RATING PERIOD:</p>
+                    <!-- Editable version (hidden when printing) -->
+                    <div class="flex items-center gap-1 no-print text-[9px]">
+                        <select id="periodStart" class="border rounded px-1 py-0.5 text-[8px]">
+                            <option>JANUARY</option>
+                            <option>FEBRUARY</option>
+                            <option>MARCH</option>
+                            <option>APRIL</option>
+                            <option>MAY</option>
+                            <option>JUNE</option>
+                            <option>JULY</option>
+                            <option>AUGUST</option>
+                            <option>SEPTEMBER</option>
+                            <option>OCTOBER</option>
+                            <option>NOVEMBER</option>
+                            <option>DECEMBER</option>
+                        </select>
+                        <span>-</span>
+                        <select id="periodEnd" class="border rounded px-1 py-0.5 text-[8px]">
+                            <option>JANUARY</option>
+                            <option>FEBRUARY</option>
+                            <option>MARCH</option>
+                            <option>APRIL</option>
+                            <option>MAY</option>
+                            <option>JUNE</option>
+                            <option>JULY</option>
+                            <option>AUGUST</option>
+                            <option>SEPTEMBER</option>
+                            <option>OCTOBER</option>
+                            <option>NOVEMBER</option>
+                            <option selected>DECEMBER</option>
+                        </select>
+                        <input type="number" id="opcrYear" class="border rounded px-1 py-0.5 text-[8px] w-12"
+                            value="2025">
+                    </div>
+                    <!-- Print-only version (plain text) -->
+                    <p class="text-[9px] hidden print-only" id="periodPrintText">JANUARY-DECEMBER 2025</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Part I Signatories -->
+        <div class="border-x border-b border-black bg-[#cce5ff] p-0.5">
+            <p class="text-[8px] font-bold">I. Signature approvals during the Performance Planning and Commitment Phase
+            </p>
+        </div>
+        <div class="border-x border-b border-black grid grid-cols-4 text-center text-[8px]">
+            <div class="border-r border-black p-2 flex flex-col justify-between">
+                <p class="mb-2 italic text-[7px] text-left leading-tight">
+                    I, <b contenteditable="true" id="sigCommitting">RYAN JAMES V. AYSON</b>, Manager, <span
+                        id="sigDeptMirror">Field Operations Management Department</span>, commit to deliver and agree to
+                    be rated on the attainment of the following targets in accordance with the indicated measures for
+                    the period <b id="sigPeriodDate">JANUARY TO DECEMBER 2025</b>.
+                </p>
+                <div id="sigCommittingBox" data-signed="false" onclick="openSignatureModal('sigCommittingBox', 'sigCommitting')" class="w-full max-w-[180px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-2 pt-1">
+                    <p class="font-bold underline uppercase text-[8px]" id="sigCommittingName">RYAN JAMES V. AYSON</p>
+                    <p class="text-[7px]">Manager, <span id="sigDeptMirror2">Field Operations Management
+                            Department</span></p>
+                </div>
+            </div>
+            <div class="border-r border-black p-2 flex flex-col justify-between">
+                <p class="mb-2 italic text-[7px] leading-tight">I hereby certify that the commitments stated herein was
+                    discussed
+                    with the ratee.</p>
+                <div id="sig1ReviewerBox" data-signed="false" onclick="openSignatureModal('sig1ReviewerBox', 'sig1Reviewer')" class="w-full max-w-[180px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-2 pt-1">
+                    <p class="font-bold underline uppercase text-[8px]" contenteditable="true" id="sig1Reviewer">PATRICK
+                        JAMES B. DIZON</p>
+                    <p class="text-[7px]" contenteditable="true" id="sig1ReviewerPos">Deputy Administrator,
+                        Engineering and Technical Operations Group</p>
+                </div>
+            </div>
+            <div class="border-r border-black p-2 flex flex-col justify-between">
+                <p class="mb-2 text-[7px] leading-tight text-left">Discussed and agreed with the PMT.</p>
+                <div id="sig1PMTBox" data-signed="false" onclick="openSignatureModal('sig1PMTBox', 'sig1PMT')" class="w-full max-w-[180px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-2 pt-1">
+                    <p class="font-bold underline uppercase text-[8px]" contenteditable="true" id="sig1PMT">JOSE ALFREDO
+                        B. ESCOTO, JR.</p>
+                    <p class="text-[7px]" contenteditable="true" id="sig1PMTPos">PMT Chairperson</p>
+                </div>
+            </div>
+            <div class="p-2 flex flex-col justify-between">
+                <p class="mb-2 text-[7px] leading-tight text-left">Approved by:</p>
+                <div id="sig1ApproverBox" data-signed="false" onclick="openSignatureModal('sig1ApproverBox', 'sig1Approver')" class="w-full max-w-[180px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-2 pt-1">
+                    <p class="font-bold underline uppercase text-[8px]" contenteditable="true" id="sig1Approver">LEONOR
+                        C. CLEOFAS, CESO IV</p>
+                    <p class="text-[7px]" contenteditable="true" id="sig1ApproverPos">Administrator</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Table -->
+        <table class="w-full border-collapse border border-black text-[8px]" id="opcrTable">
+            <thead>
+                <tr class="bg-[#00838F] text-white text-center font-bold">
+                    <th class="border border-black p-1 align-middle" style="width:25%" rowspan="2">MFOs AND PERFORMANCE
+                        INDICATORS</th>
+                    <th class="border border-black p-1 align-middle" style="width:6%" rowspan="2">DEPARTMENT<br>FY 2025
+                        BUDGET</th>
+                    <th class="border border-black p-1 align-middle" style="width:16%" rowspan="2">SUCCESS INDICATOR CY
+                        2025 TARGETS</th>
+                    <th class="border border-black p-1 align-middle" style="width:8%" rowspan="2">RESPONSIBLE
+                        DIVISION/<br>INDIVIDUALS</th>
+                    <th class="border border-black p-0.5" colspan="4">RATING</th>
+                    <th class="border border-black p-0.5 align-middle" colspan="1">ACCOMPLISHMENT/UPDATE (Encircle one)
+                    </th>
+                    <th class="border border-black p-0.5 no-print" style="width:2%" rowspan="2">Act</th>
+                </tr>
+                <tr class="bg-[#00838F] text-white text-center font-bold text-[7px]">
+                    <th class="border border-black p-0.5" style="width:2.5%">Q<sup>1</sup></th>
+                    <th class="border border-black p-0.5" style="width:2.5%">E<sup>2</sup></th>
+                    <th class="border border-black p-0.5" style="width:2.5%">T<sup>3</sup></th>
+                    <th class="border border-black p-0.5" style="width:2.5%">Ave</th>
+                    <th class="border border-black p-0.5" style="width:33%">
+                        <div class="flex justify-center gap-4">
+                            <span>Annual</span>
+                            <span>Semestral<br>S1&nbsp;&nbsp;S2</span>
+                            <span>Quarterly<br>Q1&nbsp;&nbsp;Q2&nbsp;&nbsp;Q3&nbsp;&nbsp;Q4</span>
+                        </div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody id="opcrTbody">
+                <!-- Rows will be dynamically generated -->
+            </tbody>
+        </table>
+
+        <!-- Add Row Buttons -->
+        <div class="flex gap-2 justify-center mt-4 no-print flex-wrap">
+            <button onclick="addSectionRow()" class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded text-sm">
+                <i class="fa-solid fa-layer-group mr-1"></i> Add Section (Section Title)
+            </button>
+            <button onclick="addSubSection1Row()"
+                class="px-3 py-1.5 bg-[#00838F] text-white hover:bg-[#006570] rounded text-sm">
+                <i class="fa-solid fa-folder mr-1"></i> Add Sub Section 1 (MFO)
+            </button>
+            <button onclick="addSubSection2Row()"
+                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm border border-gray-300">
+                <i class="fa-solid fa-file-lines mr-1"></i> Add Sub Section 2 (PI)
+            </button>
+            <button onclick="addDataRow()" class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 rounded text-sm">
+                <i class="fa-solid fa-plus mr-1"></i> Add Data Row (Details/Measures)
+            </button>
+        </div>
+
+        <!-- Legend -->
+        <div class="mt-4 text-[10px] legend-section">
+            <p>Legend: <sup>1</sup> Quality, <sup>2</sup> Efficiency, <sup>3</sup> Timeliness</p>
+        </div>
+
+        <!-- Part II Signatories -->
+        <div class="signature-section footer-signatures">
+            <div class="border border-black bg-blue-100 p-1 mt-4">
+                <p class="text-xs font-bold">II. Signature approvals after performance monitoring, assessment, feedback
+                    by
+                    PMT</p>
+            </div>
+            <div class="border-x border-b border-black grid grid-cols-4 text-center text-xs">
+                <div class="border-r border-black p-4 flex flex-col justify-between">
+                    <p class="text-left mb-1">Prepared by:</p>
+                    <div id="footerPreparedBox" data-signed="false" onclick="openSignatureModal('footerPreparedBox', 'footerPrepared')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                        <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                    </div>
+                    <div class="mt-2 pt-1">
+                        <p class="font-bold underline uppercase text-[9px]" contenteditable="true" id="footerPrepared">RYAN JAMES V. AYSON</p>
+                        <p class="text-[8px]">Manager, <span contenteditable="true" id="footerDept">Field Operations Management Department</span></p>
+                    </div>
+                </div>
+                <div class="border-r border-black p-4 flex flex-col justify-between">
+                    <p class="text-left mb-1">Reviewed by:</p>
+                    <div id="footerReviewerBox" data-signed="false" onclick="openSignatureModal('footerReviewerBox', 'footerReviewer')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                        <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                    </div>
+                    <div class="mt-2 pt-1">
+                        <p class="font-bold underline uppercase text-[9px]" contenteditable="true" id="footerReviewer">PATRICK JAMES B. DIZON</p>
+                        <p class="text-[8px]" contenteditable="true" id="footerReviewerPos">Deputy Administrator</p>
+                    </div>
+                </div>
+                <div class="border-r border-black p-4 flex flex-col justify-between">
+                    <p class="text-left mb-1">Recommended by:</p>
+                    <div id="footerRecommenderBox" data-signed="false" onclick="openSignatureModal('footerRecommenderBox', 'footerRecommender')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                        <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                    </div>
+                    <div class="mt-2 pt-1">
+                        <p class="font-bold underline uppercase text-[9px]" contenteditable="true" id="footerRecommender">ROMEO D. RODEROS</p>
+                        <p class="text-[8px]" contenteditable="true" id="footerRecommenderPos">Deputy Administrator, Management Services & Chairman, PMT</p>
+                    </div>
+                </div>
+                <div class="p-4 flex flex-col justify-between">
+                    <p class="text-left mb-1 leading-tight text-[9px]">The final rating was discussed with the ratee. Approved and Rated by:</p>
+                    <div id="footerApproverBox" data-signed="false" onclick="openSignatureModal('footerApproverBox', 'footerApprover')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-12 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                        <span class="text-blue-400/80 italic font-medium text-[8px] tracking-wide signature-status">Signature Pending</span>
+                    </div>
+                    <div class="mt-2 pt-1">
+                        <p class="font-bold underline uppercase text-[9px]" contenteditable="true" id="footerApprover">LEONOR C. CLEOFAS, CESO IV</p>
+                        <p class="text-[8px]" contenteditable="true" id="footerApproverPos">Administrator</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Rating Modal -->
+        <div id="ratingModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-96">
+                <h3 class="font-bold text-lg mb-4">Enter Ratings</h3>
+                <div class="grid grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Quality (Q)</label>
+                        <input type="number" id="ratingQ" min="1" max="5" step="0.1"
+                            class="mt-1 block w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Efficiency (E)</label>
+                        <input type="number" id="ratingE" min="1" max="5" step="0.1"
+                            class="mt-1 block w-full border rounded px-3 py-2">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Timeliness (T)</label>
+                        <input type="number" id="ratingT" min="1" max="5" step="0.1"
+                            class="mt-1 block w-full border rounded px-3 py-2">
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeRatingModal()"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                    <button onclick="saveRating()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Accomplishment Modal -->
+        <div id="accomplishmentModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-lg shadow-xl p-6 w-[550px] max-h-[80vh] overflow-y-auto">
+                <h3 class="font-bold text-lg mb-2">Update Accomplishment</h3>
+                <p class="text-sm text-gray-500 mb-4" id="accomplishmentQuarter">Quarter: Q1</p>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Accomplishment Text</label>
+                    <textarea id="accomplishmentText" rows="4" class="w-full border rounded px-3 py-2"
+                        placeholder="Enter accomplishments for this quarter..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Evidence Links (Google Drive,
+                        etc.)</label>
+                    <div id="evidenceLinksContainer" class="space-y-2">
+                        <!-- Links will be added dynamically -->
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <button type="button" onclick="addEvidenceLink()"
+                            class="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-plus text-xs"></i> Add Evidence Link
+                        </button>
+                        <button type="button" onclick="clearAllEvidenceLinks()"
+                            class="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-600 rounded flex items-center gap-1">
+                            <i class="fa-solid fa-trash text-xs"></i> Clear All Links
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button onclick="closeAccomplishmentModal()"
+                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
+                    <button onclick="saveAccomplishment()"
+                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Firebase SDK -->
+        <script type="module">
+            import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+            import { getFirestore, doc, getDoc, updateDoc, serverTimestamp, collection, getDocs, query, where, orderBy } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+            import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+
+            // Firebase config - MUST match main app exactly
+            const firebaseConfig = {
+                apiKey: "AIzaSyD0VGkytRW3YMqUIgbTrFNtBSDFAtlY-PU",
+                authDomain: "mwss-project-monitoring-system.firebaseapp.com",
+                projectId: "mwss-project-monitoring-system",
+                storageBucket: "mwss-project-monitoring-system.appspot.com",
+                messagingSenderId: "973804039753",
+                appId: "1:973804039753:web:bf26fd271952a7e8669998",
+                measurementId: "G-4C070YCMMT"
+            };
+
+            const app = initializeApp(firebaseConfig);
+            const db = getFirestore(app);
+            const auth = getAuth(app);
+
+            // Get OPCR ID from URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const opcrId = urlParams.get('id');
+
+            let currentRatingRowId = null;
+            let currentAccomplishmentRowId = null;
+            let currentQuarter = null;
+            let currentUser = null;
+            let authReady = false;
+
+            // Wait for auth state
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    authReady = true;
+
+                    // Update UI to show auth status
+                    const saveBtn = document.querySelector('button[onclick*="saveOpcrData"]');
+                    console.log('User authenticated:', user.email);
+                    if (saveBtn) saveBtn.title = 'Logged in as: ' + user.email;
+
+                    if (opcrId) {
+                        loadOpcrFromFirestore(opcrId);
+                    } else {
+                        initializeDefaultSections();
+                    }
+                } else {
+                    // Short wait to allow Firebase to recover session before redirecting
+                    setTimeout(() => {
+                        if (!auth.currentUser) {
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                }
+            });
+
+            // Initialize default sections
+            function initializeDefaultSections() {
+                addSectionRow('A. Major Final Outputs (MFOs)/Operations');
+                addSubSection1Row('MFO1: Uninterrupted and Adequate Supply and Distribution of Potable Water for Domestic Use in its Service');
+                addSubSection2Row('Performance Indicator 1: Management of the operations of Bulacan Bulk Water Supply Project');
+                addDataRow();
+                addSectionRow('B. Support to Operations (STO)');
+                addDataRow();
+                addSectionRow('C. General Administrative Services (GAS)');
+                addDataRow();
+            }
+
+            // Sync department field
+            document.addEventListener('DOMContentLoaded', () => {
+                const deptInput = document.getElementById('opcrDepartment');
+                deptInput.addEventListener('input', () => {
+                    const val = deptInput.value;
+                    document.getElementById('sigDeptMirror').textContent = val;
+                    document.getElementById('sigDeptMirror2').textContent = val;
+                    document.getElementById('footerDept').textContent = val;
+                });
+
+                const sigCommitting = document.getElementById('sigCommitting');
+                sigCommitting.addEventListener('input', () => {
+                    document.getElementById('sigCommittingName').textContent = sigCommitting.textContent;
+                    document.getElementById('footerPrepared').textContent = sigCommitting.textContent;
+                });
+
+                // Update print-only period text and signatories date when dropdowns change
+                function updatePeriodPrintText() {
+                    const start = document.getElementById('periodStart').value;
+                    const end = document.getElementById('periodEnd').value;
+                    const year = document.getElementById('opcrYear').value;
+
+                    // Update the print-only text in header
+                    document.getElementById('periodPrintText').textContent = `${start} - ${end} ${year}`;
+
+                    // Update the date in Part I Signatories section
+                    document.getElementById('sigPeriodDate').textContent = `${start} TO ${end} ${year}`;
+                }
+
+                document.getElementById('periodStart').addEventListener('change', updatePeriodPrintText);
+                document.getElementById('periodEnd').addEventListener('change', updatePeriodPrintText);
+                document.getElementById('opcrYear').addEventListener('input', updatePeriodPrintText);
+
+                // Initial update
+                updatePeriodPrintText();
+
+                function preparePrintMirrors() {
+                    console.log('🖨️ Preparing print mirrors...');
+                    
+                    // Sync the department text
+                    const deptInput = document.getElementById('opcrDepartment');
+                    const deptPrint = document.getElementById('opcrDepartmentPrint');
+                    if (deptInput && deptPrint) {
+                        deptPrint.textContent = deptInput.value;
+                    }
+
+                    // Mirror textareas inside opcrTbody
+                    document.querySelectorAll('#opcrTbody textarea').forEach(ta => {
+                        let mirror = ta.nextElementSibling;
+                        if (!mirror || !mirror.classList.contains('print-mirror')) {
+                            mirror = document.createElement('div');
+                            let alignClass = ta.classList.contains('text-center') ? 'text-center' : 'text-left';
+                            mirror.className = `print-mirror hidden print:block whitespace-pre-wrap p-0.5 text-[8px] leading-tight break-words ${alignClass}`;
+                            ta.insertAdjacentElement('afterend', mirror);
+                        }
+                        mirror.textContent = ta.value;
+                    });
+
+                    // Mirror inputs inside opcrTbody
+                    document.querySelectorAll('#opcrTbody input').forEach(inp => {
+                        let mirror = inp.nextElementSibling;
+                        if (!mirror || !mirror.classList.contains('print-mirror')) {
+                            mirror = document.createElement('div');
+                            inp.insertAdjacentElement('afterend', mirror);
+                        }
+                        
+                        let extraClasses = '';
+                        if (inp.classList.contains('font-bold')) {
+                            extraClasses = ' font-bold';
+                            if (inp.closest('.opcr-section')) {
+                                extraClasses += ' uppercase text-[8px]';
+                            } else if (inp.closest('.opcr-subsection1')) {
+                                extraClasses += ' text-[8px] text-white';
+                            }
+                        } else {
+                            extraClasses += ' text-[8px]';
+                        }
+                        
+                        mirror.className = `print-mirror hidden print:block p-0.5 w-full break-words text-left${extraClasses}`;
+                        mirror.textContent = inp.value;
+                    });
+                }
+
+                window.printForm = function() {
+                    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                        document.activeElement.blur();
+                    }
+                    preparePrintMirrors();
+                    setTimeout(() => {
+                        window.print();
+                    }, 150);
+                };
+
+                window.addEventListener('beforeprint', () => {
+                    preparePrintMirrors();
+                });
+            });
+
+            // Make functions available globally
+            window.addSectionRow = function (title = '') {
+                const tbody = document.getElementById('opcrTbody');
+                const tr = document.createElement('tr');
+                tr.className = 'bg-gray-300 opcr-section text-[8px]';
+                tr.innerHTML = `
+                <td colspan="9" class="border border-black p-0.5 font-bold">
+                    <input type="text" value="${title}" class="bg-transparent w-full font-bold outline-none text-[8px]" placeholder="Section Title (e.g., A. Major Final Outputs...)">
+                </td>
+                <td class="border border-black text-center no-print">
+                    <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 p-0.5"><i class="fa fa-times text-[8px]"></i></button>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            };
+
+            window.addSubSection1Row = function (title = '') {
+                const tbody = document.getElementById('opcrTbody');
+                const tr = document.createElement('tr');
+                tr.className = 'bg-[#00838F] text-white opcr-subsection1 text-[8px]';
+                tr.innerHTML = `
+                <td colspan="9" class="border border-black p-0.5 font-bold">
+                    <input type="text" value="${title}" class="bg-transparent w-full font-bold outline-none text-[8px] text-white placeholder-white/70" placeholder="Sub Section 1 (e.g., MFO1: Uninterrupted and Adequate Supply...)">
+                </td>
+                <td class="border border-black text-center no-print">
+                    <button onclick="this.closest('tr').remove()" class="text-white hover:text-red-200 p-0.5"><i class="fa fa-times text-[8px]"></i></button>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            };
+
+            window.addSubSection2Row = function (title = '') {
+                const tbody = document.getElementById('opcrTbody');
+                const rowId = 'subsec2_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                const tr = document.createElement('tr');
+                tr.className = 'bg-gray-100 opcr-subsection2 text-[8px]';
+                tr.id = rowId;
+                tr.innerHTML = `
+                <td colspan="9" class="border border-black p-0.5">
+                    <input type="text" value="${title}" class="bg-transparent w-full outline-none text-[8px]" placeholder="Sub Section 2 (e.g., Performance Indicator 1: Management of...)">
+                </td>
+                <td class="border border-black text-center no-print">
+                    <div class="flex gap-0.5 items-center justify-center">
+                        <button onclick="insertSubSection2Below('${rowId}')" class="text-blue-500 hover:text-blue-700 p-0.5" title="Insert SubSection2 below">
+                            <i class="fa fa-clone text-[8px]"></i>
+                        </button>
+                        <button onclick="insertDataRowBelowSubsection('${rowId}')" class="text-green-500 hover:text-green-700 p-0.5" title="Insert Data Row below">
+                            <i class="fa fa-plus text-[8px]"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 p-0.5" title="Delete">
+                            <i class="fa fa-times text-[8px]"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            };
+
+            // Insert a SubSection2 row below the specified row
+            window.insertSubSection2Below = function (rowId) {
+                const currentRow = document.getElementById(rowId);
+                if (!currentRow) return;
+
+                const newRowId = 'subsec2_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                const tr = document.createElement('tr');
+                tr.className = 'bg-gray-100 opcr-subsection2 text-[8px]';
+                tr.id = newRowId;
+                tr.innerHTML = `
+                <td colspan="9" class="border border-black p-0.5">
+                    <input type="text" value="" class="bg-transparent w-full outline-none text-[8px]" placeholder="Sub Section 2 (e.g., Performance Indicator 1: Management of...)">
+                </td>
+                <td class="border border-black text-center no-print">
+                    <div class="flex gap-0.5 items-center justify-center">
+                        <button onclick="insertSubSection2Below('${newRowId}')" class="text-blue-500 hover:text-blue-700 p-0.5" title="Insert SubSection2 below">
+                            <i class="fa fa-clone text-[8px]"></i>
+                        </button>
+                        <button onclick="insertDataRowBelowSubsection('${newRowId}')" class="text-green-500 hover:text-green-700 p-0.5" title="Insert Data Row below">
+                            <i class="fa fa-plus text-[8px]"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 p-0.5" title="Delete">
+                            <i class="fa fa-times text-[8px]"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+                currentRow.insertAdjacentElement('afterend', tr);
+            };
+
+            // Insert a Data Row below a subsection row
+            window.insertDataRowBelowSubsection = function (rowId) {
+                const currentRow = document.getElementById(rowId);
+                if (!currentRow) return;
+
+                const newRowId = 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                const tr = document.createElement('tr');
+                tr.className = 'opcr-data-row align-top hover:bg-gray-50 text-[8px]';
+                tr.id = newRowId;
+                tr.innerHTML = `
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] leading-tight" placeholder="Performance Indicator"></textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] text-center leading-tight" placeholder="Budget"></textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] leading-tight" placeholder="Success Indicator / Targets"></textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] text-center leading-tight" placeholder="Division"></textarea></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${newRowId}')"><span class="rating-q"></span></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${newRowId}')"><span class="rating-e"></span></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${newRowId}')"><span class="rating-t"></span></td>
+                <td class="border border-black p-0 text-center bg-gray-100 font-bold text-[8px]"><span class="rating-ave"></span></td>
+                <td class="border border-black p-0 accomplishment-cell">
+                    <div class="flex flex-col divide-y divide-gray-300">
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q1')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q1</span>
+                            <p class="text-[7px] acc-q1" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q2')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q2</span>
+                            <p class="text-[7px] acc-q2" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q3')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q3</span>
+                            <p class="text-[7px] acc-q3" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q4')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q4</span>
+                            <p class="text-[7px] acc-q4" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                    </div>
+                </td>
+                <td class="border border-black text-center no-print">
+                    <div class="flex flex-col gap-0.5 items-center">
+                        <button onclick="insertRowBelow('${newRowId}')" class="text-green-500 hover:text-green-700 p-0.5" title="Insert row below">
+                            <i class="fa fa-plus text-[8px]"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 p-0.5" title="Delete row">
+                            <i class="fa fa-times text-[8px]"></i>
+                        </button>
+                    </div>
+                </td>
+                `;
+                currentRow.insertAdjacentElement('afterend', tr);
+            };
+
+            function addSectionRow(title = '') {
+                window.addSectionRow(title);
+            }
+
+            function addSubSection1Row(title = '') {
+                window.addSubSection1Row(title);
+            }
+
+            function addSubSection2Row(title = '') {
+                window.addSubSection2Row(title);
+            }
+
+            // Helper function to escape HTML to prevent XSS and unwanted HTML rendering
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            // Helper function to build quarter content with clickable links
+            function buildQuarterContent(accText, links) {
+                // Escape HTML to prevent embedded links/HTML from rendering
+                const text = escapeHtml(accText || '');
+                let html = `<span class="acc-text">${text}</span>`;
+
+                // Filter to only include links with valid URLs
+                const validLinks = (links || []).filter(link => link && link.url && link.url.trim());
+
+                if (validLinks.length > 0) {
+                    html += `<div class="evidence-links mt-1 pt-1 border-t border-gray-200">`;
+                    validLinks.forEach(link => {
+                        html += `<div class="text-[6px]"><a href="${escapeHtml(link.url)}" target="_blank" class="text-blue-600 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-link mr-0.5"></i>${escapeHtml(link.label) || 'Evidence'}</a></div>`;
+                    });
+                    html += `</div>`;
+                }
+                return html;
+            }
+
+            window.addDataRow = function (data = {}) {
+                const tbody = document.getElementById('opcrTbody');
+                const rowId = 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                const tr = document.createElement('tr');
+                tr.className = 'opcr-data-row align-top hover:bg-gray-50 text-[8px]';
+                tr.id = rowId;
+                tr.innerHTML = `
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] leading-tight" placeholder="Performance Indicator">${data.indicator || ''}</textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] text-center leading-tight" placeholder="Budget">${data.budget || ''}</textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] leading-tight" placeholder="Success Indicator / Targets">${data.targets || ''}</textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] text-center leading-tight" placeholder="Division">${data.responsible || ''}</textarea></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${rowId}')"><span class="rating-q">${data.ratingQ || ''}</span></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${rowId}')"><span class="rating-e">${data.ratingE || ''}</span></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${rowId}')"><span class="rating-t">${data.ratingT || ''}</span></td>
+                <td class="border border-black p-0 text-center bg-gray-100 font-bold text-[8px]"><span class="rating-ave">${data.ratingAve || ''}</span></td>
+                <td class="border border-black p-0 accomplishment-cell">
+                    <div class="flex flex-col divide-y divide-gray-300">
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q1')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q1</span>
+                            <p class="text-[7px] acc-q1" data-links='${JSON.stringify(data.linksQ1 || [])}'>${buildQuarterContent(data.accQ1, data.linksQ1)}</p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q2')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q2</span>
+                            <p class="text-[7px] acc-q2" data-links='${JSON.stringify(data.linksQ2 || [])}'>${buildQuarterContent(data.accQ2, data.linksQ2)}</p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q3')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q3</span>
+                            <p class="text-[7px] acc-q3" data-links='${JSON.stringify(data.linksQ3 || [])}'>${buildQuarterContent(data.accQ3, data.linksQ3)}</p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q4')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q4</span>
+                            <p class="text-[7px] acc-q4" data-links='${JSON.stringify(data.linksQ4 || [])}'>${buildQuarterContent(data.accQ4, data.linksQ4)}</p>
+                        </div>
+                    </div>
+                </td>
+                <td class="border border-black text-center no-print">
+                    <div class="flex flex-col gap-0.5 items-center">
+                        <button onclick="insertRowBelow('${rowId}')" class="text-green-500 hover:text-green-700 p-0.5" title="Insert row below">
+                            <i class="fa fa-plus text-[8px]"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 p-0.5" title="Delete row">
+                            <i class="fa fa-times text-[8px]"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+                tbody.appendChild(tr);
+            };
+
+            function addDataRow(data = {}) {
+                window.addDataRow(data);
+            }
+
+            // Insert a new data row below the specified row
+            window.insertRowBelow = function (rowId) {
+                const currentRow = document.getElementById(rowId);
+                if (!currentRow) return;
+
+                const tbody = document.getElementById('opcrTbody');
+                const newRowId = 'row_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+                const tr = document.createElement('tr');
+                tr.className = 'opcr-data-row align-top hover:bg-gray-50 text-[8px]';
+                tr.id = newRowId;
+                tr.innerHTML = `
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] leading-tight" placeholder="Performance Indicator"></textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] text-center leading-tight" placeholder="Budget"></textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] leading-tight" placeholder="Success Indicator / Targets"></textarea></td>
+                <td class="border border-black p-0.5 align-top"><textarea class="w-full h-full min-h-[60px] border-0 bg-transparent resize-y text-[8px] text-center leading-tight" placeholder="Division"></textarea></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${newRowId}')"><span class="rating-q"></span></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${newRowId}')"><span class="rating-e"></span></td>
+                <td class="border border-black p-0 rating-cell text-center cursor-pointer text-[8px]" onclick="openRatingModal('${newRowId}')"><span class="rating-t"></span></td>
+                <td class="border border-black p-0 text-center bg-gray-100 font-bold text-[8px]"><span class="rating-ave"></span></td>
+                <td class="border border-black p-0 accomplishment-cell">
+                    <div class="flex flex-col divide-y divide-gray-300">
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q1')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q1</span>
+                            <p class="text-[7px] acc-q1" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q2')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q2</span>
+                            <p class="text-[7px] acc-q2" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q3')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q3</span>
+                            <p class="text-[7px] acc-q3" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                        <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${newRowId}', 'Q4')">
+                            <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q4</span>
+                            <p class="text-[7px] acc-q4" data-links='[]'><span class="acc-text"></span></p>
+                        </div>
+                    </div>
+                </td>
+                <td class="border border-black text-center no-print">
+                    <div class="flex flex-col gap-0.5 items-center">
+                        <button onclick="insertRowBelow('${newRowId}')" class="text-green-500 hover:text-green-700 p-0.5" title="Insert row below">
+                            <i class="fa fa-plus text-[8px]"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 p-0.5" title="Delete row">
+                            <i class="fa fa-times text-[8px]"></i>
+                        </button>
+                    </div>
+                </td>
+                `;
+
+                // Insert after the current row
+                currentRow.insertAdjacentElement('afterend', tr);
+            };
+
+            // Rating Modal
+            window.openRatingModal = function (rowId) {
+                currentRatingRowId = rowId;
+                const row = document.getElementById(rowId);
+                document.getElementById('ratingQ').value = row.querySelector('.rating-q').textContent || '';
+                document.getElementById('ratingE').value = row.querySelector('.rating-e').textContent || '';
+                document.getElementById('ratingT').value = row.querySelector('.rating-t').textContent || '';
+                document.getElementById('ratingModal').classList.remove('hidden');
+            };
+
+            window.closeRatingModal = function () {
+                document.getElementById('ratingModal').classList.add('hidden');
+                currentRatingRowId = null;
+            };
+
+            window.saveRating = function () {
+                const row = document.getElementById(currentRatingRowId);
+                const q = parseFloat(document.getElementById('ratingQ').value) || 0;
+                const e = parseFloat(document.getElementById('ratingE').value) || 0;
+                const t = parseFloat(document.getElementById('ratingT').value) || 0;
+
+                row.querySelector('.rating-q').textContent = q || '';
+                row.querySelector('.rating-e').textContent = e || '';
+                row.querySelector('.rating-t').textContent = t || '';
+
+                const count = (q > 0 ? 1 : 0) + (e > 0 ? 1 : 0) + (t > 0 ? 1 : 0);
+                const ave = count > 0 ? ((q + e + t) / count).toFixed(2) : '';
+                row.querySelector('.rating-ave').textContent = ave;
+
+                closeRatingModal();
+            };
+
+            // Accomplishment Modal
+            let currentEvidenceLinks = [];
+
+            window.addEvidenceLink = function (url = '', label = '') {
+                const container = document.getElementById('evidenceLinksContainer');
+                const linkId = 'link_' + Date.now();
+                const linkDiv = document.createElement('div');
+                linkDiv.id = linkId;
+                linkDiv.className = 'flex gap-2 items-center';
+                linkDiv.innerHTML = `
+                    <input type="text" placeholder="Link Label (e.g., MOV 1)" value="${label}" 
+                        class="flex-shrink-0 w-24 border rounded px-2 py-1.5 text-sm link-label">
+                    <input type="url" placeholder="https://drive.google.com/..." value="${url}" 
+                        class="flex-1 border rounded px-2 py-1.5 text-sm link-url">
+                    <button type="button" onclick="removeEvidenceLink('${linkId}')" 
+                        class="p-1.5 text-red-500 hover:bg-red-50 rounded">
+                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    </button>
+                `;
+                container.appendChild(linkDiv);
+            };
+
+            window.removeEvidenceLink = function (linkId) {
+                document.getElementById(linkId)?.remove();
+            };
+
+            window.clearAllEvidenceLinks = function () {
+                const container = document.getElementById('evidenceLinksContainer');
+                container.innerHTML = '';
+                // Add one empty link field
+                addEvidenceLink();
+            };
+
+            window.openAccomplishmentModal = function (rowId, quarter) {
+                currentAccomplishmentRowId = rowId;
+                currentQuarter = quarter;
+                const row = document.getElementById(rowId);
+                const accElement = row.querySelector(`.acc-${quarter.toLowerCase()}`);
+
+                // Get just the text content (from the acc-text span if it exists, otherwise from the element directly)
+                const textSpan = accElement?.querySelector('.acc-text');
+                // textContent preserves newlines naturally
+                let accText = textSpan ? textSpan.textContent : (accElement?.textContent || '');
+
+                // Get stored links from data attribute with better error handling
+                let storedLinks = [];
+                try {
+                    const linksData = accElement?.getAttribute('data-links');
+                    console.log('Loading links for', quarter, '- raw data:', linksData);
+                    if (linksData && linksData !== '[]' && linksData.trim()) {
+                        storedLinks = JSON.parse(linksData);
+                        console.log('Parsed links:', storedLinks);
+                    }
+                } catch (e) {
+                    console.error('Error parsing links data:', e);
+                    storedLinks = [];
+                }
+
+                document.getElementById('accomplishmentQuarter').textContent = `Quarter: ${quarter}`;
+                document.getElementById('accomplishmentText').value = accText.trim();
+
+                // Clear and populate evidence links
+                const container = document.getElementById('evidenceLinksContainer');
+                container.innerHTML = '';
+
+                if (Array.isArray(storedLinks) && storedLinks.length > 0) {
+                    storedLinks.forEach(link => {
+                        if (link && (link.url || link.label)) {
+                            addEvidenceLink(link.url || '', link.label || '');
+                        }
+                    });
+                } else {
+                    addEvidenceLink(); // Add one empty link field
+                }
+
+                document.getElementById('accomplishmentModal').classList.remove('hidden');
+            };
+
+            window.closeAccomplishmentModal = function () {
+                document.getElementById('accomplishmentModal').classList.add('hidden');
+                currentAccomplishmentRowId = null;
+                currentQuarter = null;
+            };
+
+            window.saveAccomplishment = function () {
+                const row = document.getElementById(currentAccomplishmentRowId);
+                const text = document.getElementById('accomplishmentText').value;
+                const accElement = row.querySelector(`.acc-${currentQuarter.toLowerCase()}`);
+
+                // Get all evidence links from the modal
+                const linkDivs = document.querySelectorAll('#evidenceLinksContainer > div');
+                const linksMap = new Map(); // Use Map to deduplicate by URL
+
+                linkDivs.forEach(div => {
+                    const label = div.querySelector('.link-label')?.value?.trim() || '';
+                    const url = div.querySelector('.link-url')?.value?.trim() || '';
+                    if (url) {
+                        // Use URL as key to deduplicate - latest entry wins (overwrites previous)
+                        linksMap.set(url, { label: label || 'Evidence', url: url });
+                    }
+                });
+
+                // Convert Map back to array
+                const links = Array.from(linksMap.values());
+                console.log('Saving links:', links);
+
+                // Completely clear and rebuild the content (overwrite, not append)
+                accElement.innerHTML = '';
+
+                // Store links in data attribute (fresh, not appending to existing)
+                accElement.setAttribute('data-links', JSON.stringify(links));
+
+                // Debug: log what we're saving
+                console.log('Saving text:', JSON.stringify(text));
+                console.log('Text has newlines:', text.includes('\n'));
+
+                // Create span and set textContent to preserve newlines
+                const textSpan = document.createElement('span');
+                textSpan.className = 'acc-text';
+                textSpan.textContent = text; // textContent preserves newlines
+
+                // Clear and add the text span
+                accElement.innerHTML = '';
+                accElement.appendChild(textSpan);
+
+                // Add links if any
+                if (links.length > 0) {
+                    const linksDiv = document.createElement('div');
+                    linksDiv.className = 'evidence-links mt-1 pt-1 border-t border-gray-200';
+                    links.forEach(link => {
+                        const linkDiv = document.createElement('div');
+                        linkDiv.className = 'text-[6px]';
+                        linkDiv.innerHTML = `<a href="${link.url}" target="_blank" class="text-blue-600 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-link mr-0.5"></i>${link.label}</a>`;
+                        linksDiv.appendChild(linkDiv);
+                    });
+                    accElement.appendChild(linksDiv);
+                }
+
+                closeAccomplishmentModal();
+            };
+
+            // Load from Firestore
+            async function loadOpcrFromFirestore(id) {
+                console.log('📥 Loading OPCR from Firestore, ID:', id);
+                try {
+                    const docRef = doc(db, 'opcr_entries', id);
+                    const docSnap = await getDoc(docRef);
+
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        console.log('📦 Loaded OPCR data:', data);
+
+                        // Populate form fields
+                        if (data.department) document.getElementById('opcrDepartment').value = data.department;
+                        if (data.year) document.getElementById('opcrYear').value = data.year;
+                        if (data.periodStart) document.getElementById('periodStart').value = data.periodStart;
+                        if (data.periodEnd) document.getElementById('periodEnd').value = data.periodEnd;
+
+                        // Sync department mirrors
+                        const dept = data.department || '';
+                        document.getElementById('sigDeptMirror').textContent = dept;
+                        document.getElementById('sigDeptMirror2').textContent = dept;
+                        document.getElementById('footerDept').textContent = dept;
+
+                        // Populate Part I Signatories
+                        if (data.signatoriesPartI) {
+                            const sig1 = data.signatoriesPartI;
+                            if (sig1.committing) {
+                                document.getElementById('sigCommitting').textContent = sig1.committing;
+                                document.getElementById('sigCommittingName').textContent = sig1.committing;
+                            }
+                            if (sig1.reviewer) document.getElementById('sig1Reviewer').textContent = sig1.reviewer;
+                            if (sig1.reviewerPos) document.getElementById('sig1ReviewerPos').textContent = sig1.reviewerPos;
+                            if (sig1.pmt) document.getElementById('sig1PMT').textContent = sig1.pmt;
+                            if (sig1.pmtPos) document.getElementById('sig1PMTPos').textContent = sig1.pmtPos;
+                            if (sig1.approver) document.getElementById('sig1Approver').textContent = sig1.approver;
+                            if (sig1.approverPos) document.getElementById('sig1ApproverPos').textContent = sig1.approverPos;
+                        }
+
+                        // Populate Part II Signatories (footer)
+                        if (data.signatories) {
+                            const sig = data.signatories;
+                            if (sig.preparedBy) document.getElementById('footerPrepared').textContent = sig.preparedBy;
+                            if (sig.preparedByDept) document.getElementById('footerDept').textContent = sig.preparedByDept;
+                            if (sig.reviewedBy) document.getElementById('footerReviewer').textContent = sig.reviewedBy;
+                            if (sig.reviewedByPos) document.getElementById('footerReviewerPos').textContent = sig.reviewedByPos;
+                            if (sig.recommendedBy) document.getElementById('footerRecommender').textContent = sig.recommendedBy;
+                            if (sig.recommendedByPos) document.getElementById('footerRecommenderPos').textContent = sig.recommendedByPos;
+                            if (sig.approvedBy) document.getElementById('footerApprover').textContent = sig.approvedBy;
+                            if (sig.approvedByPos) document.getElementById('footerApproverPos').textContent = sig.approvedByPos;
+                        }
+
+                        // Populate signatory fields from modal entry
+                        if (data.deptManager) {
+                            document.getElementById('footerPrepared').textContent = data.deptManager;
+                            document.getElementById('sigCommitting').textContent = data.deptManager;
+                            document.getElementById('sigCommittingName').textContent = data.deptManager;
+                        }
+                        if (data.deputyAdmin) {
+                            document.getElementById('footerReviewer').textContent = data.deputyAdmin;
+                            // Also populate Part I signatory (I hereby certify section)
+                            document.getElementById('sig1Reviewer').textContent = data.deputyAdmin;
+                        }
+                        // Wire the group to the position descriptions
+                        if (data.group) {
+                            const positionText = `Deputy Administrator, ${data.group}`;
+                            document.getElementById('sig1ReviewerPos').textContent = positionText;
+                            document.getElementById('footerReviewerPos').textContent = positionText;
+                        }
+                        if (data.pmtChair) {
+                            document.getElementById('footerRecommender').textContent = data.pmtChair;
+                            // Also populate Part I signatory (Discussed and agreed with PMT section)
+                            document.getElementById('sig1PMT').textContent = data.pmtChair;
+                        }
+                        if (data.administrator) {
+                            document.getElementById('footerApprover').textContent = data.administrator;
+                            // Also populate Part I signatory (Approved by section)
+                            document.getElementById('sig1Approver').textContent = data.administrator;
+                        }
+
+                        // Restore signature states
+                        if (data.signatureStates) {
+                            setSignatureValue('sigCommittingBox', data.signatureStates.sigCommitting, 'sigCommitting');
+                            setSignatureValue('sig1ReviewerBox', data.signatureStates.sig1Reviewer, 'sig1Reviewer');
+                            setSignatureValue('sig1PMTBox', data.signatureStates.sig1PMT, 'sig1PMT');
+                            setSignatureValue('sig1ApproverBox', data.signatureStates.sig1Approver, 'sig1Approver');
+
+                            setSignatureValue('footerPreparedBox', data.signatureStates.footerPrepared, 'footerPrepared');
+                            setSignatureValue('footerReviewerBox', data.signatureStates.footerReviewer, 'footerReviewer');
+                            setSignatureValue('footerRecommenderBox', data.signatureStates.footerRecommender, 'footerRecommender');
+                            setSignatureValue('footerApproverBox', data.signatureStates.footerApprover, 'footerApprover');
+                        }
+
+                        // Populate rows
+                        const tbody = document.getElementById('opcrTbody');
+                        tbody.innerHTML = '';
+
+                        console.log('📦 Full data object keys:', Object.keys(data));
+                        console.log('📦 data.items exists?', !!data.items, 'Is array?', Array.isArray(data.items));
+
+                        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+                            console.log('📊 Loading items:', data.items.length, 'rows');
+                            console.log('📊 First item:', JSON.stringify(data.items[0]));
+                            data.items.forEach((item, index) => {
+                                console.log(`  Item ${index}:`, item.type, item.title || item.indicator || '(no title/indicator)');
+                                if (item.type === 'section') {
+                                    addSectionRow(item.title || '');
+                                } else if (item.type === 'subsection1') {
+                                    addSubSection1Row(item.title || '');
+                                } else if (item.type === 'subsection2') {
+                                    addSubSection2Row(item.title || '');
+                                } else {
+                                    addDataRow(item);
+                                }
+                            });
+                        } else {
+                            console.warn('⚠️ No items array found or empty, initializing defaults. data.items =', data.items);
+                            initializeDefaultSections();
+                        }
+
+                        // Load comments from Firestore and restore icons
+                        if (data.opcrComments && typeof data.opcrComments === 'object') {
+                            console.log('💬 Loading comments from Firestore:', Object.keys(data.opcrComments).length);
+                            window.opcrComments = data.opcrComments;
+
+                            // Restore comment icons after a short delay to ensure DOM is ready
+                            setTimeout(() => {
+                                restoreCommentIcons();
+                            }, 100);
+                        } else {
+                            window.opcrComments = {};
+                        }
+
+                        // Load employees from Firestore
+                        if (data.employees && Array.isArray(data.employees)) {
+                            console.log('👥 Loading employees from Firestore:', data.employees.length);
+                            window.opcrEmployees = data.employees;
+                        } else {
+                            window.opcrEmployees = [];
+                        }
+                    } else {
+                        console.warn('❌ No OPCR document found for ID:', id);
+                        initializeDefaultSections();
+                    }
+                } catch (err) {
+                    console.error('Error loading OPCR:', err);
+                    initializeDefaultSections();
+                }
+            }
+
+            // Function to restore comment icons from saved comments
+            function restoreCommentIcons() {
+                console.log('🔄 Restoring comment icons...');
+                const comments = window.opcrComments || {};
+
+                if (Object.keys(comments).length === 0) {
+                    console.log('  No comments to restore');
+                    return;
+                }
+
+                // First, assign stable IDs to all commentable elements
+                const tbody = document.getElementById('opcrTbody');
+                if (!tbody) return;
+
+                const allRows = tbody.querySelectorAll('tr');
+                allRows.forEach((row, rowIndex) => {
+                    // For data rows
+                    if (row.classList.contains('opcr-data-row')) {
+                        // Textareas (indicator, budget, targets, responsible)
+                        const textareas = row.querySelectorAll('td textarea');
+                        const fieldNames = ['indicator', 'budget', 'targets', 'responsible'];
+                        textareas.forEach((ta, idx) => {
+                            const fieldType = fieldNames[idx] || `col${idx}`;
+                            ta.dataset.commentId = `row_${rowIndex}_${fieldType}`;
+                        });
+
+                        // Quarter boxes (Q1, Q2, Q3, Q4)
+                        const quarterClasses = ['acc-q1', 'acc-q2', 'acc-q3', 'acc-q4'];
+                        const quarterTypes = ['q1', 'q2', 'q3', 'q4'];
+                        quarterClasses.forEach((cls, idx) => {
+                            const qb = row.querySelector(`.quarter-box.${cls}`);
+                            if (qb) {
+                                qb.dataset.commentId = `row_${rowIndex}_${quarterTypes[idx]}`;
+                            }
+                        });
+
+                        // Rating cells
+                        const ratingClasses = ['rating-q', 'rating-e', 'rating-t', 'rating-ave'];
+                        ratingClasses.forEach(cls => {
+                            const rc = row.querySelector(`.${cls}`);
+                            if (rc) {
+                                rc.dataset.commentId = `row_${rowIndex}_${cls.replace('-', '_')}`;
+                            }
+                        });
+                    } else if (row.classList.contains('opcr-section')) {
+                        const input = row.querySelector('input');
+                        if (input) input.dataset.commentId = `row_${rowIndex}_section_title`;
+                    } else if (row.classList.contains('opcr-subsection1')) {
+                        const input = row.querySelector('input');
+                        if (input) input.dataset.commentId = `row_${rowIndex}_subsection1_title`;
+                    } else if (row.classList.contains('opcr-subsection2')) {
+                        const input = row.querySelector('input');
+                        if (input) input.dataset.commentId = `row_${rowIndex}_subsection2_title`;
+                    }
+                });
+
+                console.log(`  Assigned IDs to elements in ${allRows.length} rows`);
+
+                // Now match comments to elements
+                for (const [commentId, commentData] of Object.entries(comments)) {
+                    if (commentData.resolved) continue;
+
+                    // Find element with this comment ID
+                    const element = document.querySelector(`[data-comment-id="${commentId}"]`);
+                    if (element) {
+                        addCommentIcon(element, commentData);
+                        console.log(`  ✅ Restored icon for: ${commentId}`);
+                    } else {
+                        console.log(`  ⚠️ Element not found for comment: ${commentId}`);
+                    }
+                }
+            }
+
+            // Expose globally for potential use
+            window.restoreCommentIcons = restoreCommentIcons;
+
+            // ========================================
+            // Employee Management System
+            // ========================================
+
+            // Store employees for this OPCR
+            window.opcrEmployees = [];
+
+            // DOM References
+            const employeeModal = document.getElementById('employeeModal');
+            const employeeTbody = document.getElementById('employeeTbody');
+
+            // Store fetched OPCR entries for importing
+            let availableOpcrTemplates = [];
+            window.suggestedRosterEmployees = null;
+
+            // Check for past rosters and populate template list
+            window.checkPastRosters = async function () {
+                const currentDept = document.getElementById('opcrDepartment')?.value?.trim() || "";
+                const currentYear = Number(document.getElementById('opcrYear')?.value) || 0;
+                
+                const smartCopyBanner = document.getElementById('smartCopyBanner');
+                const importOpcrSelect = document.getElementById('importOpcrSelect');
+                
+                if (!smartCopyBanner || !importOpcrSelect) return;
+                
+                // Hide banner initially
+                smartCopyBanner.style.display = 'none';
+                window.suggestedRosterEmployees = null;
+                
+                try {
+                    const opcrColRef = collection(db, 'opcr_entries');
+                    const q = query(opcrColRef, orderBy('year', 'desc'));
+                    const snapshot = await getDocs(q);
+                    
+                    availableOpcrTemplates = [];
+                    
+                    snapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        const id = docSnap.id;
+                        
+                        // Only include other sheets that actually have registered employees
+                        if (id !== opcrId && data.employees && Array.isArray(data.employees) && data.employees.length > 0) {
+                            availableOpcrTemplates.push({
+                                id: id,
+                                department: data.department || 'Unnamed Department',
+                                year: data.year || 0,
+                                employees: data.employees
+                            });
+                        }
+                    });
+                    
+                    // Populate dropdown
+                    if (availableOpcrTemplates.length === 0) {
+                        importOpcrSelect.innerHTML = '<option value="">No other OPCRs with employees found</option>';
+                    } else {
+                        importOpcrSelect.innerHTML = '<option value="">-- Select an OPCR --</option>' + 
+                            availableOpcrTemplates.map(template => `
+                                <option value="${template.id}">${escapeHtml(template.department)} (${template.year}) — ${template.employees.length} employees</option>
+                            `).join('');
+                    }
+                    
+                    // Look for smart copy suggestion (same department, previous year, or closest year)
+                    if (window.opcrEmployees.length === 0 && currentDept) {
+                        const suggestion = availableOpcrTemplates.find(template => 
+                            template.department.trim().toLowerCase() === currentDept.toLowerCase() && 
+                            template.year < currentYear
+                        ) || availableOpcrTemplates.find(template => 
+                            template.department.trim().toLowerCase() === currentDept.toLowerCase()
+                        );
+                        
+                        if (suggestion) {
+                            window.suggestedRosterEmployees = suggestion.employees;
+                            const countEl = document.getElementById('smartCopyCount');
+                            const yearEl = document.getElementById('smartCopyYear');
+                            if (countEl) countEl.textContent = suggestion.employees.length;
+                            if (yearEl) yearEl.textContent = suggestion.year;
+                            smartCopyBanner.style.display = 'flex';
+                        }
+                    }
+                    
+                } catch (err) {
+                    console.error('Error fetching past rosters:', err);
+                    importOpcrSelect.innerHTML = '<option value="">Error loading templates</option>';
+                }
+            };
+
+            // Apply Suggested Smart Copy
+            window.applySmartCopy = function () {
+                if (window.suggestedRosterEmployees && Array.isArray(window.suggestedRosterEmployees)) {
+                    window.opcrEmployees = JSON.parse(JSON.stringify(window.suggestedRosterEmployees));
+                    renderEmployeeTable();
+                    
+                    // Hide the banner
+                    const smartCopyBanner = document.getElementById('smartCopyBanner');
+                    if (smartCopyBanner) smartCopyBanner.style.display = 'none';
+                    
+                    // Show brief confirmation
+                    console.log(`Copied ${window.opcrEmployees.length} employees from previous roster.`);
+                }
+            };
+
+            // Toggle Advanced Import Section
+            window.toggleImportSection = function () {
+                const section = document.getElementById('importCollapseSection');
+                const chevron = document.getElementById('importChevron');
+                if (!section || !chevron) return;
+                
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                    chevron.style.transform = 'rotate(180deg)';
+                } else {
+                    section.style.display = 'none';
+                    chevron.style.transform = 'rotate(0deg)';
+                }
+            };
+
+            // Import Employees from Selected Sheet
+            window.importSelectedEmployees = function () {
+                const select = document.getElementById('importOpcrSelect');
+                const selectedId = select?.value;
+                
+                if (!selectedId) {
+                    alert('Please select an OPCR sheet to import from.');
+                    return;
+                }
+                
+                const template = availableOpcrTemplates.find(t => t.id === selectedId);
+                if (!template) {
+                    alert('Selected OPCR template not found.');
+                    return;
+                }
+                
+                const modeEl = document.querySelector('input[name="importMode"]:checked');
+                const mode = modeEl ? modeEl.value : 'replace';
+                const newEmployees = JSON.parse(JSON.stringify(template.employees));
+                
+                if (mode === 'replace') {
+                    if (window.opcrEmployees.length > 0 && !confirm('This will overwrite your current list of employees. Are you sure you want to proceed?')) {
+                        return;
+                    }
+                    window.opcrEmployees = newEmployees;
+                } else {
+                    // Merge mode
+                    let addedCount = 0;
+                    newEmployees.forEach(newEmp => {
+                        // Check duplicate name or abbreviation (case insensitive, trimmed, and null-safe)
+                        const nameDup = window.opcrEmployees.some(e => 
+                            (e.name || '').trim().toLowerCase() === (newEmp.name || '').trim().toLowerCase()
+                        );
+                        const abbrDup = newEmp.abbreviation && window.opcrEmployees.some(e => 
+                            e.abbreviation && e.abbreviation.trim().toLowerCase() === newEmp.abbreviation.trim().toLowerCase()
+                        );
+                        
+                        if (!nameDup && !abbrDup) {
+                            window.opcrEmployees.push(newEmp);
+                            addedCount++;
+                        }
+                    });
+                    alert(`Merged ${addedCount} new employees into the roster (skipped ${newEmployees.length - addedCount} duplicates).`);
+                }
+                
+                renderEmployeeTable();
+                
+                // Hide smart copy banner if we now have employees
+                if (window.opcrEmployees.length > 0) {
+                    const smartCopyBanner = document.getElementById('smartCopyBanner');
+                    if (smartCopyBanner) smartCopyBanner.style.display = 'none';
+                }
+            };
+
+            // Open Employee Modal
+            window.openEmployeeModal = function () {
+                renderEmployeeTable();
+                employeeModal.classList.add('visible');
+                // Check past rosters for suggestion and dropdown population
+                window.checkPastRosters();
+            };
+
+            // Close Employee Modal
+            window.closeEmployeeModal = function () {
+                employeeModal.classList.remove('visible');
+            };
+
+            // Render Employee Table
+            function renderEmployeeTable() {
+                if (!employeeTbody) return;
+
+                if (window.opcrEmployees.length === 0) {
+                    employeeTbody.innerHTML = `
+                        <tr>
+                            <td colspan="3">
+                                <div class="employee-empty-state">
+                                    <i class="fa-solid fa-users"></i>
+                                    <p>No employees added yet.</p>
+                                    <p class="text-sm">Click "Add New Employee" to get started.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                employeeTbody.innerHTML = window.opcrEmployees.map((emp, index) => `
+                    <tr data-index="${index}">
+                        <td>
+                            <span class="emp-name-display">${escapeHtml(emp.name)}</span>
+                            <input type="text" class="emp-name-input" value="${escapeHtml(emp.name)}" style="display:none;" />
+                        </td>
+                        <td>
+                            <span class="emp-abbr-display">${escapeHtml(emp.abbreviation)}</span>
+                            <input type="text" class="emp-abbr-input" value="${escapeHtml(emp.abbreviation)}" style="display:none;" />
+                        </td>
+                        <td>
+                            <div class="employee-action-btns">
+                                <button class="employee-edit-btn" onclick="window.editEmployeeRow(${index})">
+                                    <i class="fa-solid fa-pen"></i> Edit
+                                </button>
+                                <button class="employee-save-row-btn" onclick="window.saveEmployeeRow(${index})" style="display:none;">
+                                    <i class="fa-solid fa-check"></i> Done
+                                </button>
+                                <button class="employee-delete-btn" onclick="window.deleteEmployeeRow(${index})">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Add New Employee Row
+            window.addNewEmployeeRow = function () {
+                window.opcrEmployees.push({
+                    name: '',
+                    abbreviation: ''
+                });
+                renderEmployeeTable();
+
+                // Auto-enter edit mode for the new row
+                const newIndex = window.opcrEmployees.length - 1;
+                setTimeout(() => {
+                    window.editEmployeeRow(newIndex);
+                    // Focus the name input
+                    const row = employeeTbody.querySelector(`tr[data-index="${newIndex}"]`);
+                    if (row) {
+                        const nameInput = row.querySelector('.emp-name-input');
+                        if (nameInput) nameInput.focus();
+                    }
+                }, 50);
+            };
+
+            // Edit Employee Row
+            window.editEmployeeRow = function (index) {
+                const row = employeeTbody.querySelector(`tr[data-index="${index}"]`);
+                if (!row) return;
+
+                // Toggle display/inputs
+                row.querySelector('.emp-name-display').style.display = 'none';
+                row.querySelector('.emp-abbr-display').style.display = 'none';
+                row.querySelector('.emp-name-input').style.display = 'block';
+                row.querySelector('.emp-abbr-input').style.display = 'block';
+                row.querySelector('.employee-edit-btn').style.display = 'none';
+                row.querySelector('.employee-save-row-btn').style.display = 'flex';
+            };
+
+            // Save Employee Row (inline)
+            window.saveEmployeeRow = function (index) {
+                const row = employeeTbody.querySelector(`tr[data-index="${index}"]`);
+                if (!row) return;
+
+                const nameInput = row.querySelector('.emp-name-input');
+                const abbrInput = row.querySelector('.emp-abbr-input');
+
+                // Update employee data
+                window.opcrEmployees[index] = {
+                    name: nameInput.value.trim(),
+                    abbreviation: abbrInput.value.trim()
+                };
+
+                // Re-render to show updates
+                renderEmployeeTable();
+            };
+
+            // Delete Employee Row
+            window.deleteEmployeeRow = function (index) {
+                if (confirm('Are you sure you want to remove this employee?')) {
+                    window.opcrEmployees.splice(index, 1);
+                    renderEmployeeTable();
+                }
+            };
+
+            // Save Employees to Firestore
+            window.saveEmployees = async function () {
+                // Validate all employees have a name
+                const validEmployees = window.opcrEmployees.filter(emp => emp.name.trim() !== '');
+                window.opcrEmployees = validEmployees;
+
+                if (!opcrId) {
+                    alert('No OPCR ID. Please save the OPCR first.');
+                    return;
+                }
+
+                try {
+                    const docRef = doc(db, 'opcr_entries', opcrId);
+                    await updateDoc(docRef, {
+                        employees: window.opcrEmployees,
+                        lastUpdated: serverTimestamp(),
+                        lastUpdatedBy: currentUser?.email || 'anonymous'
+                    });
+
+                    console.log('✅ Employees saved successfully');
+                    window.closeEmployeeModal();
+
+                    // Show success feedback
+                    const btn = document.querySelector('.employee-save-btn');
+                    if (btn) {
+                        const originalHtml = btn.innerHTML;
+                        btn.innerHTML = '<i class="fa-solid fa-check"></i> Saved!';
+                        btn.style.background = '#10b981';
+                        setTimeout(() => {
+                            btn.innerHTML = originalHtml;
+                            btn.style.background = '';
+                        }, 1500);
+                    }
+                } catch (err) {
+                    console.error('Error saving employees:', err);
+                    alert('Failed to save employees: ' + err.message);
+                }
+            };
+
+            // Close modal on backdrop click
+            if (employeeModal) {
+                employeeModal.addEventListener('click', function (e) {
+                    if (e.target === employeeModal) {
+                        window.closeEmployeeModal();
+                    }
+                });
+            }
+
+            // Close modal on Escape key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && employeeModal.classList.contains('visible')) {
+                    window.closeEmployeeModal();
+                }
+            });
+
+            // Save to Firestore
+            window.saveOpcrData = async function () {
+                // Get UI elements for loading state
+                const saveBtn = document.getElementById('saveOpcrBtn');
+                const savingOverlay = document.getElementById('savingOverlay');
+
+                // Prevent multiple saves
+                if (saveBtn && saveBtn.disabled) {
+                    return;
+                }
+
+                if (!opcrId) {
+                    alert('No OPCR ID provided. Cannot save.');
+                    return;
+                }
+
+                // Check if user is authenticated
+                if (!currentUser) {
+                    alert('You are not logged in. Please log in from the main dashboard first, then try again.');
+                    return;
+                }
+
+                // Show loading state
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.classList.add('saving');
+                    saveBtn.querySelector('.btn-text').textContent = 'Saving...';
+                }
+                if (savingOverlay) {
+                    savingOverlay.classList.add('visible');
+                }
+
+                console.log('Saving OPCR... User:', currentUser.email);
+
+                // Gather all data
+                const items = [];
+                const rows = document.querySelectorAll('#opcrTbody tr');
+                rows.forEach(row => {
+                    if (row.classList.contains('opcr-section')) {
+                        items.push({
+                            type: 'section',
+                            title: row.querySelector('input').value
+                        });
+                    } else if (row.classList.contains('opcr-subsection1')) {
+                        items.push({
+                            type: 'subsection1',
+                            title: row.querySelector('input').value
+                        });
+                    } else if (row.classList.contains('opcr-subsection2')) {
+                        items.push({
+                            type: 'subsection2',
+                            title: row.querySelector('input').value
+                        });
+                    } else if (row.classList.contains('opcr-data-row')) {
+                        const tds = row.querySelectorAll('td');
+
+                        // Helper function to get ONLY the accomplishment text (not link labels)
+                        const getAccText = (el) => {
+                            if (!el) return '';
+                            // Look for the acc-text span first
+                            const textSpan = el.querySelector('.acc-text');
+                            if (textSpan) {
+                                // Use textContent to get plain text without HTML
+                                return textSpan.textContent?.trim() || '';
+                            }
+                            // Fallback: get text content excluding evidence-links div
+                            const clone = el.cloneNode(true);
+                            const linksDiv = clone.querySelector('.evidence-links');
+                            if (linksDiv) linksDiv.remove();
+                            const icon = clone.querySelector('i');
+                            if (icon) icon.remove();
+                            return clone.textContent?.trim() || '';
+                        };
+
+                        // Helper to get links from data attribute
+                        const getLinks = (el) => {
+                            try {
+                                const linksData = el?.getAttribute('data-links');
+                                if (linksData && linksData !== '[]') {
+                                    return JSON.parse(linksData);
+                                }
+                            } catch (e) {
+                                console.error('Error parsing links:', e);
+                            }
+                            return [];
+                        };
+
+                        items.push({
+                            type: 'row',
+                            indicator: tds[0].querySelector('textarea').value,
+                            budget: tds[1].querySelector('textarea').value,
+                            targets: tds[2].querySelector('textarea').value,
+                            responsible: tds[3].querySelector('textarea').value,
+                            ratingQ: row.querySelector('.rating-q')?.textContent || '',
+                            ratingE: row.querySelector('.rating-e')?.textContent || '',
+                            ratingT: row.querySelector('.rating-t')?.textContent || '',
+                            ratingAve: row.querySelector('.rating-ave')?.textContent || '',
+                            accQ1: getAccText(row.querySelector('.acc-q1')),
+                            accQ2: getAccText(row.querySelector('.acc-q2')),
+                            accQ3: getAccText(row.querySelector('.acc-q3')),
+                            accQ4: getAccText(row.querySelector('.acc-q4')),
+                            // Evidence links for each quarter
+                            linksQ1: getLinks(row.querySelector('.acc-q1')),
+                            linksQ2: getLinks(row.querySelector('.acc-q2')),
+                            linksQ3: getLinks(row.querySelector('.acc-q3')),
+                            linksQ4: getLinks(row.querySelector('.acc-q4'))
+                        });
+                    }
+                });
+
+                try {
+                    const docRef = doc(db, 'opcr_entries', opcrId);
+
+                    // Get existing editLogs from current document
+                    const existingDoc = await getDoc(docRef);
+                    const existingData = existingDoc.exists() ? existingDoc.data() : {};
+                    const existingLogs = existingData.editLogs || [];
+                    const existingVersions = existingData.versions || [];
+
+                    // Add new edit log entry
+                    const newLog = {
+                        action: 'Form saved',
+                        user: currentUser ? currentUser.email : 'anonymous',
+                        timestamp: new Date().toISOString()
+                    };
+
+                    const saveData = {
+                        department: document.getElementById('opcrDepartment').value,
+                        year: Number(document.getElementById('opcrYear').value),
+                        periodStart: document.getElementById('periodStart').value,
+                        periodEnd: document.getElementById('periodEnd').value,
+                        items: items,
+                        // Part I Signatories
+                        signatoriesPartI: {
+                            committing: document.getElementById('sigCommitting')?.textContent || '',
+                            reviewer: document.getElementById('sig1Reviewer')?.textContent || '',
+                            reviewerPos: document.getElementById('sig1ReviewerPos')?.textContent || '',
+                            pmt: document.getElementById('sig1PMT')?.textContent || '',
+                            pmtPos: document.getElementById('sig1PMTPos')?.textContent || '',
+                            approver: document.getElementById('sig1Approver')?.textContent || '',
+                            approverPos: document.getElementById('sig1ApproverPos')?.textContent || ''
+                        },
+                        // Part II Signatories (footer)
+                        signatories: {
+                            preparedBy: document.getElementById('footerPrepared')?.textContent || '',
+                            preparedByDept: document.getElementById('footerDept')?.textContent || '',
+                            reviewedBy: document.getElementById('footerReviewer')?.textContent || '',
+                            reviewedByPos: document.getElementById('footerReviewerPos')?.textContent || '',
+                            recommendedBy: document.getElementById('footerRecommender')?.textContent || '',
+                            recommendedByPos: document.getElementById('footerRecommenderPos')?.textContent || '',
+                            approvedBy: document.getElementById('footerApprover')?.textContent || '',
+                            approvedByPos: document.getElementById('footerApproverPos')?.textContent || ''
+                        },
+                        signatureStates: {
+                            sigCommitting: document.getElementById('sigCommittingBox')?.getAttribute('data-sig-value') || '',
+                            sig1Reviewer: document.getElementById('sig1ReviewerBox')?.getAttribute('data-sig-value') || '',
+                            sig1PMT: document.getElementById('sig1PMTBox')?.getAttribute('data-sig-value') || '',
+                            sig1Approver: document.getElementById('sig1ApproverBox')?.getAttribute('data-sig-value') || '',
+                            footerPrepared: document.getElementById('footerPreparedBox')?.getAttribute('data-sig-value') || '',
+                            footerReviewer: document.getElementById('footerReviewerBox')?.getAttribute('data-sig-value') || '',
+                            footerRecommender: document.getElementById('footerRecommenderBox')?.getAttribute('data-sig-value') || '',
+                            footerApprover: document.getElementById('footerApproverBox')?.getAttribute('data-sig-value') || ''
+                        },
+                        editLogs: [...existingLogs, newLog],
+                        updatedAt: serverTimestamp(),
+                        updatedBy: currentUser ? currentUser.email : 'anonymous'
+                    };
+
+                    // Create version snapshot for restore feature
+                    const versionSnapshot = {
+                        versionId: 'v' + Date.now(),
+                        timestamp: new Date().toISOString(),
+                        user: currentUser ? currentUser.email : 'anonymous',
+                        action: 'Form saved',
+                        snapshot: {
+                            department: saveData.department,
+                            year: saveData.year,
+                            periodStart: saveData.periodStart,
+                            periodEnd: saveData.periodEnd,
+                            items: items,
+                            signatoriesPartI: saveData.signatoriesPartI,
+                            signatories: saveData.signatories
+                        }
+                    };
+
+                    // Add new version and keep only last 5 versions
+                    const updatedVersions = [...existingVersions, versionSnapshot].slice(-5);
+                    saveData.versions = updatedVersions;
+
+                    // Save comments to Firestore (filter out resolved comments)
+                    const activeComments = {};
+                    for (const [key, value] of Object.entries(window.opcrComments || {})) {
+                        if (!value.resolved) {
+                            activeComments[key] = value;
+                        }
+                    }
+                    saveData.opcrComments = activeComments;
+
+                    console.log('💾 Saving OPCR data:', saveData);
+                    console.log('📊 Items count:', items.length);
+                    console.log('📦 Version snapshots:', updatedVersions.length);
+                    console.log('💬 Comments:', Object.keys(activeComments).length);
+
+                    await updateDoc(docRef, saveData);
+
+                    alert('OPCR saved successfully!');
+
+                    // Notify parent window to refresh (wrapped in try-catch for cross-origin safety)
+                    try {
+                        if (window.opener && window.opener.refreshOpcrList) {
+                            window.opener.refreshOpcrList();
+                        }
+                    } catch (crossOriginErr) {
+                        // Cross-origin access blocked - this is expected in some environments
+                        console.log('Could not notify parent window (cross-origin):', crossOriginErr.message);
+                    }
+                } catch (err) {
+                    console.error('Error saving OPCR:', err);
+                    alert('Failed to save OPCR: ' + err.message);
+                } finally {
+                    // Always hide loading state
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.classList.remove('saving');
+                        saveBtn.querySelector('.btn-text').textContent = 'Save';
+                    }
+                    if (savingOverlay) {
+                        savingOverlay.classList.remove('visible');
+                    }
+                }
+            };
+
+            // ==========================================
+            // RIGHT-CLICK COMMENT FEATURE (Enhanced)
+            // ==========================================
+
+            // Store comments by element ID - now stores objects with text, author, timestamp
+            window.opcrComments = {};
+
+            // Currently focused element for comment
+            let currentCommentTarget = null;
+            let currentViewingCommentId = null;
+
+            // Format relative time
+            function formatRelativeTime(dateString) {
+                const date = new Date(dateString);
+                const now = new Date();
+                const diffMs = now - date;
+                const diffMins = Math.floor(diffMs / 60000);
+                const diffHours = Math.floor(diffMs / 3600000);
+                const diffDays = Math.floor(diffMs / 86400000);
+
+                if (diffMins < 1) return 'Just now';
+                if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? 's' : ''} ago`;
+                if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+                if (diffDays < 7) return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+
+                return date.toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+            }
+
+            // Get user initials from email
+            function getInitials(email) {
+                if (!email) return '?';
+                const parts = email.split('@')[0].split(/[.\-_]/);
+                if (parts.length >= 2) {
+                    return (parts[0][0] + parts[1][0]).toUpperCase();
+                }
+                return email.substring(0, 2).toUpperCase();
+            }
+
+            // Create context menu element
+            function createContextMenu() {
+                const menu = document.createElement('div');
+                menu.id = 'opcrContextMenu';
+                menu.className = 'opcr-context-menu no-print';
+                menu.innerHTML = `
+                    <div class="opcr-context-menu-item new-comment" onclick="openCommentModal()">
+                        <i class="fa-solid fa-comment-medical"></i>
+                        <span>New Comment</span>
+                    </div>
+                    <div class="opcr-context-menu-item delete-comment" onclick="deleteComment()" style="display: none;">
+                        <i class="fa-solid fa-trash"></i>
+                        <span>Delete Comment</span>
+                    </div>
+                `;
+                document.body.appendChild(menu);
+                return menu;
+            }
+
+            // Create comment modal element (for adding new comments)
+            function createCommentModal() {
+                const modal = document.createElement('div');
+                modal.id = 'opcrCommentModal';
+                modal.className = 'comment-modal no-print';
+                modal.innerHTML = `
+                    <div class="comment-modal-content">
+                        <div class="comment-modal-header">
+                            <h3><i class="fa-solid fa-comment-medical"></i> New Comment</h3>
+                            <button class="comment-modal-close" onclick="closeCommentModal()">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                        <textarea id="opcrCommentText" placeholder="Enter your comment here..."></textarea>
+                        <div class="comment-modal-actions">
+                            <button class="comment-modal-btn cancel" onclick="closeCommentModal()">Cancel</button>
+                            <button class="comment-modal-btn save" onclick="saveComment()">Post Comment</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+                return modal;
+            }
+
+            // Create comment detail panel (shows when clicking comment icon)
+            function createCommentDetailPanel() {
+                const panel = document.createElement('div');
+                panel.id = 'opcrCommentDetailPanel';
+                panel.className = 'comment-detail-panel no-print';
+                panel.innerHTML = `
+                    <div class="comment-detail-header">
+                        <h4><i class="fa-solid fa-comment"></i> Comment</h4>
+                        <button class="comment-detail-close" onclick="closeCommentDetailPanel()">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="comment-detail-body">
+                        <div class="comment-detail-meta">
+                            <div class="comment-author-avatar" id="commentAuthorAvatar">JD</div>
+                            <div class="comment-author-info">
+                                <div class="comment-author-name" id="commentAuthorName">Loading...</div>
+                                <div class="comment-timestamp" id="commentTimestamp">Loading...</div>
+                            </div>
+                        </div>
+                        <div class="comment-detail-text" id="commentDetailText">Loading...</div>
+                        <div class="comment-detail-actions">
+                            <button class="comment-resolve-btn" onclick="resolveComment()">
+                                <i class="fa-solid fa-check"></i>
+                                Resolve Comment
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(panel);
+                return panel;
+            }
+
+            // Initialize context menu, modal, and detail panel
+            const contextMenu = createContextMenu();
+            const commentModal = createCommentModal();
+            const commentDetailPanel = createCommentDetailPanel();
+
+            // Generate stable ID for elements based on position
+            function getElementCommentId(element) {
+                // If already has a comment ID, return it
+                if (element.dataset.commentId) {
+                    return element.dataset.commentId;
+                }
+
+                // Generate a stable ID based on element position and type
+                let id = '';
+
+                // Find the row and its index
+                const row = element.closest('tr');
+                if (row) {
+                    const tbody = document.getElementById('opcrTbody');
+                    const allRows = tbody ? Array.from(tbody.querySelectorAll('tr')) : [];
+                    const rowIndex = allRows.indexOf(row);
+
+                    // Determine field type
+                    let fieldType = 'unknown';
+
+                    if (element.classList.contains('quarter-box')) {
+                        // Quarter boxes (Q1, Q2, Q3, Q4)
+                        if (element.classList.contains('acc-q1')) fieldType = 'q1';
+                        else if (element.classList.contains('acc-q2')) fieldType = 'q2';
+                        else if (element.classList.contains('acc-q3')) fieldType = 'q3';
+                        else if (element.classList.contains('acc-q4')) fieldType = 'q4';
+                    } else if (element.tagName === 'TEXTAREA') {
+                        // Find which column this textarea is in
+                        const td = element.closest('td');
+                        const tds = row.querySelectorAll('td');
+                        const tdIndex = Array.from(tds).indexOf(td);
+                        const fieldNames = ['indicator', 'budget', 'targets', 'responsible'];
+                        fieldType = fieldNames[tdIndex] || `col${tdIndex}`;
+                    } else if (element.tagName === 'INPUT') {
+                        // Section/subsection title inputs
+                        if (row.classList.contains('opcr-section')) fieldType = 'section_title';
+                        else if (row.classList.contains('opcr-subsection1')) fieldType = 'subsection1_title';
+                        else if (row.classList.contains('opcr-subsection2')) fieldType = 'subsection2_title';
+                        else fieldType = 'input';
+                    } else if (element.classList.contains('rating-q')) {
+                        fieldType = 'rating_q';
+                    } else if (element.classList.contains('rating-e')) {
+                        fieldType = 'rating_e';
+                    } else if (element.classList.contains('rating-t')) {
+                        fieldType = 'rating_t';
+                    } else if (element.classList.contains('rating-ave')) {
+                        fieldType = 'rating_ave';
+                    }
+
+                    id = `row_${rowIndex}_${fieldType}`;
+                } else {
+                    // For elements outside rows (like department input)
+                    if (element.id) {
+                        id = `field_${element.id}`;
+                    } else {
+                        // Fallback to random ID
+                        id = 'comment_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    }
+                }
+
+                element.dataset.commentId = id;
+                return id;
+            }
+
+            // Hide context menu
+            function hideContextMenu() {
+                contextMenu.classList.remove('visible');
+            }
+
+            // Show context menu
+            function showContextMenu(x, y, element) {
+                const commentId = getElementCommentId(element);
+                const hasComment = window.opcrComments[commentId];
+
+                // Show "New Comment" always, show "Delete Comment" only if comment exists
+                contextMenu.querySelector('.new-comment').style.display = 'flex';
+                contextMenu.querySelector('.delete-comment').style.display = hasComment ? 'flex' : 'none';
+
+                // Position the menu
+                contextMenu.style.left = x + 'px';
+                contextMenu.style.top = y + 'px';
+                contextMenu.classList.add('visible');
+
+                // Adjust position if menu goes off screen
+                const menuRect = contextMenu.getBoundingClientRect();
+                if (menuRect.right > window.innerWidth) {
+                    contextMenu.style.left = (window.innerWidth - menuRect.width - 10) + 'px';
+                }
+                if (menuRect.bottom > window.innerHeight) {
+                    contextMenu.style.top = (window.innerHeight - menuRect.height - 10) + 'px';
+                }
+            }
+
+            // Open comment modal for new comment
+            window.openCommentModal = function () {
+                hideContextMenu();
+                closeCommentDetailPanel();
+
+                if (!currentCommentTarget) return;
+
+                document.getElementById('opcrCommentText').value = '';
+                commentModal.classList.add('visible');
+                document.getElementById('opcrCommentText').focus();
+            };
+
+            // Close comment modal
+            window.closeCommentModal = function () {
+                commentModal.classList.remove('visible');
+                document.getElementById('opcrCommentText').value = '';
+            };
+
+            // Save new comment
+            window.saveComment = function () {
+                if (!currentCommentTarget) return;
+
+                const commentId = getElementCommentId(currentCommentTarget);
+                const commentText = document.getElementById('opcrCommentText').value.trim();
+
+                if (commentText) {
+                    // Create comment object with metadata
+                    const commentData = {
+                        text: commentText,
+                        author: currentUser ? currentUser.email : 'Anonymous',
+                        createdAt: new Date().toISOString(),
+                        resolved: false
+                    };
+
+                    window.opcrComments[commentId] = commentData;
+                    addCommentIcon(currentCommentTarget, commentData);
+                }
+
+                closeCommentModal();
+            };
+
+            // Delete comment
+            window.deleteComment = function () {
+                hideContextMenu();
+                closeCommentDetailPanel();
+
+                if (!currentCommentTarget) return;
+
+                const commentId = getElementCommentId(currentCommentTarget);
+                delete window.opcrComments[commentId];
+                removeCommentIcon(currentCommentTarget);
+            };
+
+            // Resolve comment (mark as resolved and remove)
+            window.resolveComment = function () {
+                if (!currentViewingCommentId) return;
+
+                const element = document.querySelector(`[data-comment-id="${currentViewingCommentId}"]`);
+                if (element) {
+                    delete window.opcrComments[currentViewingCommentId];
+                    removeCommentIcon(element);
+                }
+
+                closeCommentDetailPanel();
+            };
+
+            // Show comment detail panel
+            window.showCommentDetailPanel = function (commentId, iconElement) {
+                const commentData = window.opcrComments[commentId];
+                if (!commentData) return;
+
+                currentViewingCommentId = commentId;
+
+                // Populate panel with comment data
+                document.getElementById('commentAuthorAvatar').textContent = getInitials(commentData.author);
+                document.getElementById('commentAuthorName').textContent = commentData.author;
+                document.getElementById('commentTimestamp').textContent = formatRelativeTime(commentData.createdAt);
+                document.getElementById('commentDetailText').textContent = commentData.text;
+
+                // Position panel near the icon
+                const iconRect = iconElement.getBoundingClientRect();
+                let left = iconRect.right + 10;
+                let top = iconRect.top;
+
+                // If panel would go off right edge, position to the left of icon
+                if (left + 320 > window.innerWidth) {
+                    left = iconRect.left - 330;
+                }
+                if (left < 10) left = 10;
+
+                // If panel would go off bottom, adjust top
+                if (top + 300 > window.innerHeight) {
+                    top = window.innerHeight - 310;
+                }
+                if (top < 10) top = 10;
+
+                commentDetailPanel.style.left = left + 'px';
+                commentDetailPanel.style.top = top + 'px';
+                commentDetailPanel.classList.add('visible');
+            };
+
+            // Close comment detail panel
+            window.closeCommentDetailPanel = function () {
+                commentDetailPanel.classList.remove('visible');
+                currentViewingCommentId = null;
+            };
+
+            // Add comment icon to element
+            function addCommentIcon(element, commentData) {
+                // Remove existing icon if any
+                removeCommentIcon(element);
+
+                // Determine where to append the icon
+                // For quarter boxes, append to the quarter box itself
+                // For other elements, append to the parent cell
+                const isQuarterBox = element.classList.contains('quarter-box');
+                const parentContainer = isQuarterBox ? element : element.closest('td');
+                if (!parentContainer) return;
+
+                const commentId = element.dataset.commentId;
+                const wrapper = document.createElement('div');
+                wrapper.className = 'comment-icon-wrapper no-print';
+                wrapper.dataset.forElement = commentId;
+                wrapper.innerHTML = `
+                    <div class="comment-icon" onclick="event.stopPropagation(); showCommentDetailPanel('${commentId}', this)" title="View comment">
+                        <i class="fa-solid fa-comment"></i>
+                    </div>
+                `;
+
+                parentContainer.appendChild(wrapper);
+            }
+
+            // Remove comment icon from element
+            function removeCommentIcon(element) {
+                // For quarter boxes, look within the element itself
+                // For other elements, look in the parent cell
+                const isQuarterBox = element.classList.contains('quarter-box');
+                const parentContainer = isQuarterBox ? element : element.closest('td');
+                if (!parentContainer) return;
+
+                const existingWrapper = parentContainer.querySelector(`.comment-icon-wrapper[data-for-element="${element.dataset.commentId}"]`);
+                if (existingWrapper) {
+                    existingWrapper.remove();
+                }
+            }
+
+            // Right-click event handler
+            document.addEventListener('contextmenu', function (e) {
+                // Check if right-clicked on a textarea or input within OPCR table
+                const target = e.target;
+                const isOpcrInput = (
+                    (target.tagName === 'TEXTAREA' || target.tagName === 'INPUT') &&
+                    (target.closest('#opcrTable') || target.closest('.opcr-section') || target.closest('.opcr-subsection1') || target.closest('.opcr-subsection2') || target.closest('.opcr-data-row') || target.id === 'opcrDepartment')
+                );
+
+                // Also allow for contenteditable elements
+                const isContentEditable = target.hasAttribute('contenteditable') && target.getAttribute('contenteditable') === 'true';
+
+                // Allow for quarter boxes (Q1, Q2, Q3, Q4)
+                const quarterBox = target.closest('.quarter-box');
+                const isQuarterBox = quarterBox && quarterBox.closest('#opcrTable');
+
+                if (isOpcrInput || isContentEditable || isQuarterBox) {
+                    e.preventDefault();
+                    // Use the quarter box as target if clicked on quarter box, otherwise use the original target
+                    const commentTarget = isQuarterBox ? quarterBox : target;
+                    currentCommentTarget = commentTarget;
+                    closeCommentDetailPanel();
+                    showContextMenu(e.clientX, e.clientY, commentTarget);
+                } else {
+                    hideContextMenu();
+                }
+            });
+
+            // Hide context menu and detail panel on click elsewhere
+            document.addEventListener('click', function (e) {
+                if (!contextMenu.contains(e.target)) {
+                    hideContextMenu();
+                }
+                if (!commentDetailPanel.contains(e.target) && !e.target.closest('.comment-icon')) {
+                    closeCommentDetailPanel();
+                }
+            });
+
+            // Hide context menu on scroll
+            document.addEventListener('scroll', function () {
+                hideContextMenu();
+                closeCommentDetailPanel();
+            }, true);
+
+            // Close modal/panel on escape key
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    hideContextMenu();
+                    closeCommentModal();
+                    closeCommentDetailPanel();
+                }
+            });
+
+            // Close modal on backdrop click
+            commentModal.addEventListener('click', function (e) {
+                if (e.target === commentModal) {
+                    closeCommentModal();
+                }
+            });
+
+            // Modify save function to include comments
+            const originalSaveOpcrData = window.saveOpcrData;
+            window.saveOpcrData = async function () {
+                // Store comments in localStorage as backup
+                try {
+                    localStorage.setItem('opcr_comments_' + opcrId, JSON.stringify(window.opcrComments));
+                } catch (e) {
+                    console.warn('Could not save comments to localStorage:', e);
+                }
+
+                // Call original save function
+                await originalSaveOpcrData();
+            };
+
+            // Load comments from localStorage on page load
+            if (opcrId) {
+                try {
+                    const savedComments = localStorage.getItem('opcr_comments_' + opcrId);
+                    if (savedComments) {
+                        const parsed = JSON.parse(savedComments);
+                        // Migrate old format (string) to new format (object)
+                        Object.keys(parsed).forEach(key => {
+                            if (typeof parsed[key] === 'string') {
+                                parsed[key] = {
+                                    text: parsed[key],
+                                    author: 'Unknown',
+                                    createdAt: new Date().toISOString(),
+                                    resolved: false
+                                };
+                            }
+                        });
+                        window.opcrComments = parsed;
+                        console.log('Loaded comments from localStorage:', window.opcrComments);
+                    }
+                } catch (e) {
+                    console.warn('Could not load comments from localStorage:', e);
+                }
+            }
+
+            // After DOM loads, restore comment icons
+            document.addEventListener('DOMContentLoaded', function () {
+                setTimeout(function () {
+                    // Restore comment icons for saved comments
+                    Object.keys(window.opcrComments).forEach(commentId => {
+                        const element = document.querySelector(`[data-comment-id="${commentId}"]`);
+                        if (element && window.opcrComments[commentId]) {
+                            addCommentIcon(element, window.opcrComments[commentId]);
+                        }
+                    });
+                }, 1000); // Wait for OPCR data to load
+            });
+        </script>
+
+        <script>
+        // --- SIGNATURE WORKFLOW FOR OPCR ---
+        let activeSignatureBoxId = null;
+        let activeSignatoryNameId = null;
+        let uploadedSignatureBase64 = null;
+        let currentTab = 'cursive';
+        let canvas = null;
+        let ctx = null;
+        let drawing = false;
+
+        function initCanvas() {
+            canvas = document.getElementById('signatureCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            ctx.strokeStyle = '#1e3a8a'; // Dark blue ink
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
+            canvas.addEventListener('touchmove', drawTouch, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            drawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.closePath();
+        }
+
+        function startDrawingTouch(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                drawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                const y = e.touches[0].clientY - rect.top;
+                ctx.moveTo(x, y);
+            }
+        }
+
+        function drawTouch(e) {
+            e.preventDefault();
+            if (drawing && e.touches.length === 1) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                const y = e.touches[0].clientY - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+        }
+
+        function clearCanvas() {
+            if (!canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function isCanvasBlank(c) {
+            const blank = document.createElement('canvas');
+            blank.width = c.width;
+            blank.height = c.height;
+            return c.toDataURL() === blank.toDataURL();
+        }
+
+        window.openSignatureModal = function(boxId, nameId) {
+            activeSignatureBoxId = boxId;
+            activeSignatoryNameId = nameId;
+            uploadedSignatureBase64 = null;
+
+            clearCanvas();
+            document.getElementById('uploadPreviewContainer').classList.add('hidden');
+            document.getElementById('signatureFileInput').value = '';
+
+            const nameSource = document.getElementById(nameId);
+            let name = nameSource ? (nameSource.innerText || nameSource.textContent).trim() : 'Signatory';
+            if (name === '...' || !name) {
+                name = 'Signed';
+            }
+            document.getElementById('cursivePreviewText').textContent = name;
+
+            switchSignatureTab('cursive');
+
+            const modal = document.getElementById('signatureModal');
+            modal.classList.remove('hidden');
+
+            if (!canvas) {
+                initCanvas();
+            }
+        };
+
+        window.closeSignatureModal = function() {
+            const modal = document.getElementById('signatureModal');
+            modal.classList.add('hidden');
+        };
+        window.switchSignatureTab = function(tab) {
+            currentTab = tab;
+
+            ['tabCursive', 'tabDraw', 'tabUpload'].forEach(tid => {
+                const btn = document.getElementById(tid);
+                if (btn) {
+                    if (tid === 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1)) {
+                        btn.classList.add('border-blue-600', 'text-blue-600');
+                        btn.classList.remove('border-transparent');
+                    } else {
+                        btn.classList.remove('border-blue-600', 'text-blue-600');
+                        btn.classList.add('border-transparent');
+                    }
+                }
+            });
+
+            ['contentCursive', 'contentDraw', 'contentUpload'].forEach(cid => {
+                const div = document.getElementById(cid);
+                if (div) {
+                    if (cid === 'content' + tab.charAt(0).toUpperCase() + tab.slice(1)) {
+                        div.classList.remove('hidden');
+                    } else {
+                        div.classList.add('hidden');
+                    }
+                }
+            });
+        };
+
+        window.handleSignatureFileUpload = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 150 * 1024) {
+                alert('Warning: Image size is over 150KB. Smaller images load faster.');
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                uploadedSignatureBase64 = evt.target.result;
+                const container = document.getElementById('uploadPreviewContainer');
+                const img = document.getElementById('uploadPreviewImage');
+                img.src = uploadedSignatureBase64;
+                container.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.clearCurrentSignature = function() {
+            setSignatureValue(activeSignatureBoxId, null, activeSignatoryNameId);
+            closeSignatureModal();
+        };
+
+        window.applySignature = function() {
+            const box = document.getElementById(activeSignatureBoxId);
+            if (!box) return;
+
+            let signatureData = '';
+            if (currentTab === 'cursive') {
+                signatureData = 'cursive';
+            } else if (currentTab === 'draw') {
+                if (isCanvasBlank(canvas)) {
+                    alert('Please draw a signature first.');
+                    return;
+                }
+                signatureData = canvas.toDataURL('image/png');
+            } else if (currentTab === 'upload') {
+                if (!uploadedSignatureBase64) {
+                    alert('Please select an image file first.');
+                    return;
+                }
+                signatureData = uploadedSignatureBase64;
+            }
+
+            setSignatureValue(activeSignatureBoxId, signatureData, activeSignatoryNameId);
+            closeSignatureModal();
+        };
+
+        function setSignatureValue(boxId, val, nameId) {
+            const box = document.getElementById(boxId);
+            if (!box) return;
+
+            if (val === 'cursive') {
+                const nameSource = document.getElementById(nameId);
+                let name = nameSource ? (nameSource.innerText || nameSource.textContent).trim() : 'Signatory';
+                if (name === '...' || !name) {
+                    name = 'Signed';
+                }
+                box.setAttribute('data-signed', 'true');
+                box.setAttribute('data-sig-value', 'cursive');
+                box.innerHTML = `
+                    <div class="flex flex-col items-center justify-center leading-none">
+                        <span class="text-blue-800 text-[11px] font-bold tracking-wide select-none" style="font-family: 'Brush Script MT', 'Courier New', cursive, sans-serif; transform: rotate(-2deg); margin-bottom: 2px;">
+                            ${name}
+                        </span>
+                        <span class="text-[6.5px] text-green-600 font-bold flex items-center justify-center gap-0.5 no-print">
+                            <i class="fa-solid fa-circle-check text-[7px]"></i> Digitally Signed
+                        </span>
+                    </div>
+                `;
+            } else if (val && val.startsWith('data:image/')) {
+                box.setAttribute('data-signed', 'true');
+                box.setAttribute('data-sig-value', val);
+                box.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-full h-full relative p-0.5">
+                        <img src="${val}" class="max-h-8 max-w-full object-contain pointer-events-none" style="filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));">
+                        <span class="text-[6.5px] text-green-600 font-bold flex items-center justify-center gap-0.5 mt-0.5 no-print">
+                            <i class="fa-solid fa-circle-check text-[7px]"></i> Digitally Signed
+                        </span>
+                    </div>
+                `;
+            } else {
+                box.setAttribute('data-signed', 'false');
+                box.removeAttribute('data-sig-value');
+                box.innerHTML = `<span class="text-blue-400/80 italic font-medium text-[7.5px] tracking-wide signature-status">Signature Pending</span>`;
+            }
+
+            // Auto-sync signatures with same name
+            syncMatchingSignatures(boxId, val, nameId);
+        }
+
+        function syncMatchingSignatures(sourceBoxId, val, sourceNameId) {
+            const sourceNameSource = document.getElementById(sourceNameId);
+            if (!sourceNameSource) return;
+            const sourceName = (sourceNameSource.innerText || sourceNameSource.textContent).trim().toLowerCase();
+            if (!sourceName || sourceName === '...' || sourceName === 'name of employee' || sourceName === 'ratee') return;
+
+            const sigMappings = [
+                { boxId: 'sigCommittingBox', nameId: 'sigCommitting' },
+                { boxId: 'sig1ReviewerBox', nameId: 'sig1Reviewer' },
+                { boxId: 'sig1PMTBox', nameId: 'sig1PMT' },
+                { boxId: 'sig1ApproverBox', nameId: 'sig1Approver' },
+                { boxId: 'footerPreparedBox', nameId: 'footerPrepared' },
+                { boxId: 'footerReviewerBox', nameId: 'footerReviewer' },
+                { boxId: 'footerRecommenderBox', nameId: 'footerRecommender' },
+                { boxId: 'footerApproverBox', nameId: 'footerApprover' }
+            ];
+
+            sigMappings.forEach(mapping => {
+                if (mapping.boxId === sourceBoxId) return;
+
+                const targetNameSource = document.getElementById(mapping.nameId);
+                if (!targetNameSource) return;
+                const targetName = (targetNameSource.innerText || targetNameSource.textContent).trim().toLowerCase();
+
+                if (targetName === sourceName) {
+                    const targetBox = document.getElementById(mapping.boxId);
+                    if (targetBox && targetBox.getAttribute('data-sig-value') !== (val || '')) {
+                        setSignatureValue(mapping.boxId, val, mapping.nameId);
+                    }
+                }
+            });
+        }
+
+        function refreshCursiveSignatures() {
+            const pairs = [
+                { boxId: 'sigCommittingBox', nameId: 'sigCommitting' },
+                { boxId: 'sig1ReviewerBox', nameId: 'sig1Reviewer' },
+                { boxId: 'sig1PMTBox', nameId: 'sig1PMT' },
+                { boxId: 'sig1ApproverBox', nameId: 'sig1Approver' },
+                { boxId: 'footerPreparedBox', nameId: 'footerPrepared' },
+                { boxId: 'footerReviewerBox', nameId: 'footerReviewer' },
+                { boxId: 'footerRecommenderBox', nameId: 'footerRecommender' },
+                { boxId: 'footerApproverBox', nameId: 'footerApprover' }
+            ];
+            pairs.forEach(p => {
+                const box = document.getElementById(p.boxId);
+                if (box && box.getAttribute('data-signed') === 'true' && box.getAttribute('data-sig-value') === 'cursive') {
+                    const nameSource = document.getElementById(p.nameId);
+                    let name = nameSource ? (nameSource.innerText || nameSource.textContent).trim() : 'Signatory';
+                    if (name === '...' || !name) {
+                        name = 'Signed';
+                    }
+                    const spanEl = box.querySelector('span');
+                    if (spanEl) spanEl.textContent = name;
+                }
+            });
+        }
+
+        // Attach listeners for contenteditables
+        document.addEventListener('DOMContentLoaded', () => {
+            [
+                document.getElementById('sigCommitting'),
+                document.getElementById('sig1Reviewer'),
+                document.getElementById('sig1PMT'),
+                document.getElementById('sig1Approver'),
+                document.getElementById('footerPrepared'),
+                document.getElementById('footerReviewer'),
+                document.getElementById('footerRecommender'),
+                document.getElementById('footerApprover')
+            ].forEach(el => {
+                if (el) {
+                    el.addEventListener('keyup', refreshCursiveSignatures);
+                    el.addEventListener('blur', refreshCursiveSignatures);
+                }
+            });
+        });
+        </script>
+
+        <!-- Signature Modal HTML -->
+        <div id="signatureModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center hidden no-print">
+            <div class="bg-white rounded-xl shadow-2xl p-6 w-[400px] max-w-[95vw] border border-slate-200 text-left">
+                <div class="flex justify-between items-center mb-4 border-b pb-2">
+                    <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-nib text-blue-600"></i> Configure Signature
+                    </h3>
+                    <button onclick="closeSignatureModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times text-lg"></i>
+                    </button>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="flex border-b border-slate-200 mb-4 text-xs font-semibold text-slate-600">
+                    <button id="tabCursive" onclick="switchSignatureTab('cursive')" class="flex-1 py-2 text-center border-b-2 border-blue-600 text-blue-600">
+                        Cursive Text
+                    </button>
+                    <button id="tabDraw" onclick="switchSignatureTab('draw')" class="flex-1 py-2 text-center border-b-2 border-transparent hover:text-slate-800">
+                        Draw Pad
+                    </button>
+                    <button id="tabUpload" onclick="switchSignatureTab('upload')" class="flex-1 py-2 text-center border-b-2 border-transparent hover:text-slate-800">
+                        Upload File
+                    </button>
+                </div>
+                
+                <!-- Tab Content: Cursive -->
+                <div id="contentCursive" class="tab-content py-2">
+                    <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Preview</label>
+                    <div class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex items-center justify-center h-20 mb-4">
+                        <span id="cursivePreviewText" class="text-blue-800 text-[20px] font-bold tracking-wide select-none" style="font-family: 'Brush Script MT', 'Courier New', cursive, sans-serif; transform: rotate(-1deg);">
+                            Signature Preview
+                        </span>
+                    </div>
+                    <p class="text-[10px] text-slate-400">This uses the current name of the signatory and applies a premium cursive signature script.</p>
+                </div>
+                
+                <!-- Tab Content: Draw -->
+                <div id="contentDraw" class="tab-content py-2 hidden">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-[10px] text-slate-500 font-bold uppercase">Draw Signature Below</label>
+                        <button onclick="clearCanvas()" class="text-[9px] text-red-500 hover:text-red-700 font-bold flex items-center gap-1">
+                            <i class="fa-solid fa-eraser"></i> Clear Pad
+                        </button>
+                    </div>
+                    <div class="border border-slate-200 rounded-lg bg-slate-50 overflow-hidden mb-4">
+                        <canvas id="signatureCanvas" width="350" height="120" class="cursor-crosshair w-full block bg-white"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Tab Content: Upload -->
+                <div id="contentUpload" class="tab-content py-2 hidden">
+                    <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Upload Image</label>
+                    <input type="file" id="signatureFileInput" accept="image/*" class="hidden" onchange="handleSignatureFileUpload(event)">
+                    <div onclick="document.getElementById('signatureFileInput').click()" class="border border-dashed border-slate-300 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 flex flex-col items-center justify-center h-24 mb-4 cursor-pointer transition-colors group">
+                        <i class="fa-solid fa-cloud-arrow-up text-slate-400 group-hover:text-blue-500 text-2xl mb-1 transition-colors"></i>
+                        <span class="text-[10px] text-slate-500 font-medium">Click to browse PNG or JPG</span>
+                        <span class="text-[8px] text-slate-400 mt-0.5">(Max 100KB recommended, transparent background works best)</span>
+                    </div>
+                    <div id="uploadPreviewContainer" class="hidden">
+                        <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Image Preview</label>
+                        <div class="border border-slate-200 rounded-lg p-2 bg-slate-50 flex items-center justify-center h-16 overflow-hidden mb-4">
+                            <img id="uploadPreviewImage" class="max-h-full max-w-full object-contain">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex justify-between items-center gap-2 mt-4 pt-3 border-t border-slate-100">
+                    <button onclick="clearCurrentSignature()" class="px-3 py-1.5 border border-red-200 hover:bg-red-50 text-red-600 rounded text-xs font-semibold flex items-center gap-1 transition-colors">
+                        <i class="fa-solid fa-trash-can"></i> Clear Signature
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="closeSignatureModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold transition-colors">
+                            Cancel
+                        </button>
+                        <button onclick="applySignature()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold shadow-md shadow-blue-500/20 transition-colors">
+                            Apply Signature
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</body>
+
+</html>

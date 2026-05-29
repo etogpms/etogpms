@@ -1,0 +1,12 @@
+﻿Warning: Cannot polyfill `DOMMatrix`, rendering may be broken: "Error: Cannot find module 'canvas'
+Require stack:
+- C:\Users\johnlowel.fradejas\CascadeProjects\construction-dashboard\temp_pdf\node_modules\pdfjs-dist\legacy\build\pdf.js
+- C:\Users\johnlowel.fradejas\CascadeProjects\construction-dashboard\temp_pdf\parse_mwsi.js".
+Warning: Cannot polyfill `Path2D`, rendering may be broken: "Error: Cannot find module 'canvas'
+Require stack:
+- C:\Users\johnlowel.fradejas\CascadeProjects\construction-dashboard\temp_pdf\node_modules\pdfjs-dist\legacy\build\pdf.js
+- C:\Users\johnlowel.fradejas\CascadeProjects\construction-dashboard\temp_pdf\parse_mwsi.js".
+Warning: TT: undefined function: 21
+Warning: TT: invalid function id: 136
+Warning: fetchStandardFontData: failed to fetch file "FoxitSerif.pfb" with "UnknownErrorException: The standard font "baseUrl" parameter must be specified, ensure that the "standardFontDataUrl" API parameter is provided.".
+Done! Output written to mwsi_output.txt

@@ -1,0 +1,77 @@
+﻿Type: object
+Keys: [
+  'AbortException',
+  'FormatError',
+  'InvalidPDFException',
+  'Line',
+  'LineDirection',
+  'LineStore',
+  'PDFParse',
+  'PasswordException',
+  'Point',
+  'Rectangle',
+  'ResponseException',
+  'Shape',
+  'Table',
+  'UnknownErrorException',
+  'VerbosityLevel',
+  'getException'
+]
+fn type: object
+node : C:\Users\johnlowel.
+fradejas\CascadeProjects\c
+onstruction-dashboard\temp
+_pdf\parse_mwsi.js:12
+At line:1 char:1
++ node parse_mwsi.js 2>&1 
+| Out-File -FilePath 
+output.txt -Encoding utf 
+...
++ ~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo        
+      : NotSpecified: (C  
+  :\Users\johnlo...arse   
+ _mwsi.js:12:String) [    
+], RemoteException
+    + FullyQualifiedError 
+   Id : NativeCommandErr  
+  or
+ 
+fn(dataBuffer).then(functi
+on(data) {
+^
+
+TypeError: fn is not a 
+function
+    at Object.<anonymous> 
+(C:\Users\johnlowel.fradej
+as\CascadeProjects\constru
+ction-dashboard\temp_pdf\p
+arse_mwsi.js:12:1)
+    at Module._compile (no
+de:internal/modules/cjs/lo
+ader:1706:14)
+    at Object..js (node:in
+ternal/modules/cjs/loader:
+1839:10)
+    at Module.load (node:i
+nternal/modules/cjs/loader
+:1441:32)
+    at Function._load (nod
+e:internal/modules/cjs/loa
+der:1263:12)
+    at 
+TracingChannel.traceSync (
+node:diagnostics_channel:3
+22:14)
+    at wrapModuleLoad (nod
+e:internal/modules/cjs/loa
+der:237:24)
+    at Function.executeUse
+rEntryPoint [as runMain] (
+node:internal/modules/run_
+main:171:5)
+    at node:internal/main/
+run_main_module:36:49
+
+Node.js v22.20.0

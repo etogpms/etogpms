@@ -1,0 +1,29 @@
+{
+  "projects": [
+  {
+    "id": "0edb8bb7-17d1-471d-8e93-2aff923a1266",
+    "name": "Construction of Intake for Eastbay 200MLD Water Treatment Plant",
+    "implementingAgency": "MWSI",
+    "contractor": "DATEM INC",
+    "contractAmount": 525135217,
+    "ntpDate": "2023-06-06",
+    "originalDuration": 440,
+    "timeExtension": 254,
+    "originalCompletion": "2024-08-18",
+    "revisedCompletion": "2024-08-18",
+    "activities": "Site Clearing\nTesting and Commissioning",
+    "issues": "n/a",
+    "remarks": "project completed",
+    "otherDetails": "n/a",
+    "sCurveDataUrl": "",
+    "accomplishments": [
+      { "date": "2025-06-30", "percent": 97 },
+      { "date": "2025-06-30", "percent": 97.7 },
+      { "date": "2025-07-08", "percent": 100 },
+      { "date": "2025-10-08", "percent": 100, "activities": "Site Clearing\nTesting and Commissioning" },
+      { "date": "2025-10-08", "percent": 100, "activities": "Site Clearing\nTesting and Commissioning" },
+      { "date": "2025-10-08", "percent": 100, "activities": "Site Clearing\nTesting and Commissioning" }
+    ]
+  }
+]
+}

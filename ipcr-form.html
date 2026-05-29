@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>IPCR Form Tracker - MWSS</title>
+    <link rel="icon" href="assets/mwss_logo.png" type="image/png" />
+    <!-- iOS Home Screen Icon -->
+    <link rel="apple-touch-icon" href="assets/mwss_logo.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="assets/mwss_logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/mwss_logo.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="assets/mwss_logo.png" />
+    <!-- Web App Capable (PWA) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 10px;
+            background: #f1f5f9;
+            padding-top: env(safe-area-inset-top, 0px);
+        }
+
+        .container-fit {
+            width: 297mm;
+            /* A4 Landscape width */
+            margin: 20px auto;
+            background: white;
+            padding: 10mm;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 1px solid black;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 4px;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+
+        /* Evidence links inside Remarks cell - no borders */
+        .evidence-links-display,
+        .evidence-links-display * {
+            border: none !important;
+        }
+
+        .bg-blue-header {
+            background-color: #34689d !important;
+            color: white !important;
+        }
+
+        .bg-yellow-sub {
+            background-color: #ffff00 !important;
+            color: black !important;
+        }
+
+        .bg-gray-section {
+            background-color: #f2f2f2 !important;
+            font-weight: bold;
+        }
+
+        .bg-blue-bar {
+            background-color: #9abce0 !important;
+            color: black !important;
+            font-weight: bold;
+            padding: 2px 8px;
+            border-left: 1px solid black;
+            border-right: 1px solid black;
+        }
+
+        /* OPCR-style hierarchy backgrounds */
+        .bg-ipcr-section {
+            background-color: #D1D5DB !important;
+            /* Gray 300 */
+            color: black !important;
+        }
+
+        .bg-ipcr-mfo {
+            background-color: #00838F !important;
+            /* Teal */
+            color: white !important;
+        }
+
+        .bg-ipcr-pi {
+            background-color: #F3F4F6 !important;
+            /* Gray 100 */
+            color: black !important;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-family: inherit;
+            font-size: inherit;
+            padding: 0;
+            margin: 0;
+        }
+
+        textarea {
+            resize: none;
+            overflow: hidden;
+            min-height: 20px;
+        }
+
+        @media print {
+            @page {
+                size: A4 landscape;
+                margin: 5mm;
+            }
+
+            body {
+                background: white;
+                margin: 0;
+                padding: 0;
+            }
+
+            .container-fit {
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                box-shadow: none !important;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .bg-blue-header {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .bg-yellow-sub {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .bg-gray-section {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .bg-blue-bar {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* Hide placeholder text when printing */
+            textarea::placeholder,
+            input::placeholder {
+                color: transparent !important;
+                opacity: 0 !important;
+            }
+
+            textarea:placeholder-shown::placeholder,
+            input:placeholder-shown::placeholder {
+                color: transparent !important;
+                opacity: 0 !important;
+            }
+
+            /* Hide textareas and inputs inside table body when printing, so we can display mirror elements instead */
+            textarea,
+            #ipcrTbody input {
+                display: none !important;
+            }
+
+            #ipcrTbody td {
+                vertical-align: top !important;
+            }
+
+            /* Remove focus/hover outlines */
+            [contenteditable] {
+                outline: none !important;
+                box-shadow: none !important;
+            }
+        }
+
+        .action-bar {
+            background: white;
+            padding: 10px 20px;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            display: flex;
+        }
+
+        .saving-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            flex-direction: column;
+        }
+
+        .saving-overlay.visible {
+            display: flex;
+        }
+
+        /* Signature Field Styles */
+        .signature-box {
+            border: 1px solid #e2e8f0;
+            background-color: #f8fafc;
+            transition: all 0.2s ease-in-out;
+        }
+        .signature-box:hover {
+            border-color: #93c5fd;
+            background-color: #f0f7ff;
+        }
+        @media print {
+            .signature-box {
+                border: none !important;
+                background: transparent !important;
+                box-shadow: none !important;
+                height: 36px !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+            .signature-box[data-signed="false"] .signature-status {
+                display: none !important;
+            }
+            .signature-box[data-signed="true"] .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="savingOverlay" class="saving-overlay">
+        <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-white mb-3"></div>
+        <p class="font-bold">Saving IPCR...</p>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="action-bar flex justify-between items-center no-print">
+        <button onclick="window.close()" class="flex items-center text-gray-700 hover:text-black font-semibold">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Dashboard
+        </button>
+        <div class="flex gap-2">
+            <button id="saveBtn" onclick="saveIpcrData()"
+                class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow-md">
+                <i class="fa-solid fa-save mr-2"></i>Save Final IPCR
+            </button>
+            <button onclick="window.printForm()"
+                class="bg-gray-800 text-white px-4 py-2 rounded font-bold hover:bg-gray-700">
+                <i class="fa-solid fa-print mr-2"></i>Print Form
+            </button>
+        </div>
+    </div>
+
+    <div class="container-fit">
+        <!-- EXACT IMAGE 2 HEADER FORMAT -->
+        <table class="mb-0 border-b-0">
+            <tr>
+                <td style="width: 32%;" class="border-black p-1">
+                    <div class="flex items-center justify-between gap-1">
+                        <img src="assets/mwss_logo.png" class="h-12">
+                        <div class="text-[7.5px] text-center leading-[1.1]">
+                            Republic of the Philippines<br>
+                            PANGASIWAAN NG TUBIG AT ALKANTARILYA SA METRO MANILA<br>
+                            <span class="font-bold">Metropolitan Waterworks and Sewerage System</span><br>
+                            Katipunan Road, Balara, Quezon City
+                        </div>
+                        <img src="assets/Bagong Pilipinas Logo.png" class="h-12">
+                    </div>
+                </td>
+                <td style="width: 38%;" class="border-black text-center p-2">
+                    <div class="font-bold text-[11px] uppercase leading-tight">
+                        INDIVIDUAL PERFORMANCE COMMITMENT AND REVIEW (IPCR)<br>
+                        MFO-BASED PERFORMANCE
+                    </div>
+                </td>
+                <td style="width: 30%;" class="border-black p-2 text-center">
+                    <div class="font-bold text-[10px] whitespace-nowrap">
+                        RATING PERIOD:
+                        <span class="no-print">
+                            <select id="pStart" class="text-[10px] uppercase border-b border-gray-300 bg-transparent">
+                                <option>JANUARY</option>
+                                <option>JULY</option>
+                            </select> -
+                            <select id="pEnd" class="text-[10px] uppercase border-b border-gray-300 bg-transparent">
+                                <option>JUNE</option>
+                                <option selected>DECEMBER</option>
+                            </select>
+                            <input type="number" id="pYear" class="w-10 text-center bg-transparent" value="2024">
+                        </span>
+                        <span class="hidden print:inline" id="periodText">JANUARY - JUNE 2024</span>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <div class="bg-blue-bar text-[9px] border-x border-black">
+            To be signed <span class="uppercase underline">BEFORE</span> the rating period.
+        </div>
+
+        <table class="border-t-0 mb-0">
+            <tr>
+                <td style="width: 50%;" class="p-3 border-black align-top">
+                    <div class="leading-relaxed text-[10px]">
+                        I, <span id="employeeName" contenteditable="true"
+                            class="border-b border-black min-w-[192px] inline-block font-bold text-center uppercase outline-none px-1">NAME
+                            OF EMPLOYEE</span>,
+                        <span id="employeePos" contenteditable="true"
+                            class="border-b border-black min-w-[160px] inline-block font-bold text-center outline-none px-1">POSITION
+                            TITLE</span>, of the
+                        <span id="employeeDept" contenteditable="true"
+                            class="border-b border-black min-w-[192px] inline-block font-bold text-center outline-none px-1">DEPARTMENT</span>,
+                        commit to deliver and agree to be rated on the attainment of the following targets in accordance
+                        with the indicated measures for the period
+                        <span class="font-bold" id="periodDisplay">JANUARY TO JUNE 2024</span>.
+                    </div>
+                    <div class="mt-4 text-center flex flex-col items-center">
+                        <div id="rateeCommitSigBox" data-signed="false" onclick="openSignatureModal('rateeCommitSigBox', 'rateeSigName')" class="w-64 border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-14 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                            <span class="text-blue-400/80 italic font-medium text-[9px] tracking-wide signature-status">Signature Pending</span>
+                        </div>
+                        <div class="w-64 border-b border-black font-bold uppercase py-0.5" id="rateeSigName">...</div>
+                        <div class="text-[9px]">Ratee</div>
+                    </div>
+                </td>
+                <td style="width: 50%;" class="p-3 border-black align-top">
+                    <div class="mb-4 text-[10px]">I hereby certify that the commitments stated herein were
+                        discussed/agreed with the ratee.</div>
+                    <div class="mt-4 text-center flex flex-col items-center">
+                        <div id="raterCommitSigBox" data-signed="false" onclick="openSignatureModal('raterCommitSigBox', 'raterName')" class="w-64 border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-14 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                            <span class="text-blue-400/80 italic font-medium text-[9px] tracking-wide signature-status">Signature Pending</span>
+                        </div>
+                        <div class="w-64 border-b border-black font-bold uppercase outline-none py-0.5"
+                            contenteditable="true" id="raterName">RYAN JAMES V. AYSON</div>
+                        <div class="text-[9px]" contenteditable="true" id="raterPos">Acting Manager, Field Operations
+                            Management Department</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
+
+        <!-- Main Items Table -->
+        <table class="border-t-0">
+            <thead class="bg-blue-header text-center font-bold text-[9px]">
+                <tr>
+                    <th rowspan="2" style="width: 32%;">MFOs AND PERFORMANCE INDICATORS</th>
+                    <th rowspan="2" style="width: 18%;">SUCCESS INDICATOR<br>FY <span class="year-label">2024</span>
+                        TARGETS</th>
+                    <th rowspan="2" style="width: 20%;">ACTUAL ACCOMPLISHMENTS</th>
+                    <th colspan="4" style="width: 15%;">RATING</th>
+                    <th rowspan="2" style="width: 15%;">REMARKS</th>
+                    <th rowspan="2" class="no-print" style="width: 2%;">Act</th>
+                </tr>
+                <tr class="text-[8px]">
+                    <th class="w-[3.75%]">Quality<br>Q¹</th>
+                    <th class="w-[3.75%]">Efficiency<br>E²</th>
+                    <th class="w-[3.75%]">Timeliness<br>T³</th>
+                    <th class="w-[3.75%]">Ave</th>
+                </tr>
+            </thead>
+            <tbody id="ipcrTbody">
+                <!-- DataRows -->
+            </tbody>
+        </table>
+
+        <!-- Average Rating -->
+        <table class="border-t-0 font-bold">
+            <tr class="text-[11px] uppercase">
+                <td style="width: 70%;" class="text-right p-2 border-black">FINAL AVERAGE RATING</td>
+                <td style="width: 15%;" class="text-center bg-blue-50 border-black" id="finalAve">—</td>
+                <td style="width: 15%;" class="border-black"></td>
+            </tr>
+            <tr>
+                <td colspan="9" class="p-1 text-[8px] bg-white border-black">
+                    Legend: 1 - Quality, 2 - Efficiency, 3 - Timeliness<br>
+                    Note: Signature approvals after performance monitoring, assessment, feedback by To be signed after
+                    the Performance Review and Feedback by the PMT
+                </td>
+            </tr>
+        </table>
+
+        <!-- Signature Footer (Assessment Phase) -->
+        <div class="grid grid-cols-4 mt-6 border border-black text-center text-[9px]">
+            <div class="border-r border-black p-3 flex flex-col justify-between">
+                <p class="text-left font-normal mb-1">Prepared by:</p>
+                <div id="preparedSigBox" data-signed="false" onclick="openSignatureModal('preparedSigBox', 'preparedByName')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-14 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[9px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-auto">
+                    <div class="font-bold uppercase pb-1" id="preparedByName">...</div>
+                    <div class="border-t border-black text-[8px] pt-1" id="preparedByPos">Ratee</div>
+                </div>
+            </div>
+            <div class="border-r border-black p-3 flex flex-col justify-between">
+                <p class="text-left font-normal mb-1">Reviewed by:</p>
+                <div id="reviewedSigBox" data-signed="false" onclick="openSignatureModal('reviewedSigBox', 'reviewedByName')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-14 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[9px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-auto">
+                    <div class="font-bold uppercase pb-1 outline-none" contenteditable="true" id="reviewedByName">RYAN JAMES V. AYSON</div>
+                    <div class="border-t border-black text-[8px] pt-1" contenteditable="true" id="reviewedByPos">Manager, FOMD</div>
+                </div>
+            </div>
+            <div class="border-r border-black p-3 flex flex-col justify-between">
+                <p class="text-left font-normal mb-1">Recommended by:</p>
+                <div id="recommendedSigBox" data-signed="false" onclick="openSignatureModal('recommendedSigBox', 'recommenderName')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-14 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[9px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-auto">
+                    <div class="font-bold uppercase pb-1 outline-none" contenteditable="true" id="recommenderName">JOSE D. DORADO, JR.</div>
+                    <div class="border-t border-black text-[8px] pt-1" contenteditable="true" id="recommenderPos">Deputy Administrator</div>
+                </div>
+            </div>
+            <div class="p-3 flex flex-col justify-between">
+                <div>
+                    <p class="text-left font-normal mb-1 leading-tight">The final rating was discussed with the ratee.</p>
+                    <p class="text-left font-normal mb-1">Approved and Rated by:</p>
+                </div>
+                <div id="approvedSigBox" data-signed="false" onclick="openSignatureModal('approvedSigBox', 'approverName')" class="w-full max-w-[200px] mx-auto border border-slate-200 rounded-lg bg-white flex flex-col items-center justify-center h-14 shadow-sm cursor-pointer hover:border-blue-300 hover:bg-slate-50/50 transition-all select-none signature-box my-1">
+                    <span class="text-blue-400/80 italic font-medium text-[9px] tracking-wide signature-status">Signature Pending</span>
+                </div>
+                <div class="mt-auto">
+                    <div class="font-bold uppercase pb-1 outline-none" contenteditable="true" id="approverName">LEONOR C. CLEOFAS, CESO IV</div>
+                    <div class="border-t border-black text-[8px] pt-1" contenteditable="true" id="approverPos">Administrator</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="no-print mt-6 flex gap-2 justify-center pb-10 flex-wrap">
+            <button onclick="addRows('section')"
+                class="px-3 py-1.5 bg-gray-300 hover:bg-gray-400 rounded text-sm font-medium flex items-center gap-2 shadow-sm transition-all border border-gray-400">
+                <i class="fa-solid fa-layer-group text-slate-700"></i> Add Section (Section Title)
+            </button>
+            <button onclick="addRows('subsection1')"
+                class="px-3 py-1.5 bg-[#00838F] text-white hover:bg-[#006570] rounded text-sm font-medium flex items-center gap-2 shadow-sm transition-all">
+                <i class="fa-solid fa-folder"></i> Add Sub Section 1 (MFO)
+            </button>
+            <button onclick="addRows('subsection2')"
+                class="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded text-sm font-medium flex items-center gap-2 shadow-sm transition-all border border-gray-300">
+                <i class="fa-solid fa-file-lines text-slate-600"></i> Add Sub Section 2 (PI)
+            </button>
+            <button onclick="addRows('data')"
+                class="px-3 py-1.5 bg-blue-100 hover:bg-blue-200 rounded text-sm font-medium flex items-center gap-2 shadow-sm transition-all border border-blue-200">
+                <i class="fa-solid fa-plus text-blue-700"></i> Add Data Row (Details/Measures)
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts Area -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyD0VGkytRW3YMqUIgbTrFNtBSDFAtlY-PU",
+            authDomain: "mwss-project-monitoring-system.firebaseapp.com",
+            projectId: "mwss-project-monitoring-system",
+            storageBucket: "mwss-project-monitoring-system.appspot.com",
+            messagingSenderId: "973804039753",
+            appId: "1:973804039753:web:bf26fd271952a7e8669998"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        let docId = new URLSearchParams(window.location.search).get('id');
+        let currentUser = null;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                if (docId) loadData();
+                else initializeDefault();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        // UI Mirroring
+        const eName = document.getElementById('employeeName');
+        const ePos = document.getElementById('employeePos');
+        const pStart = document.getElementById('pStart');
+        const pEnd = document.getElementById('pEnd');
+        const pYear = document.getElementById('pYear');
+
+        [pStart, pEnd, pYear].forEach(el => el.addEventListener('input', updateMirrors));
+        [eName, ePos, document.getElementById('employeeDept')].forEach(el => el.addEventListener('keyup', updateMirrors));
+        [eName, ePos, document.getElementById('employeeDept')].forEach(el => el.addEventListener('blur', updateMirrors));
+
+        function updateMirrors() {
+            const name = eName.innerText.trim() !== 'NAME OF EMPLOYEE' ? eName.innerText : '...';
+            const pos = ePos.innerText.trim() !== 'POSITION TITLE' ? ePos.innerText : '...';
+            document.getElementById('rateeSigName').textContent = name;
+            document.getElementById('preparedByName').textContent = name;
+            document.getElementById('preparedByPos').textContent = pos;
+            document.getElementById('periodDisplay').textContent = `${pStart.value} TO ${pEnd.value} ${pYear.value}`;
+            document.getElementById('periodText').textContent = `${pStart.value} - ${pEnd.value} ${pYear.value}`;
+            document.querySelectorAll('.year-label').forEach(el => el.textContent = pYear.value);
+        }
+
+        [eName, ePos, pStart, pEnd, pYear].forEach(el => el.addEventListener('input', updateMirrors));
+
+        function addRows(type, data = {}) {
+            const tr = document.createElement('tr');
+            tr.dataset.type = type;
+            const rid = 'rid_' + Date.now() + Math.random().toString(36).substr(2, 4);
+            tr.id = rid;
+
+            if (type === 'section') {
+                tr.className = 'bg-ipcr-section uppercase';
+                tr.innerHTML = `<td colspan="8" class="border-black"><input type="text" class="font-bold uppercase bg-transparent" value="${data.title || ''}" placeholder="SECTION TITLE (e.g. A. Major Final Outputs)"></td>
+                                <td class="no-print border-black text-center" style="width: 40px;"><button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 transition-colors"><i class="fa-solid fa-times"></i></button></td>`;
+            } else if (type === 'subsection1' || type === 'pi') {
+                tr.className = 'bg-ipcr-mfo text-white';
+                tr.innerHTML = `<td colspan="8" class="border-black"><input type="text" class="font-bold text-white placeholder-white/70 bg-transparent" value="${data.title || ''}" placeholder="SUB SECTION 1 (e.g. MFO1: Uninterrupted Supply...)"></td>
+                                <td class="no-print border-black text-center" style="width: 40px;"><button onclick="this.closest('tr').remove()" class="text-white hover:text-red-200 transition-colors"><i class="fa-solid fa-times"></i></button></td>`;
+            } else if (type === 'subsection2') {
+                tr.className = 'bg-ipcr-pi';
+                tr.innerHTML = `<td colspan="8" class="border-black"><input type="text" class="bg-transparent w-full outline-none" value="${data.title || ''}" placeholder="SUB SECTION 2 (e.g. Performance Indicator 1: Management...)"></td>
+                                <td class="no-print border-black text-center" style="width: 40px;">
+                                    <div class="flex gap-1 items-center justify-center">
+                                        <button onclick="insertSubSection2Below('${rid}')" class="text-blue-500 hover:text-blue-700 transition-colors" title="Insert SubSection2 below">
+                                            <i class="fa-solid fa-clone"></i>
+                                        </button>
+                                        <button onclick="insertDataRowBelowSubsection('${rid}')" class="text-green-500 hover:text-green-700 transition-colors" title="Insert Data Row below">
+                                            <i class="fa-solid fa-plus font-bold"></i>
+                                        </button>
+                                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 transition-colors" title="Delete">
+                                            <i class="fa-solid fa-times"></i>
+                                        </button>
+                                    </div>
+                                </td>`;
+            } else {
+                tr.className = 'align-top text-[9px] hover:bg-gray-50';
+                // Build evidence links HTML for display under Remarks
+                var evidenceLinks = data.evidenceLinks || [];
+                var evidenceHtml = '';
+                if (evidenceLinks.length > 0) {
+                    evidenceHtml = '<div class="evidence-links-display" style="padding:2px 4px;margin-top:2px;border:none;">';
+                    evidenceHtml += '<div style="font-size:7px;color:#6b7280;font-weight:600;margin-bottom:1px;">Evidence/MOV:</div>';
+                    evidenceLinks.forEach(function(link) {
+                        var qBadge = link.quarter ? '<span style="display:inline-block;background:#dbeafe;color:#1d4ed8;border-radius:2px;padding:0 3px;margin-right:2px;font-size:6px;font-weight:600;">' + link.quarter + '</span>' : '';
+                        evidenceHtml += '<div style="font-size:7px;line-height:1.4;">' + qBadge + '<a href="' + (link.url || '#') + '" target="_blank" style="color:#2563eb;text-decoration:none;" onclick="event.stopPropagation()" title="' + (link.url || '') + '"><i class="fa-solid fa-link" style="margin-right:2px;font-size:6px;"></i>' + (link.label || 'Evidence') + '</a></div>';
+                    });
+                    evidenceHtml += '</div>';
+                }
+                // Store evidence links in data attribute for saving
+                var evidenceJson = JSON.stringify(evidenceLinks).replace(/'/g, '&#39;').replace(/"/g, '&quot;');
+                tr.setAttribute('data-evidence', JSON.stringify(evidenceLinks));
+
+                var hasEvidence = evidenceLinks.length > 0;
+                var remarksPlaceholder = hasEvidence ? '' : 'Remarks';
+
+                tr.innerHTML = `
+                    <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Performance Indicator">${data.mfo || ''}</textarea></td>
+                    <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Success Indicators / Targets">${data.targets || ''}</textarea></td>
+                    <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Actual Accomplishments">${data.accomplishments || ''}</textarea></td>
+                    <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full q w-full bg-transparent" value="${data.ratingQ || ''}" oninput="calcRowAve('${rid}')"></td>
+                    <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full e w-full bg-transparent" value="${data.ratingE || ''}" oninput="calcRowAve('${rid}')"></td>
+                    <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full t w-full bg-transparent" value="${data.ratingT || ''}" oninput="calcRowAve('${rid}')"></td>
+                    <td class="border-black text-center bg-gray-50 font-bold ave align-middle">${data.ratingAve || ''}</td>
+                    <td class="border-black p-0 align-top">
+                        <textarea class="p-1 leading-tight" style="min-height:${hasEvidence ? '20px' : '40px'};" placeholder="${remarksPlaceholder}">${data.remarks || ''}</textarea>
+                        ${evidenceHtml}
+                    </td>
+                    <td class="no-print border-black text-center" style="width: 40px; vertical-align: top; padding-top: 4px;">
+                        <div class="flex flex-col gap-1 items-center">
+                            <button onclick="insertRowBelow('${rid}')" class="text-green-500 hover:text-green-700 transition-colors" title="Insert row below">
+                                <i class="fa-solid fa-plus font-bold"></i>
+                            </button>
+                            <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 transition-colors" title="Delete row">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+            }
+            document.getElementById('ipcrTbody').appendChild(tr);
+            setupPrintMirrors(tr);
+        }
+
+        window.insertSubSection2Below = function (rowId) {
+            const currentRow = document.getElementById(rowId);
+            if (!currentRow) return;
+
+            const tr = document.createElement('tr');
+            tr.dataset.type = 'subsection2';
+            const rid = 'rid_' + Date.now() + Math.random().toString(36).substr(2, 4);
+            tr.id = rid;
+            tr.className = 'bg-ipcr-pi';
+            tr.innerHTML = `<td colspan="8" class="border-black"><input type="text" class="bg-transparent w-full outline-none" placeholder="SUB SECTION 2 (e.g. Performance Indicator 1: Management...)"></td>
+                            <td class="no-print border-black text-center" style="width: 40px;">
+                                <div class="flex gap-1 items-center justify-center">
+                                    <button onclick="insertSubSection2Below('${rid}')" class="text-blue-500 hover:text-blue-700 transition-colors" title="Insert SubSection2 below">
+                                        <i class="fa-solid fa-clone"></i>
+                                    </button>
+                                    <button onclick="insertDataRowBelowSubsection('${rid}')" class="text-green-500 hover:text-green-700 transition-colors" title="Insert Data Row below">
+                                        <i class="fa-solid fa-plus font-bold"></i>
+                                    </button>
+                                    <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 transition-colors" title="Delete">
+                                        <i class="fa-solid fa-times"></i>
+                                    </button>
+                                </div>
+                            </td>`;
+            currentRow.insertAdjacentElement('afterend', tr);
+            setupPrintMirrors(tr);
+        };
+
+        window.insertDataRowBelowSubsection = function (rowId) {
+            const currentRow = document.getElementById(rowId);
+            if (!currentRow) return;
+
+            const tr = document.createElement('tr');
+            tr.dataset.type = 'data';
+            const rid = 'rid_' + Date.now() + Math.random().toString(36).substr(2, 4);
+            tr.id = rid;
+            tr.className = 'align-top text-[9px] hover:bg-gray-50';
+            tr.innerHTML = `
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Performance Indicator"></textarea></td>
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Success Indicators / Targets"></textarea></td>
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Actual Accomplishments"></textarea></td>
+                <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full q w-full bg-transparent" oninput="calcRowAve('${rid}')"></td>
+                <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full e w-full bg-transparent" oninput="calcRowAve('${rid}')"></td>
+                <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full t w-full bg-transparent" oninput="calcRowAve('${rid}')"></td>
+                <td class="border-black text-center bg-gray-50 font-bold ave align-middle"></td>
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Remarks"></textarea></td>
+                <td class="no-print border-black text-center" style="width: 40px; vertical-align: middle;">
+                    <div class="flex flex-col gap-1 items-center">
+                        <button onclick="insertRowBelow('${rid}')" class="text-green-500 hover:text-green-700 transition-colors" title="Insert row below">
+                            <i class="fa-solid fa-plus font-bold"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 transition-colors" title="Delete row">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            currentRow.insertAdjacentElement('afterend', tr);
+            setupPrintMirrors(tr);
+        };
+
+        window.insertRowBelow = function (rowId) {
+            const currentRow = document.getElementById(rowId);
+            if (!currentRow) return;
+
+            const tr = document.createElement('tr');
+            tr.dataset.type = 'data';
+            const rid = 'rid_' + Date.now() + Math.random().toString(36).substr(2, 4);
+            tr.id = rid;
+            tr.className = 'align-top text-[9px] hover:bg-gray-50';
+            tr.innerHTML = `
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Performance Indicator"></textarea></td>
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Success Indicators / Targets"></textarea></td>
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Actual Accomplishments"></textarea></td>
+                <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full q w-full bg-transparent" oninput="calcRowAve('${rid}')"></td>
+                <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full e w-full bg-transparent" oninput="calcRowAve('${rid}')"></td>
+                <td class="border-black p-0"><input type="number" step="0.1" class="text-center h-full t w-full bg-transparent" oninput="calcRowAve('${rid}')"></td>
+                <td class="border-black text-center bg-gray-50 font-bold ave align-middle"></td>
+                <td class="border-black p-0"><textarea class="p-1 min-h-[40px] leading-tight" placeholder="Remarks"></textarea></td>
+                <td class="no-print border-black text-center" style="width: 40px; vertical-align: middle;">
+                    <div class="flex flex-col gap-1 items-center">
+                        <button onclick="insertRowBelow('${rid}')" class="text-green-500 hover:text-green-700 transition-colors" title="Insert row below">
+                            <i class="fa-solid fa-plus font-bold"></i>
+                        </button>
+                        <button onclick="this.closest('tr').remove()" class="text-red-500 hover:text-red-700 transition-colors" title="Delete row">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            currentRow.insertAdjacentElement('afterend', tr);
+            setupPrintMirrors(tr);
+        };
+
+        window.calcRowAve = (id) => {
+            const tr = document.getElementById(id);
+            const q = parseFloat(tr.querySelector('.q').value) || 0;
+            const e = parseFloat(tr.querySelector('.e').value) || 0;
+            const t = parseFloat(tr.querySelector('.t').value) || 0;
+            const count = (q > 0 ? 1 : 0) + (e > 0 ? 1 : 0) + (t > 0 ? 1 : 0);
+            const aveEl = tr.querySelector('.ave');
+            aveEl.textContent = count > 0 ? ((q + e + t) / count).toFixed(2) : '';
+            recalcFinal();
+        };
+
+        function recalcFinal() {
+            const aves = Array.from(document.querySelectorAll('.ave')).map(el => parseFloat(el.textContent)).filter(v => !isNaN(v));
+            const final = aves.length ? (aves.reduce((a, b) => a + b, 0) / aves.length).toFixed(2) : '—';
+            document.getElementById('finalAve').textContent = final;
+        }
+
+        function setupPrintMirrors(parent) {
+            // Mirror textareas
+            parent.querySelectorAll('textarea').forEach(ta => {
+                let mirror = ta.nextElementSibling;
+                if (!mirror || !mirror.classList.contains('print-mirror')) {
+                    mirror = document.createElement('div');
+                    mirror.className = 'print-mirror hidden print:block whitespace-pre-wrap p-1 text-[9px] leading-tight break-words';
+                    ta.insertAdjacentElement('afterend', mirror);
+                }
+                mirror.textContent = ta.value;
+
+                ta.addEventListener('input', () => {
+                    ta.style.height = 'auto';
+                    ta.style.height = ta.scrollHeight + 'px';
+                    mirror.textContent = ta.value;
+                });
+                
+                // Trigger initial size
+                ta.style.height = 'auto';
+                ta.style.height = ta.scrollHeight + 'px';
+            });
+
+            // Mirror inputs inside the table (ratings, section headers, etc.)
+            parent.querySelectorAll('input').forEach(inp => {
+                let mirror = inp.nextElementSibling;
+                if (!mirror || !mirror.classList.contains('print-mirror')) {
+                    mirror = document.createElement('div');
+                    inp.insertAdjacentElement('afterend', mirror);
+                }
+
+                // Differentiate alignment based on input type (ratings = centered, titles/headers = left-aligned)
+                if (inp.type === 'number' || inp.classList.contains('q') || inp.classList.contains('e') || inp.classList.contains('t')) {
+                    mirror.className = 'print-mirror hidden print:block p-1 text-[9px] text-center w-full break-words font-bold';
+                } else {
+                    let extraClasses = '';
+                    if (inp.classList.contains('font-bold')) {
+                        extraClasses = ' font-bold uppercase text-[10px]';
+                    } else {
+                        extraClasses = ' font-semibold text-[9.5px]'; // For subsection2 (Performance Indicators)
+                    }
+                    mirror.className = 'print-mirror hidden print:block p-1 w-full break-words text-left' + extraClasses;
+                }
+
+                mirror.textContent = inp.value;
+
+                inp.addEventListener('input', () => {
+                    mirror.textContent = inp.value;
+                });
+            });
+        }
+
+        window.printForm = function() {
+            // Blur any focused element (inputs, textareas, contenteditables) to commit changes and avoid Safari focus-lock delays
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+            
+            // Allow browser focus/layout state to stabilize before opening print dialog
+            setTimeout(() => {
+                window.print();
+            }, 150);
+        };
+
+        function initializeDefault() {
+            addRows('section', { title: 'A. Major Final Outputs (MFOs)/ Operations' });
+            addRows('subsection1', { title: 'MFO1: Strategic Planning and Management' });
+            addRows('subsection2', { title: 'Performance Indicator 1: Alignment with Agency Goals' });
+            addRows('data');
+            updateMirrors();
+        }
+
+        async function loadData() {
+            try {
+                const doc = await db.collection('ipcr_entries').doc(docId).get();
+                if (!doc.exists) return initializeDefault();
+                const d = doc.data();
+                eName.innerText = d.rateeName || 'NAME OF EMPLOYEE';
+                ePos.innerText = d.rateePosition || 'POSITION TITLE';
+                document.getElementById('employeeDept').innerText = d.department || 'DEPARTMENT';
+                pStart.value = d.periodStart || 'JANUARY';
+                pEnd.value = d.periodEnd || 'JUNE';
+                pYear.value = d.year || '2024';
+
+                document.getElementById('raterName').textContent = d.sigRaterName || 'RYAN JAMES V. AYSON';
+                document.getElementById('raterPos').textContent = d.sigRaterPos || 'Acting Manager, FOMD';
+                document.getElementById('reviewedByName').textContent = d.sigReviewerName || 'RYAN JAMES V. AYSON';
+                document.getElementById('recommenderName').textContent = d.sigRecommenderName || 'JOSE D. DORADO, JR.';
+                document.getElementById('approverName').textContent = d.sigApproverName || 'LEONOR C. CLEOFAS, CESO IV';
+
+                // Evidence links are automatically carried via the item's evidenceLinks property
+                if (d.items) d.items.forEach(it => addRows(it.type, it));
+                updateMirrors();
+                recalcFinal();
+
+                // Restore signature states
+                if (d.signatureStates) {
+                    setSignatureValue('rateeCommitSigBox', d.signatureStates.rateeCommit, 'rateeSigName');
+                    setSignatureValue('raterCommitSigBox', d.signatureStates.raterCommit, 'raterName');
+                    setSignatureValue('preparedSigBox', d.signatureStates.prepared, 'preparedByName');
+                    setSignatureValue('reviewedSigBox', d.signatureStates.reviewed, 'reviewedByName');
+                    setSignatureValue('recommendedSigBox', d.signatureStates.recommended, 'recommenderName');
+                    setSignatureValue('approvedSigBox', d.signatureStates.approved, 'approverName');
+                }
+
+                // Ownership check
+                const isAdmin = currentUser.email === 'johnlowel.fradejas@mwss.gov.ph';
+                const isOwner = d.createdBy === currentUser.email;
+                if (!isOwner && !isAdmin && doc.exists) {
+                    const saveBtn = document.getElementById('saveBtn');
+                    if (saveBtn) {
+                        saveBtn.style.display = 'none';
+                    }
+                    // Also disable all inputs to make it truly view-only
+                    document.querySelectorAll('input, textarea, select').forEach(el => {
+                        el.disabled = true;
+                    });
+                    // Hide action buttons in rows
+                    document.querySelectorAll('.no-print button').forEach(btn => {
+                        if (!btn.onclick || !btn.onclick.toString().includes('print')) {
+                            btn.style.display = 'none';
+                        }
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        window.saveIpcrData = async function () {
+            const overlay = document.getElementById('savingOverlay');
+            overlay.classList.add('visible');
+            try {
+                const items = Array.from(document.querySelectorAll('#ipcrTbody tr')).map(tr => {
+                    if (tr.dataset.type === 'data') {
+                        const tas = tr.querySelectorAll('textarea');
+                        const ins = tr.querySelectorAll('input');
+                        // Read evidence links from data attribute
+                        let evidenceLinks = [];
+                        try {
+                            const raw = tr.getAttribute('data-evidence');
+                            if (raw) evidenceLinks = JSON.parse(raw);
+                        } catch (e) { console.error('Error parsing evidence links:', e); }
+                        return {
+                            type: 'data', mfo: tas[0].value, targets: tas[1].value, accomplishments: tas[2].value,
+                            ratingQ: ins[0].value, ratingE: ins[1].value, ratingT: ins[2].value,
+                            ratingAve: tr.querySelector('.ave').textContent, remarks: tas[3].value,
+                            evidenceLinks: evidenceLinks
+                        };
+                    } else {
+                        return { type: tr.dataset.type, title: tr.querySelector('input').value };
+                    }
+                });
+
+                const payload = {
+                    rateeName: eName.innerText === 'NAME OF EMPLOYEE' ? '' : eName.innerText,
+                    rateePosition: ePos.innerText === 'POSITION TITLE' ? '' : ePos.innerText,
+                    department: document.getElementById('employeeDept').innerText === 'DEPARTMENT' ? '' : document.getElementById('employeeDept').innerText,
+                    periodStart: pStart.value,
+                    periodEnd: pEnd.value,
+                    year: pYear.value,
+                    sigRaterName: document.getElementById('raterName').textContent,
+                    sigRaterPos: document.getElementById('raterPos').textContent,
+                    sigReviewerName: document.getElementById('reviewedByName').textContent,
+                    sigRecommenderName: document.getElementById('recommenderName').textContent,
+                    sigApproverName: document.getElementById('approverName').textContent,
+                    items,
+                    finalAverage: document.getElementById('finalAve').textContent,
+                    signatureStates: {
+                        rateeCommit: document.getElementById('rateeCommitSigBox')?.getAttribute('data-sig-value') || '',
+                        raterCommit: document.getElementById('raterCommitSigBox')?.getAttribute('data-sig-value') || '',
+                        prepared: document.getElementById('preparedSigBox')?.getAttribute('data-sig-value') || '',
+                        reviewed: document.getElementById('reviewedSigBox')?.getAttribute('data-sig-value') || '',
+                        recommended: document.getElementById('recommendedSigBox')?.getAttribute('data-sig-value') || '',
+                        approved: document.getElementById('approvedSigBox')?.getAttribute('data-sig-value') || ''
+                    },
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    updatedBy: currentUser.email
+                };
+                await db.collection('ipcr_entries').doc(docId).update(payload);
+                alert("IPCR Saved Successfully!");
+            } catch (e) { alert("Error: " + e.message); }
+            finally { overlay.classList.remove('visible'); }
+        }
+
+        // --- SIGNATURE WORKFLOW ---
+        let activeSignatureBoxId = null;
+        let activeSignatoryNameId = null;
+        let uploadedSignatureBase64 = null;
+        let currentTab = 'cursive';
+        let canvas = null;
+        let ctx = null;
+        let drawing = false;
+
+        function initCanvas() {
+            canvas = document.getElementById('signatureCanvas');
+            if (!canvas) return;
+            ctx = canvas.getContext('2d');
+            ctx.strokeStyle = '#1e3a8a'; // Dark blue ink
+            ctx.lineWidth = 2.5;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mousemove', draw);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mouseleave', stopDrawing);
+
+            canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
+            canvas.addEventListener('touchmove', drawTouch, { passive: false });
+            canvas.addEventListener('touchend', stopDrawing);
+        }
+
+        function startDrawing(e) {
+            drawing = true;
+            ctx.beginPath();
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.moveTo(x, y);
+        }
+
+        function draw(e) {
+            if (!drawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        }
+
+        function stopDrawing() {
+            drawing = false;
+            ctx.closePath();
+        }
+
+        function startDrawingTouch(e) {
+            e.preventDefault();
+            if (e.touches.length === 1) {
+                drawing = true;
+                ctx.beginPath();
+                const rect = canvas.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                const y = e.touches[0].clientY - rect.top;
+                ctx.moveTo(x, y);
+            }
+        }
+
+        function drawTouch(e) {
+            e.preventDefault();
+            if (drawing && e.touches.length === 1) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.touches[0].clientX - rect.left;
+                const y = e.touches[0].clientY - rect.top;
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+        }
+
+        function clearCanvas() {
+            if (!canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function isCanvasBlank(c) {
+            const blank = document.createElement('canvas');
+            blank.width = c.width;
+            blank.height = c.height;
+            return c.toDataURL() === blank.toDataURL();
+        }
+
+        window.openSignatureModal = function(boxId, nameId) {
+            activeSignatureBoxId = boxId;
+            activeSignatoryNameId = nameId;
+            uploadedSignatureBase64 = null;
+
+            clearCanvas();
+            document.getElementById('uploadPreviewContainer').classList.add('hidden');
+            document.getElementById('signatureFileInput').value = '';
+
+            const nameSource = document.getElementById(nameId);
+            let name = nameSource ? (nameSource.innerText || nameSource.textContent).trim() : 'Signatory';
+            if (name === '...' || name === 'NAME OF EMPLOYEE' || !name) {
+                name = 'Signed';
+            }
+            document.getElementById('cursivePreviewText').textContent = name;
+
+            switchSignatureTab('cursive');
+
+            const modal = document.getElementById('signatureModal');
+            modal.classList.remove('hidden');
+
+            if (!canvas) {
+                initCanvas();
+            }
+        };
+
+        window.closeSignatureModal = function() {
+            document.getElementById('signatureModal').classList.add('hidden');
+        };
+
+        window.switchSignatureTab = function(tab) {
+            currentTab = tab;
+
+            ['tabCursive', 'tabDraw', 'tabUpload'].forEach(tid => {
+                const btn = document.getElementById(tid);
+                if (btn) {
+                    if (tid === 'tab' + tab.charAt(0).toUpperCase() + tab.slice(1)) {
+                        btn.classList.add('border-blue-600', 'text-blue-600');
+                        btn.classList.remove('border-transparent');
+                    } else {
+                        btn.classList.remove('border-blue-600', 'text-blue-600');
+                        btn.classList.add('border-transparent');
+                    }
+                }
+            });
+
+            ['contentCursive', 'contentDraw', 'contentUpload'].forEach(cid => {
+                const div = document.getElementById(cid);
+                if (div) {
+                    if (cid === 'content' + tab.charAt(0).toUpperCase() + tab.slice(1)) {
+                        div.classList.remove('hidden');
+                    } else {
+                        div.classList.add('hidden');
+                    }
+                }
+            });
+        };
+
+        window.handleSignatureFileUpload = function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.size > 150 * 1024) {
+                alert('Warning: Image size is over 150KB. Smaller images load faster.');
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                uploadedSignatureBase64 = evt.target.result;
+                const container = document.getElementById('uploadPreviewContainer');
+                const img = document.getElementById('uploadPreviewImage');
+                img.src = uploadedSignatureBase64;
+                container.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.clearCurrentSignature = function() {
+            setSignatureValue(activeSignatureBoxId, null, activeSignatoryNameId);
+            closeSignatureModal();
+        };
+
+        window.applySignature = function() {
+            const box = document.getElementById(activeSignatureBoxId);
+            if (!box) return;
+
+            let signatureData = '';
+            if (currentTab === 'cursive') {
+                signatureData = 'cursive';
+            } else if (currentTab === 'draw') {
+                if (isCanvasBlank(canvas)) {
+                    alert('Please draw a signature first.');
+                    return;
+                }
+                signatureData = canvas.toDataURL('image/png');
+            } else if (currentTab === 'upload') {
+                if (!uploadedSignatureBase64) {
+                    alert('Please select an image file first.');
+                    return;
+                }
+                signatureData = uploadedSignatureBase64;
+            }
+
+            setSignatureValue(activeSignatureBoxId, signatureData, activeSignatoryNameId);
+            closeSignatureModal();
+        };
+
+        function setSignatureValue(boxId, val, nameId) {
+            const box = document.getElementById(boxId);
+            if (!box) return;
+
+            if (val === 'cursive') {
+                const nameSource = document.getElementById(nameId);
+                let name = nameSource ? (nameSource.innerText || nameSource.textContent).trim() : 'Signatory';
+                if (name === '...' || name === 'NAME OF EMPLOYEE' || !name) {
+                    name = 'Signed';
+                }
+                box.setAttribute('data-signed', 'true');
+                box.setAttribute('data-sig-value', 'cursive');
+                box.innerHTML = `
+                    <div class="flex flex-col items-center justify-center leading-none">
+                        <span class="text-blue-800 text-[13px] font-bold tracking-wide select-none" style="font-family: 'Brush Script MT', 'Courier New', cursive, sans-serif; transform: rotate(-2deg); margin-bottom: 2px;">
+                            ${name}
+                        </span>
+                        <span class="text-[7px] text-green-600 font-bold flex items-center justify-center gap-0.5 no-print">
+                            <i class="fa-solid fa-circle-check text-[7.5px]"></i> Digitally Signed
+                        </span>
+                    </div>
+                `;
+            } else if (val && val.startsWith('data:image/')) {
+                box.setAttribute('data-signed', 'true');
+                box.setAttribute('data-sig-value', val);
+                box.innerHTML = `
+                    <div class="flex flex-col items-center justify-center w-full h-full relative p-0.5">
+                        <img src="${val}" class="max-h-9 max-w-full object-contain pointer-events-none" style="filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));">
+                        <span class="text-[7px] text-green-600 font-bold flex items-center justify-center gap-0.5 mt-0.5 no-print">
+                            <i class="fa-solid fa-circle-check text-[7.5px]"></i> Digitally Signed
+                        </span>
+                    </div>
+                `;
+            } else {
+                box.setAttribute('data-signed', 'false');
+                box.removeAttribute('data-sig-value');
+                const textClass = boxId.includes('sig1') || boxId.includes('footer') ? 'text-[8px]' : 'text-[9px]';
+                box.innerHTML = `<span class="text-blue-400/80 italic font-medium ${textClass} tracking-wide signature-status">Signature Pending</span>`;
+            }
+
+            // Auto-sync signatures with same name
+            syncMatchingSignatures(boxId, val, nameId);
+        }
+
+        function syncMatchingSignatures(sourceBoxId, val, sourceNameId) {
+            const sourceNameSource = document.getElementById(sourceNameId);
+            if (!sourceNameSource) return;
+            const sourceName = (sourceNameSource.innerText || sourceNameSource.textContent).trim().toLowerCase();
+            if (!sourceName || sourceName === '...' || sourceName === 'name of employee' || sourceName === 'ratee') return;
+
+            const sigMappings = [
+                { boxId: 'rateeCommitSigBox', nameId: 'rateeSigName' },
+                { boxId: 'raterCommitSigBox', nameId: 'raterName' },
+                { boxId: 'preparedSigBox', nameId: 'preparedByName' },
+                { boxId: 'reviewedSigBox', nameId: 'reviewedByName' },
+                { boxId: 'recommendedSigBox', nameId: 'recommenderName' },
+                { boxId: 'approvedSigBox', nameId: 'approverName' }
+            ];
+
+            sigMappings.forEach(mapping => {
+                if (mapping.boxId === sourceBoxId) return;
+
+                const targetNameSource = document.getElementById(mapping.nameId);
+                if (!targetNameSource) return;
+                const targetName = (targetNameSource.innerText || targetNameSource.textContent).trim().toLowerCase();
+
+                if (targetName === sourceName) {
+                    const targetBox = document.getElementById(mapping.boxId);
+                    if (targetBox && targetBox.getAttribute('data-sig-value') !== (val || '')) {
+                        setSignatureValue(mapping.boxId, val, mapping.nameId);
+                    }
+                }
+            });
+        }
+
+        function refreshCursiveSignatures() {
+            const pairs = [
+                { boxId: 'rateeCommitSigBox', nameId: 'rateeSigName' },
+                { boxId: 'raterCommitSigBox', nameId: 'raterName' },
+                { boxId: 'preparedSigBox', nameId: 'preparedByName' },
+                { boxId: 'reviewedSigBox', nameId: 'reviewedByName' },
+                { boxId: 'recommendedSigBox', nameId: 'recommenderName' },
+                { boxId: 'approvedSigBox', nameId: 'approverName' }
+            ];
+            pairs.forEach(p => {
+                const box = document.getElementById(p.boxId);
+                if (box && box.getAttribute('data-signed') === 'true' && box.getAttribute('data-sig-value') === 'cursive') {
+                    const nameSource = document.getElementById(p.nameId);
+                    let name = nameSource ? (nameSource.innerText || nameSource.textContent).trim() : 'Signatory';
+                    if (name === '...' || name === 'NAME OF EMPLOYEE' || !name) {
+                        name = 'Signed';
+                    }
+                    const spanEl = box.querySelector('span');
+                    if (spanEl) spanEl.textContent = name;
+                }
+            });
+        }
+
+        // Attach listeners for contenteditables
+        [document.getElementById('raterName'), document.getElementById('reviewedByName'), document.getElementById('recommenderName'), document.getElementById('approverName')].forEach(el => {
+            if (el) {
+                el.addEventListener('keyup', refreshCursiveSignatures);
+                el.addEventListener('blur', refreshCursiveSignatures);
+            }
+        });
+
+        // Extend updateMirrors to include refresh
+        const originalUpdateMirrors = window.updateMirrors;
+        window.updateMirrors = function() {
+            if (typeof originalUpdateMirrors === 'function') {
+                originalUpdateMirrors();
+            }
+            refreshCursiveSignatures();
+        };
+    </script>
+
+    <!-- Signature Modal HTML -->
+    <div id="signatureModal" class="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center hidden no-print">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-[400px] max-w-[95vw] border border-slate-200 text-left">
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+                    <i class="fa-solid fa-pen-nib text-blue-600"></i> Configure Signature
+                </h3>
+                <button onclick="closeSignatureModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex border-b border-slate-200 mb-4 text-xs font-semibold text-slate-600">
+                <button id="tabCursive" onclick="switchSignatureTab('cursive')" class="flex-1 py-2 text-center border-b-2 border-blue-600 text-blue-600">
+                    Cursive Text
+                </button>
+                <button id="tabDraw" onclick="switchSignatureTab('draw')" class="flex-1 py-2 text-center border-b-2 border-transparent hover:text-slate-800">
+                    Draw Pad
+                </button>
+                <button id="tabUpload" onclick="switchSignatureTab('upload')" class="flex-1 py-2 text-center border-b-2 border-transparent hover:text-slate-800">
+                    Upload File
+                </button>
+            </div>
+            
+            <!-- Tab Content: Cursive -->
+            <div id="contentCursive" class="tab-content py-2">
+                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Preview</label>
+                <div class="border border-slate-200 rounded-lg p-4 bg-slate-50 flex items-center justify-center h-20 mb-4">
+                    <span id="cursivePreviewText" class="text-blue-800 text-[20px] font-bold tracking-wide select-none" style="font-family: 'Brush Script MT', 'Courier New', cursive, sans-serif; transform: rotate(-1deg);">
+                        Signature Preview
+                    </span>
+                </div>
+                <p class="text-[10px] text-slate-400">This uses the current name of the signatory and applies a premium cursive signature script.</p>
+            </div>
+            
+            <!-- Tab Content: Draw -->
+            <div id="contentDraw" class="tab-content py-2 hidden">
+                <div class="flex justify-between items-center mb-1">
+                    <label class="block text-[10px] text-slate-500 font-bold uppercase">Draw Signature Below</label>
+                    <button onclick="clearCanvas()" class="text-[9px] text-red-500 hover:text-red-700 font-bold flex items-center gap-1">
+                        <i class="fa-solid fa-eraser"></i> Clear Pad
+                    </button>
+                </div>
+                <div class="border border-slate-200 rounded-lg bg-slate-50 overflow-hidden mb-4">
+                    <canvas id="signatureCanvas" width="350" height="120" class="cursor-crosshair w-full block bg-white"></canvas>
+                </div>
+            </div>
+            
+            <!-- Tab Content: Upload -->
+            <div id="contentUpload" class="tab-content py-2 hidden">
+                <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Upload Image</label>
+                <input type="file" id="signatureFileInput" accept="image/*" class="hidden" onchange="handleSignatureFileUpload(event)">
+                <div onclick="document.getElementById('signatureFileInput').click()" class="border border-dashed border-slate-300 rounded-lg p-4 bg-slate-50/50 hover:bg-slate-50 flex flex-col items-center justify-center h-24 mb-4 cursor-pointer transition-colors group">
+                    <i class="fa-solid fa-cloud-arrow-up text-slate-400 group-hover:text-blue-500 text-2xl mb-1 transition-colors"></i>
+                    <span class="text-[10px] text-slate-500 font-medium">Click to browse PNG or JPG</span>
+                    <span class="text-[8px] text-slate-400 mt-0.5">(Max 100KB recommended, transparent background works best)</span>
+                </div>
+                <div id="uploadPreviewContainer" class="hidden">
+                    <label class="block text-[10px] text-slate-500 font-bold mb-1 uppercase">Image Preview</label>
+                    <div class="border border-slate-200 rounded-lg p-2 bg-slate-50 flex items-center justify-center h-16 overflow-hidden mb-4">
+                        <img id="uploadPreviewImage" class="max-h-full max-w-full object-contain">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="flex justify-between items-center gap-2 mt-4 pt-3 border-t border-slate-100">
+                <button onclick="clearCurrentSignature()" class="px-3 py-1.5 border border-red-200 hover:bg-red-50 text-red-600 rounded text-xs font-semibold flex items-center gap-1 transition-colors">
+                    <i class="fa-solid fa-trash-can"></i> Clear Signature
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="closeSignatureModal()" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold transition-colors">
+                        Cancel
+                    </button>
+                    <button onclick="applySignature()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold shadow-md shadow-blue-500/20 transition-colors">
+                        Apply Signature
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

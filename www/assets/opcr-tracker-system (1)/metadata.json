@@ -1,0 +1,5 @@
+{
+  "name": "OPCR Tracker System",
+  "description": "A web-based system to digitize, track, and print the Office Performance Commitment and Review (OPCR) form with evidence uploading and rating calculations.",
+  "requestFramePermissions": []
+}

@@ -1,0 +1,135 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper: signed-in check
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(data) { return isSignedIn() && request.auth.uid == data.ownerUid; }
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.email == 'johnlowel.fradejas@mwss.gov.ph';
+    }
+
+    // TEMP UNBLOCK for development
+    // Allow any signed-in user to create/update BNAQ entries.
+    // Tighten this later to check approved users and validate fields.
+    // Product Presentations
+    match /product_presentations/{id} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // OPCR Entries
+    match /opcr_entries/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null; // Explicitly allow all writes for registered users
+    }
+
+    // IPCR Entries
+    match /ipcr_entries/{docId} {
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (resource.data.createdBy == request.auth.token.email || isAdmin());
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.createdBy == request.auth.token.email);
+    }
+
+    // Deepwell Monitoring: allow any authenticated user to create/update; restrict deletes to admin
+    match /deepwells/{id} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Service Updates: allow any authenticated user to create/update; restrict deletes to admin
+    match /service_updates/{id} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Projects: allow any authenticated user to create/update; restrict deletes to admin
+    match /projects/{id} {
+      allow read: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
+    }
+
+    // Keep other reads working
+    match /{document=**} {
+      allow read: if true;
+    }
+
+    // Personal tasks are private to their owner
+    match /personal_tasks/{taskId} {
+      allow create: if isOwner(request.resource.data);
+      allow read: if isOwner(resource.data);
+      allow update, delete: if isOwner(resource.data);
+    }
+
+    // Users collection: allow each user to create/update their own profile doc
+    // Admin can update any user document (for approvals, access level changes, etc.)
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.auth.uid == uid;
+      allow update: if isSignedIn() && (request.auth.uid == uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Document Registry collections: allow any authenticated user to read/write/delete
+    match /docreg_memoranda/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    match /docreg_office_orders/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    match /docreg_outgoing/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    match /docreg_incoming/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    match /docreg_travel_orders/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    match /docreg_notices/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    match /docreg_minutes/{id} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+    // Calendar Activities: registered users can read, create own, manage own
+    match /calendar_activities/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if isOwner(resource.data) || isAdmin();
+    }
+
+    // Notifications: users can read/write only their own notifications
+    match /notifications/{id} {
+      allow read: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.recipientUid == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+      allow delete: if isSignedIn() && resource.data.recipientUid == request.auth.uid;
+    }
+
+    // Chat messages: allow signed-in users to read, send, and manage their own messages
+    match /messages/{id} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.resource.data.fromId == request.auth.uid;
+      allow update: if isSignedIn() && resource.data.fromId == request.auth.uid;
+      allow delete: if isAdmin() || (isSignedIn() && resource.data.fromId == request.auth.uid);
+    }
+
+    // Mail collection for Trigger Email extension
+    match /mail/{id} {
+      allow create: if isSignedIn();
+      allow read, update, delete: if isAdmin();
+    }
+  }
+}
