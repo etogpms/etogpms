@@ -24,7 +24,7 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="styles.css?v=6" />
+  <link rel="stylesheet" href="styles.css?v=7" />
   <link rel="stylesheet" href="style-modern.css" />
   <!-- SheetJS for Excel parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -35,8 +35,13 @@
   <!-- Login screen  -->
   <div id="loginScreen" class="d-flex flex-column align-items-center justify-content-center vh-100"
     style="display:none;">
+    <div class="login-hero-slideshow" aria-hidden="true">
+      <div class="login-hero-slide login-hero-slide-mwss"></div>
+      <div class="login-hero-slide login-hero-slide-ipo"></div>
+      <div class="login-hero-slide login-hero-slide-wawa"></div>
+    </div>
     <h2 class="login-page-title text-center text-uppercase">Project Monitoring</h2>
-    <div class="card p-4 shadow-lg" style="min-width:320px; max-width:400px; border-radius: 12px;">
+    <div class="card login-card p-4 shadow-lg" style="min-width:320px; max-width:400px; border-radius: 12px;">
       <h4 class="mb-4 text-center" id="loginTitle">Login</h4>
       <!-- Login Form -->
       <form id="loginForm">
@@ -1125,66 +1130,13 @@
         </div>
         <!-- Service Update Details Modal (Read-only) -->
         <div class="modal fade" id="serviceUpdateDetailsModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+          <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
-              <div class="modal-header bg-secondary text-white">
+              <div class="modal-header service-update-details-modal-header text-white">
                 <h5 class="modal-title">Service Update Report - Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
-              <div class="modal-body">
-                <div class="row g-2 mb-2">
-                  <div class="col-md-4">
-                    <div class="small text-muted">Date</div>
-                    <div id="surDetDate" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">Concessionaire</div>
-                    <div id="surDetProvider" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">Dam Levels As of</div>
-                    <div><span id="surDetDamDate"></span> <span id="surDetDamAsOf" class="ms-1"></span></div>
-                  </div>
-                </div>
-                <div class="alert alert-info py-2 small">
-                  Plant metrics date: <span id="surDetPlantsDate"></span> (same as report date)
-                </div>
-                <div id="surDetPlantTableContainer" class="mb-3"></div>
-                <div class="row g-2">
-                  <div class="col-md-4">
-                    <div class="small text-muted">Total Raw Water Inflows (MLD)</div>
-                    <div id="surDetInflows" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">Total Daily Treatment Production (MLD)</div>
-                    <div id="surDetProduction" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">Supply Augmentation (MLD)</div>
-                    <div id="surDetSupplyAug" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">Angat Dam (masl)</div>
-                    <div id="surDetAngat" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">Ipo Dam (masl)</div>
-                    <div id="surDetIpo" class="fw-semibold"></div>
-                  </div>
-                  <div class="col-md-4">
-                    <div class="small text-muted">La Mesa Dam (masl)</div>
-                    <div id="surDetLaMesa" class="fw-semibold"></div>
-                  </div>
-                </div>
-                <div class="mt-3">
-                  <div class="small text-muted">Remarks</div>
-                  <div id="surDetRemarks" class="border rounded p-2 bg-light"></div>
-                </div>
-                <div class="mt-3">
-                  <div class="small text-muted">Edit History</div>
-                  <div id="surDetHistory" class="border rounded p-2 bg-light small"></div>
-                </div>
-              </div>
+              <div class="modal-body service-update-details-body" id="serviceUpdateDetailsBody"></div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
               </div>
@@ -2598,46 +2550,16 @@
 
         <!-- Presentation Details Modal -->
         <div class="modal fade" id="presentationDetailsModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-md">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-              <div class="modal-header bg-primary text-white">
+              <div class="modal-header presentation-details-modal-header text-white">
                 <h5 class="modal-title">
                   <i class="fa-solid fa-chalkboard-user me-2"></i>Presentation Details
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                   aria-label="Close"></button>
               </div>
-              <div class="modal-body px-4 py-3">
-                <div class="pres-detail-row mb-3">
-                  <div class="pres-detail-label">Subject</div>
-                  <div class="pres-detail-value fw-bold fs-6" id="presDetailSubject">—</div>
-                </div>
-                <div class="row g-3 mb-3">
-                  <div class="col-6">
-                    <div class="pres-detail-label">Date</div>
-                    <div class="pres-detail-value" id="presDetailDate">—</div>
-                  </div>
-                  <div class="col-6">
-                    <div class="pres-detail-label">Time</div>
-                    <div class="pres-detail-value" id="presDetailTime">—</div>
-                  </div>
-                </div>
-                <div class="pres-detail-row mb-3">
-                  <div class="pres-detail-label">Venue</div>
-                  <div class="pres-detail-value" id="presDetailVenue">—</div>
-                </div>
-                <div class="pres-detail-row mb-3">
-                  <div class="pres-detail-label">Presenter</div>
-                  <div class="pres-detail-value" id="presDetailPresenter">—</div>
-                </div>
-                <div class="pres-detail-row mb-3">
-                  <div class="pres-detail-label">Remarks</div>
-                  <div class="pres-detail-value text-muted" id="presDetailRemarks" style="white-space:pre-line;">—</div>
-                </div>
-                <div class="pres-detail-row small text-muted border-top pt-2 mt-2">
-                  <span id="presDetailMeta"></span>
-                </div>
-              </div>
+              <div class="modal-body presentation-details-body" id="presDetailBody"></div>
               <div class="modal-footer justify-content-between" id="presDetailFooter">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                 <div class="d-flex gap-2" id="presDetailActions" style="display:none;">
@@ -2770,79 +2692,124 @@
           <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
               <form id="deepwellForm">
-                <div class="modal-header bg-primary text-white">
+                <div class="modal-header deepwell-details-modal-header text-white">
                   <h5 class="modal-title">Deepwell Details</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body deepwell-modal-body">
                   <input type="hidden" id="deepwellId" name="deepwellId" />
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label">Deepwell Name</label>
-                      <input type="text" class="form-control" id="dwName" name="dwName" required />
+                  <div class="deepwell-record-hero">
+                    <div class="deepwell-record-seal"><i class="fa-solid fa-water"></i></div>
+                    <div class="deepwell-record-title">
+                      <div class="deepwell-record-kicker">MWSS Deepwell Monitoring Record</div>
+                      <h5 id="dwRecordName">Deepwell Record</h5>
+                      <p id="dwRecordProvider">Concessionaire not specified</p>
                     </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Concessionaire</label>
-                      <select class="form-select" id="dwProvider" name="dwProvider" required>
-                        <option value="MWCI">MWCI</option>
-                        <option value="MWSI">MWSI</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">NWRB Permit No.</label>
-                      <input type="text" class="form-control" id="dwPermit" name="dwPermit" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Status</label>
-                      <input type="text" class="form-control" id="dwStatus" name="dwStatus" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Rated Yield (cu.m/day)</label>
-                      <input type="number" step="0.01" class="form-control" id="dwRatedYield" name="dwRatedYield" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Avg Monthly Prod (cu.m)</label>
-                      <input type="number" step="0.01" class="form-control" id="dwAvgProd" name="dwAvgProd" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Total Prod (cu.m)</label>
-                      <input type="number" step="0.01" class="form-control" id="dwTotalProd" name="dwTotalProd" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Location</label>
-                      <input type="text" class="form-control" id="dwLocation" name="dwLocation" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Municipality</label>
-                      <input type="text" class="form-control" id="dwMunicipality" name="dwMunicipality" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Latitude</label>
-                      <input type="text" class="form-control" id="dwLatitude" name="dwLatitude"
-                        inputmode="numeric" autocomplete="off" placeholder="14° 35' 24.12&quot;" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Longitude</label>
-                      <input type="text" class="form-control" id="dwLongitude" name="dwLongitude"
-                        inputmode="numeric" autocomplete="off" placeholder="121° 02' 36.45&quot;" />
+                    <div class="deepwell-record-status">
+                      <span id="dwRecordStatus" class="deepwell-status-badge is-other">Status</span>
                     </div>
                   </div>
-                  <hr>
-                  <h6>Monthly Production (cu.m)</h6>
-                  <div class="table-responsive mb-2">
-                    <table class="table table-sm align-middle" id="dwMonthsTable">
-                      <thead>
-                        <tr>
-                          <th>Month</th>
-                          <th>Total Production</th>
-                          <th></th>
-                        </tr>
-                      </thead>
-                      <tbody id="dwMonthsBody"></tbody>
-                    </table>
+                  <div class="deepwell-summary-grid">
+                    <div class="deepwell-summary-metric">
+                      <span>Rated Yield</span>
+                      <strong id="dwMetricRatedYield">Not specified</strong>
+                    </div>
+                    <div class="deepwell-summary-metric">
+                      <span>Avg Monthly Production</span>
+                      <strong id="dwMetricAvgProd">Not specified</strong>
+                    </div>
+                    <div class="deepwell-summary-metric">
+                      <span>Total Production</span>
+                      <strong id="dwMetricTotalProd">Not specified</strong>
+                    </div>
+                    <div class="deepwell-summary-metric">
+                      <span>NWRB Permit No.</span>
+                      <strong id="dwMetricPermit">Not specified</strong>
+                    </div>
                   </div>
-                  <button type="button" class="btn btn-outline-primary btn-sm" id="addDwMonthBtn"><i
-                      class="fa fa-plus me-1"></i>Add Month</button>
+                  <section class="deepwell-detail-section">
+                    <div class="deepwell-section-heading">
+                      <div>
+                        <h6><i class="fa-regular fa-file-lines me-2"></i>Deepwell Information</h6>
+                        <p>Official facility details, location, and operating status.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3 deepwell-form-grid">
+                      <div class="col-md-6">
+                        <label class="form-label">Deepwell Name</label>
+                        <input type="text" class="form-control" id="dwName" name="dwName" required />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Concessionaire</label>
+                        <select class="form-select" id="dwProvider" name="dwProvider" required>
+                          <option value="MWCI">MWCI</option>
+                          <option value="MWSI">MWSI</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">NWRB Permit No.</label>
+                        <input type="text" class="form-control" id="dwPermit" name="dwPermit" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Status</label>
+                        <input type="text" class="form-control" id="dwStatus" name="dwStatus" />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Rated Yield (cu.m/day)</label>
+                        <input type="number" step="0.01" class="form-control" id="dwRatedYield" name="dwRatedYield" />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Avg Monthly Prod (cu.m)</label>
+                        <input type="number" step="0.01" class="form-control" id="dwAvgProd" name="dwAvgProd" />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label">Total Prod (cu.m)</label>
+                        <input type="number" step="0.01" class="form-control" id="dwTotalProd" name="dwTotalProd" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-control" id="dwLocation" name="dwLocation" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Municipality</label>
+                        <input type="text" class="form-control" id="dwMunicipality" name="dwMunicipality" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Latitude</label>
+                        <input type="text" class="form-control" id="dwLatitude" name="dwLatitude"
+                          inputmode="numeric" autocomplete="off" placeholder="14° 35' 24.12&quot;" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Longitude</label>
+                        <input type="text" class="form-control" id="dwLongitude" name="dwLongitude"
+                          inputmode="numeric" autocomplete="off" placeholder="121° 02' 36.45&quot;" />
+                      </div>
+                    </div>
+                  </section>
+                  <section class="deepwell-detail-section">
+                    <div class="deepwell-section-heading">
+                      <div>
+                        <h6><i class="fa-solid fa-chart-column me-2"></i>Monthly Production</h6>
+                        <p>Recorded production volume by reporting month.</p>
+                      </div>
+                    </div>
+                    <div class="table-responsive deepwell-table-wrap">
+                      <table class="table table-sm align-middle deepwell-record-table" id="dwMonthsTable">
+                        <thead>
+                          <tr>
+                            <th>Month</th>
+                            <th>Total Production</th>
+                            <th class="dw-actions-col"></th>
+                          </tr>
+                        </thead>
+                        <tbody id="dwMonthsBody"></tbody>
+                      </table>
+                    </div>
+                    <div class="deepwell-section-actions">
+                      <button type="button" class="btn btn-outline-primary btn-sm" id="addDwMonthBtn"><i
+                          class="fa fa-plus me-1"></i>Add Month</button>
+                    </div>
+                  </section>
 
                   <div id="dwHistoryContainer" class="mt-3"></div>
                 </div>
@@ -2859,9 +2826,9 @@
         <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
           <div class="modal-dialog modal-xl modal-dialog-scrollable">
             <div class="modal-content">
-              <div class="modal-header bg-secondary text-white">
+              <div class="modal-header project-details-modal-header text-white">
                 <h5 class="modal-title" id="detailsModalLabel">Project Details</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
               </div>
               <div class="modal-body" id="detailsBody">
                 <!-- dynamic -->
@@ -3706,6 +3673,103 @@
             pointer-events: none;
           }
 
+          .deepwell-static-map {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            min-height: inherit;
+            overflow: hidden;
+            border-radius: inherit;
+            background:
+              radial-gradient(circle at 54% 34%, rgba(13, 59, 102, 0.10) 0 9%, transparent 10%),
+              radial-gradient(circle at 72% 56%, rgba(13, 59, 102, 0.08) 0 11%, transparent 12%),
+              radial-gradient(circle at 34% 74%, rgba(13, 59, 102, 0.08) 0 10%, transparent 11%),
+              linear-gradient(135deg, #e8eef5 0%, #f7fafc 100%);
+          }
+
+          .deepwell-static-map::before {
+            content: "";
+            position: absolute;
+            inset: 18px;
+            border: 1px solid rgba(13, 59, 102, 0.12);
+            border-radius: 18px;
+          }
+
+          .deepwell-static-map::after {
+            content: "";
+            position: absolute;
+            left: -8%;
+            top: 50%;
+            width: 116%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(13, 59, 102, 0.18), transparent);
+            transform: rotate(-14deg);
+          }
+
+          .deepwell-static-region {
+            position: absolute;
+            z-index: 1;
+            color: rgba(13, 39, 66, 0.48);
+            font-size: 0.72rem;
+            font-weight: 800;
+            letter-spacing: 0;
+            text-transform: uppercase;
+          }
+
+          .deepwell-static-region.region-ncr { left: 47%; top: 32%; }
+          .deepwell-static-region.region-rizal { left: 66%; top: 48%; }
+          .deepwell-static-region.region-cavite { left: 27%; top: 70%; }
+
+          .deepwell-static-marker {
+            position: absolute;
+            z-index: 3;
+            width: 18px;
+            height: 18px;
+            border: 2px solid #fff;
+            border-radius: 50%;
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.28);
+            transform: translate(-50%, -50%);
+          }
+
+          .deepwell-static-marker.dot-active { background: #10b981; }
+          .deepwell-static-marker.dot-standby { background: #f59e0b; }
+          .deepwell-static-marker.dot-inactive { background: #64748b; }
+          .deepwell-static-marker.dot-other { background: #3b82f6; }
+
+          .deepwell-static-tooltip {
+            display: none;
+            position: absolute;
+            left: 50%;
+            bottom: calc(100% + 8px);
+            min-width: 160px;
+            padding: 0.45rem 0.55rem;
+            border: 1px solid #d8e0ea;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.96);
+            color: #172033;
+            font-size: 0.76rem;
+            font-weight: 500;
+            text-align: left;
+            transform: translateX(-50%);
+            box-shadow: 0 10px 24px -16px rgba(15, 23, 42, 0.55);
+          }
+
+          .deepwell-static-marker:hover .deepwell-static-tooltip,
+          .deepwell-static-marker:focus .deepwell-static-tooltip {
+            display: block;
+          }
+
+          .deepwell-static-empty {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            z-index: 2;
+            color: #64748b;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transform: translate(-50%, -50%);
+          }
+
           #deepwellMapModal .modal-body {
             padding: 0;
             overflow: hidden;
@@ -3830,7 +3894,7 @@
         <script src="js/features/deepwells.js?v=2" defer></script>
 
         <script src="js/features/service-updates.js?v=1" defer></script>
-        <script src="js/features/presentations.js?v=4" defer></script>
+        <script src="js/features/presentations.js?v=5" defer></script>
         <script src="js/features/personal-tasks.js?v=1" defer></script>
         <script src="js/features/messenger.js?v=1" defer></script>
         <script src="js/features/opcr.js?v=1" defer></script>
@@ -3842,7 +3906,7 @@
         <script src="js/ui/toast.js?v=1" defer></script>
         <script src="export.js?v=7" defer></script>
         <script src="docreg.js" defer></script>
-        <script src="script.js?v=16" defer></script>
+        <script src="script.js?v=17" defer></script>
       </div> <!-- end mainContent -->
     </div> <!-- end flex -->
   </div> <!-- end appWrapper -->
@@ -3853,13 +3917,16 @@
     style="display:none;">
     <div class="messenger-header">
       <div class="d-flex align-items-center justify-content-between">
-        <h5 class="mb-0 text-white">Chats</h5>
         <div>
-          <button type="button" class="btn btn-sm btn-danger me-2 d-none" id="messengerClear" title="Clear All Messages"
+          <div class="messenger-kicker">MWSS Communications</div>
+          <h5 class="mb-0 text-white">Messages</h5>
+        </div>
+        <div class="messenger-actions">
+          <button type="button" class="messenger-icon-btn messenger-danger d-none" id="messengerClear" title="Clear All Messages"
             aria-label="Clear all messages">
             <i class="fa fa-trash"></i>
           </button>
-          <button type="button" class="btn btn-sm btn-outline-light" id="messengerClose" aria-label="Close messenger">
+          <button type="button" class="messenger-icon-btn" id="messengerClose" aria-label="Close messenger">
             <i class="fa fa-times"></i>
           </button>
         </div>
@@ -3868,15 +3935,12 @@
 
     <!-- Contacts List -->
     <div class="messenger-contacts">
-      <div class="contact-item active" data-chat="all">
-        <div class="contact-avatar">
-          <i class="fa fa-users"></i>
-        </div>
-        <div class="contact-info">
-          <div class="contact-name">General Chat</div>
-          <div class="contact-preview">Everyone can see these messages</div>
-        </div>
-        <div class="contact-badge" style="display:none;">0</div>
+      <div class="messenger-search-wrap">
+        <label class="messenger-search" for="messengerUserSearch">
+          <i class="fa fa-search"></i>
+          <input type="search" id="messengerUserSearch" placeholder="Search user or chat..." autocomplete="off">
+        </label>
+        <div class="messenger-contact-count" id="messengerContactCount">All chats</div>
       </div>
       <div id="contactsList"></div>
     </div>
@@ -3884,19 +3948,19 @@
     <!-- Chat Area -->
     <div class="messenger-chat">
       <div class="chat-header">
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center min-w-0">
           <div class="chat-avatar me-2">
             <i class="fa fa-users"></i>
           </div>
-          <div>
+          <div class="min-w-0">
             <div class="chat-title">General Chat</div>
-            <div class="chat-status">Active now</div>
+            <div class="chat-status">Everyone can see these messages</div>
           </div>
         </div>
       </div>
 
       <!-- Load older messages control (outside of scroll container so it isn't wiped on re-render) -->
-      <div class="text-center p-2 border-bottom" id="chatLoadOlderBar">
+      <div class="chat-load-older" id="chatLoadOlderBar">
         <button type="button" class="btn btn-sm btn-outline-secondary" id="chatLoadOlderBtn">Load older</button>
         <span id="chatLoadOlderSpinner" class="spinner-border spinner-border-sm ms-2" role="status" aria-hidden="true"
           style="display:none;"></span>
@@ -3905,7 +3969,7 @@
       <div class="chat-messages" id="chatMessages"></div>
 
       <div class="chat-input">
-        <div class="input-group">
+        <div class="input-group chat-compose">
           <textarea class="form-control" id="chatInput" placeholder="Type a message..." rows="1"
             style="resize:none; overflow:hidden;"></textarea>
           <button type="button" class="btn btn-primary" id="chatSend" aria-label="Send message">
@@ -3922,56 +3986,149 @@
       position: fixed;
       top: 0;
       right: 0;
-      width: 320px;
+      width: min(420px, 100vw);
       height: 100vh;
-      background: #fff;
-      box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+      background: #f5f7fb;
+      border-left: 1px solid rgba(13, 59, 102, 0.12);
+      box-shadow: -18px 0 48px -30px rgba(15, 23, 42, 0.55);
       z-index: 1060;
       display: flex;
       flex-direction: column;
     }
 
     .messenger-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 12px 15px;
+      background: #0d3b66;
+      border-bottom: 4px solid #f4d35e;
+      padding: 16px 18px;
       color: white;
     }
 
+    .messenger-kicker {
+      color: rgba(255, 255, 255, 0.74);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+
+    .messenger-actions {
+      align-items: center;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .messenger-icon-btn {
+      align-items: center;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      border-radius: 999px;
+      color: #ffffff;
+      display: inline-flex;
+      height: 38px;
+      justify-content: center;
+      transition: background 0.15s ease, transform 0.15s ease;
+      width: 38px;
+    }
+
+    .messenger-icon-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .messenger-icon-btn.messenger-danger {
+      background: #b91c1c;
+      border-color: #b91c1c;
+    }
+
     .messenger-contacts {
-      flex: 0 0 180px;
-      border-bottom: 1px solid #e9ecef;
+      background: #ffffff;
+      border-bottom: 1px solid #d8e0ea;
+      flex: 0 0 246px;
       overflow-y: auto;
+    }
+
+    .messenger-search-wrap {
+      background: #ffffff;
+      border-bottom: 1px solid #e5ebf2;
+      padding: 12px 14px 10px;
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .messenger-search {
+      align-items: center;
+      background: #f1f5f9;
+      border: 1px solid #d8e0ea;
+      border-radius: 999px;
+      color: #64748b;
+      display: flex;
+      gap: 0.55rem;
+      margin: 0;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .messenger-search input {
+      background: transparent;
+      border: 0;
+      color: #0d2742;
+      font-size: 0.92rem;
+      min-width: 0;
+      outline: 0;
+      width: 100%;
+    }
+
+    .messenger-contact-count {
+      color: #64748b;
+      font-size: 0.76rem;
+      font-weight: 700;
+      margin-top: 0.45rem;
+      text-transform: uppercase;
     }
 
     .contact-item {
       display: flex;
       align-items: center;
-      padding: 8px 15px;
+      gap: 0.7rem;
+      padding: 11px 14px;
       cursor: pointer;
-      transition: background-color 0.2s;
-      border-bottom: 1px solid #f8f9fa;
+      transition: background-color 0.2s, border-color 0.2s;
+      border-bottom: 1px solid #edf2f7;
+      border-left: 4px solid transparent;
     }
 
     .contact-item:hover {
-      background-color: #f8f9fa;
+      background-color: #f8fafc;
     }
 
     .contact-item.active {
-      background-color: #e3f2fd;
-      border-left: 3px solid #2196f3;
+      background-color: #eef6ff;
+      border-left-color: #0d3b66;
     }
 
     .contact-avatar {
-      width: 32px;
-      height: 32px;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #0d3b66;
       display: flex;
       align-items: center;
       justify-content: center;
       color: white;
-      margin-right: 10px;
       font-size: 14px;
+    }
+
+    .contact-avatar.is-group {
+      background: #0d3b66;
+    }
+
+    .contact-avatar.is-admin {
+      background: #8a5a00;
+    }
+
+    .contact-avatar.is-user {
+      background: #2563eb;
     }
 
     .contact-info {
@@ -3980,14 +4137,17 @@
     }
 
     .contact-name {
-      font-weight: 600;
-      font-size: 14px;
-      color: #1a1a1a;
+      font-weight: 800;
+      font-size: 0.94rem;
+      color: #0d2742;
       margin-bottom: 2px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .contact-preview {
-      font-size: 12px;
+      font-size: 0.8rem;
       color: #65676b;
       white-space: nowrap;
       overflow: hidden;
@@ -3995,16 +4155,24 @@
     }
 
     .contact-badge {
-      background: #ff4757;
+      background: #dc2626;
       color: white;
-      border-radius: 50%;
-      width: 20px;
+      border-radius: 999px;
       height: 20px;
+      min-width: 20px;
       display: flex;
       align-items: center;
       justify-content: center;
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 800;
+      padding: 0 0.35rem;
+    }
+
+    .contact-empty {
+      color: #64748b;
+      font-size: 0.9rem;
+      padding: 18px 16px;
+      text-align: center;
     }
 
     .messenger-chat {
@@ -4015,16 +4183,17 @@
     }
 
     .chat-header {
-      padding: 10px 15px;
-      border-bottom: 1px solid #e9ecef;
-      background: #f8f9fa;
+      padding: 12px 16px;
+      border-bottom: 1px solid #d8e0ea;
+      background: #ffffff;
     }
 
     .chat-avatar {
-      width: 32px;
-      height: 32px;
+      flex: 0 0 auto;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #0d3b66;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -4032,59 +4201,107 @@
       font-size: 14px;
     }
 
+    .chat-avatar.is-admin {
+      background: #8a5a00;
+    }
+
+    .chat-avatar.is-user {
+      background: #2563eb;
+    }
+
     .chat-title {
-      font-weight: 600;
-      font-size: 16px;
-      color: #1a1a1a;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #0d2742;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .chat-status {
-      font-size: 12px;
+      font-size: 0.78rem;
       color: #65676b;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .chat-load-older {
+      background: #ffffff;
+      border-bottom: 1px solid #e5ebf2;
+      padding: 0.55rem;
+      text-align: center;
     }
 
     .chat-messages {
       flex: 1;
-      padding: 15px;
+      padding: 16px;
       overflow-y: auto;
-      background: #f8f9fa;
+      background: #f5f7fb;
       min-height: 0;
       max-height: calc(100vh - 200px);
     }
 
     .chat-input {
-      padding: 10px 15px;
+      padding: 12px 14px;
       background: white;
-      border-top: 1px solid #e9ecef;
+      border-top: 1px solid #d8e0ea;
       flex-shrink: 0;
       position: sticky;
       bottom: 0;
       z-index: 10;
     }
 
+    .chat-compose {
+      align-items: flex-end;
+      background: #f8fafc;
+      border: 1px solid #d8e0ea;
+      border-radius: 999px;
+      padding: 0.2rem;
+    }
+
+    .chat-compose .form-control {
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      min-height: 38px;
+      padding: 0.55rem 0.75rem;
+    }
+
+    .chat-compose .btn {
+      align-items: center;
+      border-radius: 999px !important;
+      display: inline-flex;
+      height: 38px;
+      justify-content: center;
+      width: 44px;
+    }
+
     .message-group {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
     }
 
     .message-bubble {
-      max-width: 70%;
-      padding: 12px 16px;
+      max-width: 78%;
+      padding: 10px 14px;
       border-radius: 18px;
       margin-bottom: 4px;
       word-wrap: break-word;
       position: relative;
+      box-shadow: 0 8px 24px -18px rgba(15, 23, 42, 0.45);
     }
 
     .message-bubble.sent {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #0d3b66;
       color: white;
       margin-left: auto;
       border-bottom-right-radius: 4px;
     }
 
     .message-bubble.received {
-      background: #e4e6ea;
-      color: #1a1a1a;
+      background: #ffffff;
+      border: 1px solid #d8e0ea;
+      color: #172033;
       margin-right: auto;
       border-bottom-left-radius: 4px;
     }
@@ -4101,6 +4318,13 @@
       color: #65676b;
       margin-bottom: 4px;
       padding-left: 4px;
+    }
+
+    .chat-empty-state {
+      color: #64748b;
+      font-size: 0.92rem;
+      padding: 24px 10px;
+      text-align: center;
     }
 
     .typing-indicator {
@@ -4156,13 +4380,21 @@
         padding-top: calc(12px + max(35px, env(safe-area-inset-top, 0px))) !important;
       }
 
+      .messenger-contacts {
+        flex-basis: 238px;
+      }
+
       .chat-messages {
         max-height: calc(100vh - 180px);
         padding: 10px;
       }
 
       .chat-input {
-        padding: 8px 10px;
+        padding: 8px 10px calc(8px + env(safe-area-inset-bottom, 0px));
+      }
+
+      .message-bubble {
+        max-width: 86%;
       }
     }
 
@@ -4175,7 +4407,7 @@
 
     @media (max-height: 600px) {
       .messenger-contacts {
-        flex: 0 0 120px;
+        flex: 0 0 170px;
       }
 
       .chat-messages {
@@ -4277,13 +4509,13 @@
 
   <!-- Incoming Letter Details Modal -->
   <div class="modal fade" id="ilDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Document Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="ilDetailsBody"></div>
+        <div class="modal-body document-details-body" id="ilDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-primary" id="ilReplyBtn">Reply/Action</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -4382,13 +4614,13 @@
 
   <!-- Outgoing Letter Details Modal -->
   <div class="modal fade" id="olDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Document Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="olDetailsBody"></div>
+        <div class="modal-body document-details-body" id="olDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-primary ol-print-btn" id="olPrintBtn"><i
               class="fa fa-download me-1"></i>Download Word</button>
@@ -4486,13 +4718,13 @@
 
   <!-- Memorandum Details Modal -->
   <div class="modal fade" id="moDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Memorandum Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="moDetailsBody"></div>
+        <div class="modal-body document-details-body" id="moDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-primary mo-print-btn"
             onclick="window.moPrintCurrent && window.moPrintCurrent()"><i class="fa fa-download me-1"></i>Download
@@ -4558,13 +4790,13 @@
 
   <!-- Office Order Details Modal -->
   <div class="modal fade" id="ooDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Office Order Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="ooDetailsBody"></div>
+        <div class="modal-body document-details-body" id="ooDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
@@ -4627,13 +4859,13 @@
 
   <!-- Travel Order Details Modal -->
   <div class="modal fade" id="toDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Travel Order Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="toDetailsBody"></div>
+        <div class="modal-body document-details-body" id="toDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
@@ -4695,13 +4927,13 @@
 
   <!-- Minutes of Meeting Details Modal -->
   <div class="modal fade" id="miDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Minutes of Meeting Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="miDetailsBody"></div>
+        <div class="modal-body document-details-body" id="miDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
@@ -4780,13 +5012,13 @@
 
   <!-- Notice of Meeting Details Modal -->
   <div class="modal fade" id="noDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header bg-secondary text-white">
+        <div class="modal-header document-details-modal-header text-white">
           <h5 class="modal-title">Notice of Meeting Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <div class="modal-body" id="noDetailsBody"></div>
+        <div class="modal-body document-details-body" id="noDetailsBody"></div>
         <div class="modal-footer">
           <button type="button" class="btn btn-outline-primary no-print-btn"
             onclick="window.noPrintCurrent && window.noPrintCurrent()"><i class="fa fa-download me-1"></i>Download

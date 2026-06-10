@@ -192,6 +192,19 @@
       return perProv.MWCI > perProv.MWSI ? perProv.MWCI : perProv.MWSI;
     }
 
+    function normalizeDeepwellStatus(status) {
+      const raw = (status || '').toString().trim();
+      const s = raw.toLowerCase();
+      const c = s.replace(/[^a-z0-9]/g, '');
+      if (!s) return '';
+      if (c === 'inactive' || c === 'notactive' || c === 'nonactive' || s.includes('inactive')) return 'inactive';
+      if (c === 'standby' || c === 'rto' || c === 'rfo' || c === 'ud' || s.includes('standby')) return 'standby';
+      if (s.includes('ready') && (s.includes('operate') || s.includes('operation') || s.includes('ops'))) return 'standby';
+      if ((s.includes('under') || s.includes('u/')) && (s.includes('dev') || s.includes('devel') || s.includes('devt'))) return 'standby';
+      if (c === 'active' || s.includes('active')) return 'active';
+      return c || s;
+    }
+
     /**
      * Determine the auto-computed status for a deepwell.
      * Rules are relative to latestMonth (global latest update):
@@ -207,23 +220,27 @@
 
       // Use case-insensitive comparison to avoid constant updates due to casing
       const cur = (currentStatus || '').trim();
-      const curLower = cur.toLowerCase();
+      const curNorm = normalizeDeepwellStatus(cur);
 
       if (hasRecentData) {
-        return { status: 'Active', changed: curLower !== 'active' };
+        return { status: 'Active', changed: curNorm !== 'active' };
       }
 
       // No recent data in last 2 months relative to latest update
-      if (curLower === 'active' || curLower === '') {
+      if (curNorm === 'active' || curNorm === '') {
         return { status: 'Standby', changed: true };
       }
 
-      if (curLower === 'standby') {
+      if (curNorm === 'standby') {
         const last8 = generateMonthKeys(8, latestMonth);
         const hasAnyIn8 = last8.some(k => monthSet.has(k));
         if (!hasAnyIn8) {
           return { status: 'Inactive', changed: true };
         }
+      }
+
+      if (curNorm === 'inactive') {
+        return { status: 'Inactive', changed: cur.toLowerCase() !== 'inactive' };
       }
 
       // If already Inactive or any other status (and no recent data), no auto-change needed
@@ -506,6 +523,48 @@
       if (avgEl) avgEl.value = avg ? avg.toFixed(2) : '';
     }
 
+    function displayDeepwellNumber(value, unit = '') {
+      const numeric = parseFloat(value);
+      if (isNaN(numeric) || numeric === 0) return 'Not specified';
+      return `${fmtNum(numeric)}${unit ? ` ${unit}` : ''}`;
+    }
+
+    function getDeepwellStatusClass(status) {
+      const normalized = normalizeDeepwellStatus(status);
+      if (normalized === 'active') return 'is-active';
+      if (normalized === 'standby') return 'is-standby';
+      if (normalized === 'inactive') return 'is-inactive';
+      return 'is-other';
+    }
+
+    function setDeepwellText(id, value) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value || 'Not specified';
+    }
+
+    function updateDeepwellRecordSummary(dw = {}, edit = true) {
+      if (elements.deepwellForm) {
+        elements.deepwellForm.classList.toggle('deepwell-record-mode', !edit);
+        elements.deepwellForm.classList.toggle('deepwell-edit-mode', edit);
+      }
+      setDeepwellText('dwRecordName', dw.name || (edit ? 'Deepwell Record' : 'Untitled Deepwell'));
+      setDeepwellText('dwRecordProvider', dw.provider ? `${dw.provider} Concessionaire` : 'Concessionaire not specified');
+      const statusEl = document.getElementById('dwRecordStatus');
+      if (statusEl) {
+        const status = dw.status || 'Status';
+        statusEl.textContent = status;
+        statusEl.className = `deepwell-status-badge ${getDeepwellStatusClass(status)}`;
+      }
+      setDeepwellText('dwMetricRatedYield', displayDeepwellNumber(dw.ratedYield, 'cu.m/day'));
+      setDeepwellText('dwMetricAvgProd', displayDeepwellNumber(dw.avgProd, 'cu.m'));
+      setDeepwellText('dwMetricTotalProd', displayDeepwellNumber(dw.totalProd, 'cu.m'));
+      setDeepwellText('dwMetricPermit', dw.permit || 'Not specified');
+      const addMonthBtn = document.getElementById('addDwMonthBtn');
+      if (addMonthBtn) addMonthBtn.style.display = edit ? 'inline-flex' : 'none';
+      const dismissBtn = document.querySelector('#deepwellModal .modal-footer [data-bs-dismiss="modal"]');
+      if (dismissBtn) dismissBtn.textContent = edit ? 'Cancel' : 'Close';
+    }
+
     function addDwMonthRow(data = {}) {
       if (!elements.dwMonthsBody) return;
       const tr = document.createElement('tr');
@@ -532,6 +591,7 @@
       updateDwStats();
       const historyContainer = document.getElementById('dwHistoryContainer');
       if (historyContainer) historyContainer.innerHTML = '';
+      updateDeepwellRecordSummary({}, true);
       if (elements.deepwellForm) {
         Array.from(elements.deepwellForm.elements).forEach(el => {
           if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
@@ -563,15 +623,23 @@
           const when = h.timestamp ? new Date(h.timestamp).toLocaleString() : '';
           const who = h.fullName || h.email || 'Unknown user';
           const act = h.action || 'update';
-          return `<div class="d-flex align-items-start gap-2 py-1">
-          <i class="fa-regular fa-clock mt-1 text-muted"></i>
+          return `<div class="deepwell-audit-item">
+          <i class="fa-regular fa-clock"></i>
           <div>
             <div><strong>${act}</strong> by ${who}</div>
-            <div class="text-muted small">${when}</div>
+            <time>${when}</time>
           </div>
         </div>`;
         }).join('');
-        historyContainer.innerHTML = `<div class="small text-muted mt-3">Edit History</div><div class="border rounded p-2 bg-light small">${rows}</div>`;
+        historyContainer.innerHTML = `<section class="deepwell-detail-section">
+          <div class="deepwell-section-heading">
+            <div>
+              <h6><i class="fa-regular fa-clock me-2"></i>Edit History</h6>
+              <p>Administrative activity log.</p>
+            </div>
+          </div>
+          <div class="deepwell-audit-list">${rows}</div>
+        </section>`;
       }
     }
 
@@ -597,6 +665,7 @@
         if ((dw.months || []).length === 0) addDwMonthRow();
       }
       updateDwStats();
+      updateDeepwellRecordSummary(dw, edit);
       if (elements.deepwellForm) {
         Array.from(elements.deepwellForm.elements).forEach(el => {
           if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {

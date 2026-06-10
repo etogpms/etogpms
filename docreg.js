@@ -473,6 +473,109 @@
       });
     } catch (_) { }
   }
+
+  function docDetailValue(value, fallback = 'Not specified') {
+    const raw = (value === undefined || value === null) ? '' : String(value).trim();
+    return raw ? escapeHtml(raw) : `<span class="text-muted">${fallback}</span>`;
+  }
+
+  function docRecordField(label, value, { html = false, wide = false } = {}) {
+    const content = html ? (value || '<span class="text-muted">Not specified</span>') : docDetailValue(value);
+    return `<div class="document-detail-field${wide ? ' is-wide' : ''}">
+      <div class="document-detail-label">${escapeHtml(label)}</div>
+      <div class="document-detail-value">${content}</div>
+    </div>`;
+  }
+
+  function docStatusClass(status) {
+    const s = (status || '').toString().trim().toLowerCase();
+    if (s.includes('archived') || s.includes('completed') || s.includes('delivered') || s.includes('logged')) return 'is-complete';
+    if (s.includes('draft') || s.includes('pending')) return 'is-draft';
+    if (s.includes('sent') || s.includes('received')) return 'is-active';
+    return 'is-neutral';
+  }
+
+  function docStatusBadge(status) {
+    const label = (status || '').toString().trim() || 'Recorded';
+    return `<span class="document-status-badge ${docStatusClass(label)}">${escapeHtml(label)}</span>`;
+  }
+
+  function docDetailSection(icon, title, fields, subtitle = '') {
+    const fieldHtml = (fields || []).filter(Boolean).map(field => docRecordField(field.label, field.value, field)).join('');
+    if (!fieldHtml) return '';
+    return `<section class="document-detail-section">
+      <div class="document-section-heading">
+        <div>
+          <h6><i class="${icon} me-2"></i>${escapeHtml(title)}</h6>
+          ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
+        </div>
+      </div>
+      <div class="document-detail-grid">${fieldHtml}</div>
+    </section>`;
+  }
+
+  function docAuditSection(history) {
+    const hist = (history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    if (!hist.length) return '';
+    const rows = hist.map(h => {
+      const who = (h.fullName || '').trim() || (h.email || 'unknown');
+      const when = h.timestamp ? new Date(h.timestamp).toLocaleString() : '';
+      const act = h.action || 'update';
+      return `<div class="document-audit-item">
+        <i class="fa-regular fa-clock"></i>
+        <div>
+          <div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div>
+          <time>${escapeHtml(when)}</time>
+        </div>
+      </div>`;
+    }).join('');
+    return `<section class="document-detail-section">
+      <div class="document-section-heading">
+        <div>
+          <h6><i class="fa-regular fa-clock me-2"></i>Edit History</h6>
+          <p>Administrative activity log.</p>
+        </div>
+      </div>
+      <div class="document-audit-list">${rows}</div>
+    </section>`;
+  }
+
+  function renderDocumentRecord(config) {
+    const {
+      type = 'Document Registry Record',
+      title = 'Document Details',
+      subtitle = '',
+      icon = 'fa-regular fa-file-lines',
+      status = '',
+      summary = [],
+      sections = [],
+      history = []
+    } = config || {};
+    const summaryHtml = (summary || []).filter(Boolean).map(item => `<div class="document-summary-metric">
+      <span>${escapeHtml(item.label)}</span>
+      <strong>${item.html ? (item.value || '<span class="text-muted">Not specified</span>') : docDetailValue(item.value)}</strong>
+    </div>`).join('');
+    const sectionsHtml = (sections || []).filter(Boolean).map(section => docDetailSection(
+      section.icon || 'fa-regular fa-file-lines',
+      section.title || 'Details',
+      section.fields || [],
+      section.subtitle || ''
+    )).join('');
+    return `<div class="document-record">
+      <div class="document-record-hero">
+        <div class="document-record-seal"><i class="${icon}"></i></div>
+        <div class="document-record-title">
+          <div class="document-record-kicker">${escapeHtml(type)}</div>
+          <h5>${docDetailValue(title, 'Untitled Document')}</h5>
+          <p>${docDetailValue(subtitle, 'Document Registry')}</p>
+        </div>
+        <div class="document-record-status">${docStatusBadge(status)}</div>
+      </div>
+      ${summaryHtml ? `<div class="document-summary-grid">${summaryHtml}</div>` : ''}
+      ${sectionsHtml}
+      ${docAuditSection(history)}
+    </div>`;
+  }
   try {
     if (!window.ilUnlinkReply) {
       window.ilUnlinkReply = async function (incomingId, replyId) {
@@ -928,36 +1031,38 @@
     if (toAgency) letterToParts.push(`<div>${escapeHtml(toAgency)}</div>`);
     if (toAddress) letterToParts.push(`<div>${escapeHtml(toAddress)}</div>`);
     const letterToHtml = letterToParts.join('');
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-4"><div class="small text-muted">Reference No.</div><div class="fw-semibold">${escapeHtml(it.refNo || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Prepared by</div><div class="fw-semibold">${escapeHtml(it.preparedBy || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Control No.</div><div class="fw-semibold">${escapeHtml(it.controlNo || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Letter to:</div><div>${letterToHtml}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Document Link</div><div class="fw-semibold">${renderDocLink(it.docLink)}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Delivery/Sent via</div><div class="fw-semibold">${escapeHtml(it.deliveryVia || '')}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Signatory</div><div class="fw-semibold">${escapeHtml(it.signatory || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Status</div><div class="fw-semibold">${escapeHtml(it.status || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Remarks</div><div class="fw-semibold">${escapeHtml(it.remarks || '')}</div></div>
-      </div>
-    `;
+    const html = renderDocumentRecord({
+      type: 'Outgoing Letter Record',
+      icon: 'fa-solid fa-paper-plane',
+      title: it.subject || it.refNo || it.controlNo || 'Outgoing Document',
+      subtitle: it.refNo || it.controlNo || 'Document Registry',
+      status: it.status,
+      summary: [
+        { label: 'Reference No.', value: it.refNo },
+        { label: 'Control No.', value: it.controlNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Prepared By', value: it.preparedBy }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-file-lines',
+          title: 'Document Information',
+          subtitle: 'Official routing and signatory details.',
+          fields: [
+            { label: 'Letter To', value: letterToHtml, html: true, wide: true },
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Delivery/Sent Via', value: it.deliveryVia },
+            { label: 'Signatory', value: it.signatory },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true, wide: true },
+            { label: 'Remarks', value: it.remarks, wide: true }
+          ]
+        }
+      ],
+      history: it.history
+    });
     if (els.detailsBody) {
       els.detailsBody.innerHTML = html;
       restrictDocLinksIn(els.detailsBody);
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class="d-flex align-items-start gap-2 py-1"><i class="fa-regular fa-clock mt-1 text-muted"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class="text-muted small">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.detailsBody.insertAdjacentHTML('beforeend', `<div class="small text-muted mt-3">Edit History</div><div class="border rounded p-2 bg-light small">${rows}</div>`);
-        }
-      } catch (_) { }
       try { els.detailsBody.setAttribute('data-current-id', it.id); } catch (_) { }
     }
     try { window.__olCurrentItem = it; } catch (_) { }
@@ -1281,40 +1386,51 @@
   function noDelete(id) { /* re-bound to Firestore below */ }
   function noOpenDetails(id) {
     const it = noLoad().find(x => x.id === id); if (!it) return;
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-4"><div class="small text-muted">Control No.</div><div class="fw-semibold">${escapeHtml(it.controlNo || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Signatory</div><div class="fw-semibold">${escapeHtml(it.signatory || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Designation</div><div class="fw-semibold">${escapeHtml(it.signatoryDesignation || it.designation || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Department</div><div class="fw-semibold">${escapeHtml(it.signatoryDepartment || '')}</div></div>
-        ${it.meetDate ? `<div class="col-md-4" id="noMeetDateRow"><div class="small text-muted">Date of Meeting</div><div class="fw-semibold">${fmtDate(it.meetDate) || ''}</div></div>` : ''}
-        ${it.meetTime ? `<div class="col-md-4" id="noMeetTimeRow"><div class="small text-muted">Time of Meeting</div><div class="fw-semibold">${escapeHtml(fmtTime(it.meetTime))}</div></div>` : ''}
-        <div class="col-md-6"><div class="small text-muted">Name</div><div class="fw-semibold">${escapeHtml(it.name || '')}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Agency</div><div class="fw-semibold">${escapeHtml(it.agency || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Document Link</div><div class="fw-semibold">${it.docLink ? `<a href="${escapeAttr(it.docLink)}" target="_blank" rel="noopener">${escapeHtml(it.docLink)}</a>` : ''}</div></div>
-        <div class="col-12"><div class="small text-muted">Remarks</div><div class="fw-semibold">${escapeHtml(it.remarks || '')}</div></div>
-      </div>
-    `;
+    const html = renderDocumentRecord({
+      type: 'Notice of Meeting Record',
+      icon: 'fa-solid fa-bullhorn',
+      title: it.subject || it.controlNo || it.refNo || 'Notice of Meeting',
+      subtitle: it.controlNo || it.refNo || 'Document Registry',
+      status: it.status || 'Recorded',
+      summary: [
+        { label: 'Control No.', value: it.controlNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Meeting Date', value: fmtDate(it.meetDate) },
+        { label: 'Meeting Time', value: fmtTime(it.meetTime) }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-calendar-check',
+          title: 'Meeting Information',
+          subtitle: 'Schedule, venue, and participant details.',
+          fields: [
+            { label: 'Venue', value: it.venue },
+            { label: 'Participant Name', value: it.name },
+            { label: 'Agency', value: it.agency },
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true, wide: true },
+            { label: 'Remarks', value: it.remarks, wide: true }
+          ]
+        },
+        {
+          icon: 'fa-regular fa-pen-to-square',
+          title: 'Signatory',
+          subtitle: 'Approving official information.',
+          fields: [
+            { label: 'Signatory', value: it.signatory },
+            { label: 'Designation', value: it.signatoryDesignation || it.designation },
+            { label: 'Department', value: it.signatoryDepartment, wide: true }
+          ]
+        }
+      ],
+      history: it.history
+    });
     if (els.noDetailsBody) {
       els.noDetailsBody.innerHTML = html;
       try { els.noDetailsBody.setAttribute('data-current-id', it.id); } catch (_) { }
       try { els.noDetailsBody.setAttribute('data-current-json', encodeURIComponent(JSON.stringify(it))); } catch (_) { }
       try { window.__noCurrentItem = it; } catch (_) { }
       try { window.__noCurrentId = it.id; } catch (_) { }
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class="d-flex align-items-start gap-2 py-1"><i class="fa-regular fa-clock mt-1 text-muted"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class="text-muted small">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.noDetailsBody.insertAdjacentHTML('beforeend', `<div class="small text-muted mt-3">Edit History</div><div class="border rounded p-2 bg-light small">${rows}</div>`);
-        }
-      } catch (_) { }
       restrictDocLinksIn(els.noDetailsBody);
     }
     noDetailsModal.show();
@@ -1324,35 +1440,19 @@
   if (els.noAddBtn) els.noAddBtn.addEventListener('click', noOnAdd);
   if (els.noForm) els.noForm.addEventListener('submit', noOnSubmit);
   if (els.noSearchInput) els.noSearchInput.addEventListener('input', debounce(() => { noCurrentPage = 1; renderNo(); }, 200));
-  if (els.noTbody) { els.noTbody.addEventListener('click', (ev) => { const eBtn = ev.target.closest('.no-edit'); if (eBtn) { ev.preventDefault(); noOpenEdit(eBtn.getAttribute('data-id')); return; } const dBtn = ev.target.closest('.no-del'); if (dBtn) { ev.preventDefault(); noDelete(dBtn.getAttribute('data-id')); return; } const tr = ev.target.closest('tr'); if (!tr) return; const cell = ev.target.closest('td'); if (cell === tr.lastElementChild) return; const id = tr.getAttribute('data-id'); noOpenDetails(id); try { const it = noLoad().find(x => x.id === id) || {}; const body = els.noDetailsBody; if (body) { body.querySelector('#noMeetDateRow')?.remove(); body.querySelector('#noMeetTimeRow')?.remove(); const dateCol = `<div class="col-md-4" id="noMeetDateRow"><div class="small text-muted">Date of Meeting</div><div class="fw-semibold">${fmtDate(it.meetDate) || ''}</div></div>`; const timeCol = it.meetTime ? `<div class="col-md-4" id="noMeetTimeRow"><div class="small text-muted">Time of Meeting</div><div class="fw-semibold">${escapeHtml(fmtTime(it.meetTime))}</div></div>` : ''; const insertHtml = dateCol + timeCol; const labels = Array.from(body.querySelectorAll('.small.text-muted')); const subjLabel = labels.find(el => (el.textContent || '').trim() === 'Subject'); if (subjLabel && subjLabel.parentElement) { subjLabel.parentElement.insertAdjacentHTML('beforebegin', insertHtml); } else { const docDateLabel = labels.find(el => (el.textContent || '').trim() === 'Document Date'); if (docDateLabel && docDateLabel.parentElement) { docDateLabel.parentElement.insertAdjacentHTML('afterend', insertHtml); } else { body.insertAdjacentHTML('afterbegin', `<div class="row g-2">${insertHtml}</div>`); } } restrictDocLinksIn(body); } } catch (_) { } }); }
+  if (els.noTbody) { els.noTbody.addEventListener('click', (ev) => { const eBtn = ev.target.closest('.no-edit'); if (eBtn) { ev.preventDefault(); noOpenEdit(eBtn.getAttribute('data-id')); return; } const dBtn = ev.target.closest('.no-del'); if (dBtn) { ev.preventDefault(); noDelete(dBtn.getAttribute('data-id')); return; } const tr = ev.target.closest('tr'); if (!tr) return; const cell = ev.target.closest('td'); if (cell === tr.lastElementChild) return; const id = tr.getAttribute('data-id'); noOpenDetails(id); }); }
   // Global wrappers
   window.noEdit = (id) => { try { noOpenEdit(id); } catch (_) { } };
   window.noDelete = (id) => { try { noDelete(id); } catch (_) { } };
   window.noOpenDetails = (id) => { try { noOpenDetails(id); } catch (_) { } };
 
-  // Enforce restricted access and inject Venue on Notice details after rendering
+  // Enforce restricted access on Notice details after rendering
   try {
     const __origNoOpenDetails = noOpenDetails;
     noOpenDetails = function (id) {
       try { __origNoOpenDetails(id); } catch (_) { }
       try {
         restrictDocLinksIn(els.noDetailsBody);
-        const body = els.noDetailsBody;
-        const it = (noLoad().find(x => x.id === id) || {});
-        if (body) {
-          try { body.querySelector('#noVenueRow')?.remove(); } catch (_) { }
-          const v = (it.venue || '').trim();
-          if (v) {
-            const venueCol = `<div class="col-md-4" id="noVenueRow"><div class="small text-muted">Venue</div><div class="fw-semibold">${escapeHtml(v)}</div></div>`;
-            const labels = Array.from(body.querySelectorAll('.small.text-muted'));
-            const signatoryLabel = labels.find(el => (el.textContent || '').trim() === 'Signatory');
-            if (signatoryLabel && signatoryLabel.parentElement) {
-              signatoryLabel.parentElement.insertAdjacentHTML('afterend', venueCol);
-            } else {
-              body.insertAdjacentHTML('afterbegin', `<div class="row g-2">${venueCol}</div>`);
-            }
-          }
-        }
       } catch (_) { }
     };
   } catch (_) { }
@@ -1596,31 +1696,35 @@
       range = (it.noEnd || !end) ? (start + ' to Until revoked') : (start + ' to ' + end);
     }
     const participantsHtml = (it.participants || '').split(/\r?\n/).filter(Boolean).map(n => `<div>${escapeHtml(n)}</div>`).join('');
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-4"><div class="small text-muted">Reference #</div><div class="fw-semibold">${escapeHtml(it.refNo || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Date Inclusion</div><div class="fw-semibold">${escapeHtml(range)}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Participants</div><div class="fw-semibold">${participantsHtml || ''}</div></div>
-        <div class="col-12"><div class="small text-muted">Document Link</div><div class="fw-semibold">${renderDocLink(it.docLink)}</div></div>
-      </div>
-    `;
+    const html = renderDocumentRecord({
+      type: 'Office Order Record',
+      icon: 'fa-solid fa-briefcase',
+      title: it.subject || it.refNo || 'Office Order',
+      subtitle: it.refNo || 'Document Registry',
+      status: it.status || 'Recorded',
+      summary: [
+        { label: 'Reference No.', value: it.refNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Date Inclusion', value: range },
+        { label: 'Participants', value: (it.participants || '').split(/\r?\n/).filter(Boolean).length || 'Not specified' }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-file-lines',
+          title: 'Order Information',
+          subtitle: 'Official subject, coverage, and participant details.',
+          fields: [
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Participants', value: participantsHtml, html: true, wide: true },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true, wide: true }
+          ]
+        }
+      ],
+      history: it.history
+    });
     if (els.ooDetailsBody) {
       els.ooDetailsBody.innerHTML = html;
       restrictDocLinksIn(els.ooDetailsBody);
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class=\"d-flex align-items-start gap-2 py-1\"><i class=\"fa-regular fa-clock mt-1 text-muted\"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class=\"text-muted small\">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.ooDetailsBody.insertAdjacentHTML('beforeend', `<div class=\"small text-muted mt-3\">Edit History</div><div class=\"border rounded p-2 bg-light small\">${rows}</div>`);
-        }
-      } catch (_) { }
     }
     ooDetailsModal.show();
   }
@@ -1862,31 +1966,35 @@
       const start = fmtDate(it.incStart) || ''; const end = fmtDate(it.incEnd) || ''; range = (it.noEnd || !end) ? (start + ' to Until revoked') : (start + ' to ' + end);
     }
     const participantsHtml = (it.participants || '').split(/\r?\n/).filter(Boolean).map(n => `<div>${escapeHtml(n)}</div>`).join('');
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-4"><div class="small text-muted">Reference #</div><div class="fw-semibold">${escapeHtml(it.refNo || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Date Inclusion</div><div class="fw-semibold">${escapeHtml(range)}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Participants</div><div class="fw-semibold">${participantsHtml || ''}</div></div>
-        <div class="col-12"><div class="small text-muted">Document Link</div><div class="fw-semibold">${renderDocLink(it.docLink)}</div></div>
-      </div>
-    `;
+    const html = renderDocumentRecord({
+      type: 'Travel Order Record',
+      icon: 'fa-solid fa-plane',
+      title: it.subject || it.refNo || 'Travel Order',
+      subtitle: it.refNo || 'Document Registry',
+      status: it.status || 'Recorded',
+      summary: [
+        { label: 'Reference No.', value: it.refNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Travel Date', value: range },
+        { label: 'Participants', value: (it.participants || '').split(/\r?\n/).filter(Boolean).length || 'Not specified' }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-file-lines',
+          title: 'Travel Information',
+          subtitle: 'Official subject, travel coverage, and participant details.',
+          fields: [
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Participants', value: participantsHtml, html: true, wide: true },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true, wide: true }
+          ]
+        }
+      ],
+      history: it.history
+    });
     if (els.toDetailsBody) {
       els.toDetailsBody.innerHTML = html;
       restrictDocLinksIn(els.toDetailsBody);
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class=\"d-flex align-items-start gap-2 py-1\"><i class=\"fa-regular fa-clock mt-1 text-muted\"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class=\"text-muted small\">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.toDetailsBody.insertAdjacentHTML('beforeend', `<div class=\"small text-muted mt-3\">Edit History</div><div class=\"border rounded p-2 bg-light small\">${rows}</div>`);
-        }
-      } catch (_) { }
       els.toDetailsBody.setAttribute('data-current-id', it.id);
     }
     // Ensure footer has Edit/Delete
@@ -2038,34 +2146,37 @@
   function miOpenDetails(id) {
     const it = miLoad().find(x => x.id === id); if (!it) return;
     const agendaHtml = (it.agenda || '').split(/\r?\n/).filter(Boolean).map(n => `<div>${escapeHtml(n)}</div>`).join('');
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-3"><div class="small text-muted">Control No.</div><div class="fw-semibold">${escapeHtml(it.controlNo || '')}</div></div>
-        <div class="col-md-3"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-3"><div class="small text-muted">Date of Meeting</div><div class="fw-semibold">${fmtDate(it.meetDate) || ''}</div></div>
-        <div class="col-md-3"><div class="small text-muted">Signatory</div><div class="fw-semibold">${escapeHtml(it.signatory || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Agenda</div><div class="fw-semibold">${agendaHtml || ''}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Prepared by</div><div class="fw-semibold">${escapeHtml(it.preparedBy || '')}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Document Link</div><div class="fw-semibold">${renderDocLink(it.docLink)}</div></div>
-        <div class="col-12"><div class="small text-muted">Remarks</div><div class="fw-semibold">${escapeHtml(it.remarks || '')}</div></div>
-      </div>
-    `;
+    const html = renderDocumentRecord({
+      type: 'Minutes of Meeting Record',
+      icon: 'fa-solid fa-clipboard-list',
+      title: it.subject || it.controlNo || 'Minutes of Meeting',
+      subtitle: it.controlNo || 'Document Registry',
+      status: it.status || 'Recorded',
+      summary: [
+        { label: 'Control No.', value: it.controlNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Meeting Date', value: fmtDate(it.meetDate) },
+        { label: 'Prepared By', value: it.preparedBy }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-file-lines',
+          title: 'Meeting Information',
+          subtitle: 'Subject, agenda, signatory, and document reference.',
+          fields: [
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Agenda', value: agendaHtml, html: true, wide: true },
+            { label: 'Signatory', value: it.signatory },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true },
+            { label: 'Remarks', value: it.remarks, wide: true }
+          ]
+        }
+      ],
+      history: it.history
+    });
     if (els.miDetailsBody) {
       els.miDetailsBody.innerHTML = html;
       restrictDocLinksIn(els.miDetailsBody);
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class=\"d-flex align-items-start gap-2 py-1\"><i class=\"fa-regular fa-clock mt-1 text-muted\"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class=\"text-muted small\">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.miDetailsBody.insertAdjacentHTML('beforeend', `<div class=\"small text-muted mt-3\">Edit History</div><div class=\"border rounded p-2 bg-light small\">${rows}</div>`);
-        }
-      } catch (_) { }
     }
     miDetailsModal.show();
   }
@@ -2385,36 +2496,46 @@
     if (fromAgency) letterFromParts.push(`<div>${escapeHtml(fromAgency)}</div>`);
     if (fromAddress) letterFromParts.push(`<div>${escapeHtml(fromAddress)}</div>`);
     const letterFromHtml = letterFromParts.join('');
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-4"><div class="small text-muted">Reference No.</div><div class="fw-semibold">${escapeHtml(it.refNo || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Received Date</div><div class="fw-semibold">${fmtDate(it.receivedDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Category</div><div class="fw-semibold">${escapeHtml(it.category || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Letter from:</div><div>${letterFromHtml}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Document Link</div><div class="fw-semibold">${renderDocLink(it.docLink)}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Delivery/Sent via</div><div class="fw-semibold">${escapeHtml(it.deliveryVia || '')}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Assigned To</div><div class="fw-semibold">${escapeHtml(it.assignedTo || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Status</div><div class="fw-semibold">${escapeHtml(it.status || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Remarks</div><div class="fw-semibold">${escapeHtml(it.remarks || '')}</div></div>
-        ${repliesBlock}
-      </div>`;
+    const html = renderDocumentRecord({
+      type: 'Incoming Letter Record',
+      icon: 'fa-solid fa-inbox',
+      title: it.subject || it.refNo || 'Incoming Document',
+      subtitle: it.refNo || 'Document Registry',
+      status: it.status,
+      summary: [
+        { label: 'Reference No.', value: it.refNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Received Date', value: fmtDate(it.receivedDate) },
+        { label: 'Category', value: it.category }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-file-lines',
+          title: 'Document Information',
+          subtitle: 'Sender, routing, and registry details.',
+          fields: [
+            { label: 'Letter From', value: letterFromHtml, html: true, wide: true },
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Delivery/Sent Via', value: it.deliveryVia },
+            { label: 'Assigned To', value: it.assignedTo },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true, wide: true },
+            { label: 'Remarks', value: it.remarks, wide: true }
+          ]
+        },
+        repliesBlock ? {
+          icon: 'fa-solid fa-reply',
+          title: 'Reply/Action Tracking',
+          subtitle: 'Linked replies and response elapsed time.',
+          fields: [
+            { label: 'Linked Replies', value: repliesBlock, html: true, wide: true }
+          ]
+        } : null
+      ],
+      history: it.history
+    });
     if (els.ilDetailsBody) {
       els.ilDetailsBody.innerHTML = html;
       restrictDocLinksIn(els.ilDetailsBody);
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class=\"d-flex align-items-start gap-2 py-1\"><i class=\"fa-regular fa-clock mt-1 text-muted\"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class=\"text-muted small\">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.ilDetailsBody.insertAdjacentHTML('beforeend', `<div class=\"small text-muted mt-3\">Edit History</div><div class=\"border rounded p-2 bg-light small\">${rows}</div>`);
-        }
-      } catch (_) { }
       els.ilDetailsBody.setAttribute('data-current-id', it.id);
       try {
         els.ilDetailsBody.querySelectorAll('.il-unlink-reply').forEach(btn => {
@@ -2720,21 +2841,35 @@
     if (fromDesignation) memoFromParts.push(`<div>${escapeHtml(fromDesignation)}</div>`);
     if (fromDepartment) memoFromParts.push(`<div>${escapeHtml(fromDepartment)}</div>`);
     const memoFromHtml = memoFromParts.join('');
-    const html = `
-      <div class="row g-2">
-        <div class="col-md-4"><div class="small text-muted">Reference No.</div><div class="fw-semibold">${escapeHtml(it.refNo || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Document Date</div><div class="fw-semibold">${fmtDate(it.docDate) || ''}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Prepared by</div><div class="fw-semibold">${escapeHtml(it.preparedBy || '')}</div></div>
-        <div class="col-md-4"><div class="small text-muted">Control No.</div><div class="fw-semibold">${escapeHtml(it.controlNo || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Memo to:</div><div>${memoToHtml}</div></div>
-        <div class="col-12"><div class="small text-muted">Memo from:</div><div>${memoFromHtml}</div></div>
-        <div class="col-12"><div class="small text-muted">Subject</div><div class="fw-semibold">${escapeHtml(it.subject || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Document Link</div><div class="fw-semibold">${renderDocLink(it.docLink)}</div></div>
-        <div class="col-md-6"><div class="small text-muted">Signatory</div><div class="fw-semibold">${escapeHtml(it.signatory || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Status</div><div class="fw-semibold">${escapeHtml(it.status || '')}</div></div>
-        <div class="col-12"><div class="small text-muted">Remarks</div><div class="fw-semibold">${escapeHtml(it.remarks || '')}</div></div>
-      </div>
-    `;
+    const html = renderDocumentRecord({
+      type: 'Memorandum Record',
+      icon: 'fa-solid fa-file-lines',
+      title: it.subject || it.refNo || it.controlNo || 'Memorandum',
+      subtitle: it.refNo || it.controlNo || 'Document Registry',
+      status: it.status,
+      summary: [
+        { label: 'Reference No.', value: it.refNo },
+        { label: 'Control No.', value: it.controlNo },
+        { label: 'Document Date', value: fmtDate(it.docDate) },
+        { label: 'Prepared By', value: it.preparedBy }
+      ],
+      sections: [
+        {
+          icon: 'fa-regular fa-file-lines',
+          title: 'Memorandum Information',
+          subtitle: 'Routing, subject, signatory, and registry details.',
+          fields: [
+            { label: 'Memo To', value: memoToHtml, html: true, wide: true },
+            { label: 'Memo From', value: memoFromHtml, html: true, wide: true },
+            { label: 'Subject', value: it.subject, wide: true },
+            { label: 'Signatory', value: it.signatory },
+            { label: 'Document Link', value: renderDocLink(it.docLink), html: true },
+            { label: 'Remarks', value: it.remarks, wide: true }
+          ]
+        }
+      ],
+      history: it.history
+    });
     if (els.moDetailsBody) {
       els.moDetailsBody.innerHTML = html;
       restrictDocLinksIn(els.moDetailsBody);
@@ -2742,18 +2877,6 @@
       try { els.moDetailsBody.setAttribute('data-current-json', encodeURIComponent(JSON.stringify(it))); } catch (_) { }
       try { window.__moCurrentItem = it; } catch (_) { }
       try { window.__moCurrentId = it.id; } catch (_) { }
-      try {
-        const __hist = (it.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        if (__hist.length) {
-          const rows = __hist.map(h => {
-            const who = (h.fullName || '').trim() || (h.email || 'unknown');
-            const when = (new Date(h.timestamp)).toLocaleString();
-            const act = h.action || 'update';
-            return `<div class=\"d-flex align-items-start gap-2 py-1\"><i class=\"fa-regular fa-clock mt-1 text-muted\"></i><div><div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div><div class=\"text-muted small\">${escapeHtml(when)}</div></div></div>`;
-          }).join('');
-          els.moDetailsBody.insertAdjacentHTML('beforeend', `<div class=\"small text-muted mt-3\">Edit History</div><div class=\"border rounded p-2 bg-light small\">${rows}</div>`);
-        }
-      } catch (_) { }
     }
     moDetailsModal.show();
   }

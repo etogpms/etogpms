@@ -29,6 +29,15 @@
       if (typeof opts.elevatedAccessRef === 'function') return opts.elevatedAccessRef();
       return false;
     };
+    const escapeHtml = (value) => {
+      if (window.AppUtils && window.AppUtils.escapeHtml) return window.AppUtils.escapeHtml(value);
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
 
     function setPresentations(list) {
       presentations = Array.isArray(list) ? list.slice() : [];
@@ -203,6 +212,110 @@
     let presDetailsModal = null;
     let currentDetailId = null;
 
+    function formatPresentationTime(value) {
+      let timeStr = value || '';
+      if (timeStr) {
+        const [h, m] = timeStr.split(':');
+        const hour = parseInt(h, 10);
+        if (!Number.isNaN(hour)) {
+          const ampm = hour >= 12 ? 'PM' : 'AM';
+          const h12 = hour % 12 || 12;
+          timeStr = `${h12}:${m || '00'} ${ampm}`;
+        }
+      }
+      return timeStr;
+    }
+
+    function formatPresentationDate(value, opts = {}) {
+      if (!value) return '—';
+      try {
+        const [y, mon, day] = String(value).split('-').map(Number);
+        const dateObj = new Date(y, mon - 1, day);
+        return dateObj.toLocaleDateString('en-US', {
+          weekday: opts.weekday === false ? undefined : 'short',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch (_) {
+        return String(value);
+      }
+    }
+
+    function formatPresentationStamp(value) {
+      if (!value) return '';
+      try {
+        if (typeof value === 'string') return new Date(value).toLocaleString();
+        if (value.toDate) return value.toDate().toLocaleString();
+      } catch (_) { /* keep blank */ }
+      return '';
+    }
+
+    function presentationStatus(dateValue) {
+      const dateYmd = normalizeYmd(dateValue);
+      if (!dateYmd) return { text: 'For Scheduling', className: 'is-pending' };
+      const today = todayYmd();
+      if (dateYmd < today) return { text: 'Completed', className: 'is-completed' };
+      if (dateYmd === today) return { text: 'Today', className: 'is-today' };
+      return { text: 'Scheduled', className: 'is-scheduled' };
+    }
+
+    function presValue(value, fallback = '—') {
+      const text = String(value ?? '').trim();
+      if (!text) return `<span class="presentation-muted">${escapeHtml(fallback)}</span>`;
+      return escapeHtml(text);
+    }
+
+    function presField(label, value, icon, options = {}) {
+      const content = options.html ? value : presValue(value);
+      return `<div class="presentation-detail-field${options.wide ? ' is-wide' : ''}">
+        <div class="presentation-detail-icon"><i class="${icon}"></i></div>
+        <div>
+          <div class="presentation-detail-label">${escapeHtml(label)}</div>
+          <div class="presentation-detail-value">${content}</div>
+        </div>
+      </div>`;
+    }
+
+    function presSection(icon, title, fields, subtitle = '') {
+      return `<section class="presentation-detail-section">
+        <div class="presentation-section-heading">
+          <div>
+            <h6><i class="${icon} me-2"></i>${escapeHtml(title)}</h6>
+            ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
+          </div>
+        </div>
+        <div class="presentation-detail-grid">
+          ${fields.join('')}
+        </div>
+      </section>`;
+    }
+
+    function presAuditSection(p) {
+      const updatedAt = formatPresentationStamp(p.updatedAt);
+      const items = [];
+      if (p.updatedBy || updatedAt) {
+        items.push(`<div class="presentation-audit-item">
+          <i class="fa-regular fa-clock"></i>
+          <div><strong>Last updated</strong><br><span>${presValue(p.updatedBy || 'System')}</span>${updatedAt ? `<time>${escapeHtml(updatedAt)}</time>` : ''}</div>
+        </div>`);
+      }
+      if (!items.length) {
+        return `<section class="presentation-detail-section">
+          <div class="presentation-section-heading">
+            <h6><i class="fa-regular fa-clock me-2"></i>Audit Information</h6>
+          </div>
+          <div class="presentation-empty-state">No audit information recorded.</div>
+        </section>`;
+      }
+      return `<section class="presentation-detail-section">
+        <div class="presentation-section-heading">
+          <h6><i class="fa-regular fa-clock me-2"></i>Audit Information</h6>
+        </div>
+        <div class="presentation-audit-list">${items.join('')}</div>
+      </section>`;
+    }
+
     function initDetailsModal() {
       const el = document.getElementById('presentationDetailsModal');
       if (el) {
@@ -236,46 +349,46 @@
       if (!p) return;
       currentDetailId = id;
 
-      // Format time
-      let timeStr = p.time || '';
-      if (timeStr) {
-        const [h, m] = timeStr.split(':');
-        const hour = parseInt(h, 10);
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const h12 = hour % 12 || 12;
-        timeStr = `${h12}:${m} ${ampm}`;
-      }
+      const body = document.getElementById('presDetailBody');
+      const timeStr = formatPresentationTime(p.time) || '—';
+      const dateDisplay = formatPresentationDate(p.date);
+      const status = presentationStatus(p.date);
+      const remarksHtml = `<div class="presentation-remarks">${presValue(p.remarks, 'No remarks recorded.')}</div>`;
 
-      // Format date nicely
-      let dateDisplay = p.date || '—';
-      if (p.date) {
-        try {
-          const [y, mon, day] = p.date.split('-').map(Number);
-          const dateObj = new Date(y, mon - 1, day);
-          dateDisplay = dateObj.toLocaleDateString('en-US', {
-            weekday: 'short', year: 'numeric', month: 'long', day: 'numeric'
-          });
-        } catch (_) { /* keep raw */ }
-      }
+      if (body) {
+        body.innerHTML = `<div class="presentation-record">
+          <div class="presentation-record-hero">
+            <div class="presentation-record-seal"><i class="fa-solid fa-chalkboard-user"></i></div>
+            <div class="presentation-record-title">
+              <div class="presentation-record-kicker">MWSS Product Presentation Record</div>
+              <h5>${presValue(p.subject, 'Untitled Presentation')}</h5>
+              <p>${presValue(p.presenter, 'Presenter not specified')}</p>
+            </div>
+            <div class="presentation-record-status">
+              <span class="presentation-status-badge ${status.className}">${escapeHtml(status.text)}</span>
+            </div>
+          </div>
 
-      // Populate fields
-      document.getElementById('presDetailSubject').textContent = p.subject || '—';
-      document.getElementById('presDetailDate').textContent = dateDisplay;
-      document.getElementById('presDetailTime').textContent = timeStr || '—';
-      document.getElementById('presDetailVenue').textContent = p.venue || '—';
-      document.getElementById('presDetailPresenter').textContent = p.presenter || '—';
-      document.getElementById('presDetailRemarks').textContent = p.remarks || 'No remarks';
+          <div class="presentation-summary-grid">
+            <div class="presentation-summary-metric"><span>Date</span><strong>${escapeHtml(dateDisplay)}</strong></div>
+            <div class="presentation-summary-metric"><span>Time</span><strong>${escapeHtml(timeStr)}</strong></div>
+            <div class="presentation-summary-metric"><span>Venue</span><strong>${presValue(p.venue)}</strong></div>
+          </div>
 
-      // Meta info
-      const metaEl = document.getElementById('presDetailMeta');
-      if (metaEl) {
-        let metaParts = [];
-        if (p.updatedBy) metaParts.push(`Updated by: ${p.updatedBy}`);
-        if (p.updatedAt) {
-          const d = typeof p.updatedAt === 'string' ? p.updatedAt : (p.updatedAt.toDate ? p.updatedAt.toDate().toLocaleString() : '');
-          if (d) metaParts.push(`Last updated: ${d}`);
-        }
-        metaEl.textContent = metaParts.join(' • ') || '';
+          ${presSection('fa-regular fa-calendar-check', 'Schedule Information', [
+            presField('Presentation Date', dateDisplay, 'fa-regular fa-calendar-days'),
+            presField('Presentation Time', timeStr, 'fa-regular fa-clock'),
+            presField('Venue', p.venue, 'fa-solid fa-location-dot', { wide: true }),
+          ], 'Official schedule and venue details')}
+
+          ${presSection('fa-solid fa-user-tie', 'Presentation Details', [
+            presField('Subject', p.subject, 'fa-solid fa-file-lines', { wide: true }),
+            presField('Presenter', p.presenter, 'fa-solid fa-user-tie'),
+            presField('Remarks', remarksHtml, 'fa-regular fa-message', { html: true, wide: true }),
+          ], 'Presenter information and notes')}
+
+          ${presAuditSection(p)}
+        </div>`;
       }
 
       // Show/hide Edit/Delete buttons

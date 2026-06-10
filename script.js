@@ -2274,11 +2274,29 @@
   }
 
   function getDeepwellMarkerClass(status) {
-    const s = (status || '').toLowerCase();
-    if (s.includes('active') && !s.includes('inactive')) return 'marker-active';
-    if (s.includes('standby')) return 'marker-standby';
-    if (s.includes('inactive')) return 'marker-inactive';
+    const s = (status || '').toString().trim().toLowerCase();
+    const c = s.replace(/[^a-z0-9]/g, '');
+    if (c === 'inactive' || c === 'notactive' || c === 'nonactive' || s.includes('inactive')) return 'marker-inactive';
+    if (c === 'standby' || c === 'rto' || c === 'rfo' || c === 'ud' || s.includes('standby')) return 'marker-standby';
+    if (s.includes('ready') && (s.includes('operate') || s.includes('operation') || s.includes('ops'))) return 'marker-standby';
+    if ((s.includes('under') || s.includes('u/')) && (s.includes('dev') || s.includes('devel') || s.includes('devt'))) return 'marker-standby';
+    if (c === 'active' || s.includes('active')) return 'marker-active';
     return 'marker-other';
+  }
+
+  function getDeepwellMapStatus(dw) {
+    try {
+      const latestMonths = DeepwellsFeatureInstance.getLatestMonthsByProvider();
+      const prov = (dw.provider || '').toUpperCase();
+      const refMonth = latestMonths[prov] || latestMonths.MWCI;
+      return DeepwellsFeatureInstance.computeDeepwellAutoStatus(dw.months, dw.status, refMonth).status || dw.status || '-';
+    } catch (_) {
+      return dw.status || '-';
+    }
+  }
+
+  function mapEscapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', '\'': '&#39;' }[c]));
   }
 
   function createCustomMarker(markerClass) {
@@ -2289,6 +2307,61 @@
       iconAnchor: [10, 10],
       popupAnchor: [0, -10]
     });
+  }
+
+  function getMappedDeepwells(wells) {
+    return (wells || []).map(dw => ({
+      dw,
+      lat: parseDmsCoordinate(dw.latitude),
+      lng: parseDmsCoordinate(dw.longitude)
+    })).filter(item => !isNaN(item.lat) && !isNaN(item.lng));
+  }
+
+  function staticMarkerClass(markerClass) {
+    return (markerClass || 'marker-other').replace('marker-', 'dot-');
+  }
+
+  function renderStaticDeepwellMap(container, wells, interactive = false) {
+    if (!container) return;
+    const mapped = getMappedDeepwells(wells);
+    const regionBounds = {
+      minLat: 14.05,
+      maxLat: 14.95,
+      minLng: 120.75,
+      maxLng: 121.45
+    };
+    const dataBounds = mapped.reduce((acc, item) => ({
+      minLat: Math.min(acc.minLat, item.lat),
+      maxLat: Math.max(acc.maxLat, item.lat),
+      minLng: Math.min(acc.minLng, item.lng),
+      maxLng: Math.max(acc.maxLng, item.lng)
+    }), { minLat: regionBounds.maxLat, maxLat: regionBounds.minLat, minLng: regionBounds.maxLng, maxLng: regionBounds.minLng });
+    const bounds = mapped.length ? {
+      minLat: Math.min(regionBounds.minLat, dataBounds.minLat - 0.05),
+      maxLat: Math.max(regionBounds.maxLat, dataBounds.maxLat + 0.05),
+      minLng: Math.min(regionBounds.minLng, dataBounds.minLng - 0.05),
+      maxLng: Math.max(regionBounds.maxLng, dataBounds.maxLng + 0.05)
+    } : regionBounds;
+    const latRange = Math.max(bounds.maxLat - bounds.minLat, 0.1);
+    const lngRange = Math.max(bounds.maxLng - bounds.minLng, 0.1);
+    const markers = mapped.map(({ dw, lat, lng }) => {
+      const left = ((lng - bounds.minLng) / lngRange) * 100;
+      const top = (1 - ((lat - bounds.minLat) / latRange)) * 100;
+      const status = getDeepwellMapStatus(dw);
+      const cls = staticMarkerClass(getDeepwellMarkerClass(status));
+      const title = `${dw.name || 'Deepwell'} - ${status}`;
+      return `<button type="button" class="deepwell-static-marker ${cls}" style="left:${left.toFixed(2)}%;top:${top.toFixed(2)}%;" title="${mapEscapeHtml(title)}" aria-label="${mapEscapeHtml(title)}">
+        ${interactive ? `<span class="deepwell-static-tooltip"><strong>${mapEscapeHtml(dw.name || 'Deepwell')}</strong><br>${mapEscapeHtml(status)}<br>${mapEscapeHtml(dw.municipality || dw.location || '')}</span>` : ''}
+      </button>`;
+    }).join('');
+    container.classList.remove('leaflet-container');
+    container.innerHTML = `<div class="deepwell-static-map" role="img" aria-label="Static deepwell map preview">
+      <div class="deepwell-static-region region-ncr">NCR</div>
+      <div class="deepwell-static-region region-rizal">Rizal</div>
+      <div class="deepwell-static-region region-cavite">Cavite</div>
+      ${markers}
+      ${!mapped.length ? '<div class="deepwell-static-empty">No mapped deepwells available.</div>' : ''}
+    </div>`;
   }
 
   /** Destroy an existing Leaflet map instance and clear its container */
@@ -2305,23 +2378,28 @@
     if (!container || !window.L) return null;
     // ensure container is empty
     container.innerHTML = '';
-    const map = L.map(container, {
-      zoomControl: interactive,
-      dragging: interactive,
-      scrollWheelZoom: interactive,
-      doubleClickZoom: interactive,
-      boxZoom: interactive,
-      keyboard: interactive,
-      tap: interactive,
-      attributionControl: interactive
-    }).setView(DEEPWELL_MAP_CENTER, DEEPWELL_MAP_ZOOM);
+    try {
+      const map = L.map(container, {
+        zoomControl: interactive,
+        dragging: interactive,
+        scrollWheelZoom: interactive,
+        doubleClickZoom: interactive,
+        boxZoom: interactive,
+        keyboard: interactive,
+        tap: interactive,
+        attributionControl: interactive
+      }).setView(DEEPWELL_MAP_CENTER, DEEPWELL_MAP_ZOOM);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '&copy; OpenStreetMap'
-    }).addTo(map);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(map);
 
-    return map;
+      return map;
+    } catch (err) {
+      try { console.warn('[Deepwell Map] Leaflet initialization failed. Falling back to static map.', err); } catch (_) {}
+      return null;
+    }
   }
 
   /** Add markers to a map and optionally fit bounds */
@@ -2332,7 +2410,8 @@
       const lat = parseDmsCoordinate(dw.latitude);
       const lng = parseDmsCoordinate(dw.longitude);
       if (isNaN(lat) || isNaN(lng)) return;
-      const mc = getDeepwellMarkerClass(dw.status);
+      const displayStatus = getDeepwellMapStatus(dw);
+      const mc = getDeepwellMarkerClass(displayStatus);
       const marker = L.marker([lat, lng], { icon: createCustomMarker(mc) }).addTo(map);
       bounds.push([lat, lng]);
 
@@ -2347,7 +2426,7 @@
         marker.bindPopup(`
           <div style="min-width:140px">
             <div class="fw-bold text-primary mb-1">${dw.name || 'Deepwell'}</div>
-            <div class="small"><b>Status:</b> ${dw.status || '-'}</div>
+            <div class="small"><b>Status:</b> ${displayStatus}</div>
             <div class="small"><b>Provider:</b> ${dw.provider || '-'}</div>
             <div class="small text-muted">${dw.municipality || dw.location || ''}</div>
           </div>
@@ -2365,19 +2444,27 @@
    */
   function renderDeepwellMapDash() {
     const previewEl = elements.deepwellMapPreview;
-    if (!previewEl || !window.L) return;
+    if (!previewEl) return;
 
     const wells = DeepwellsFeatureInstance.getDeepwells();
-    const signature = wells.map(w => `${w.id}:${w.status}:${w.latitude}:${w.longitude}`).join('|');
+    const renderMode = window.L ? 'leaflet' : 'static';
+    const signature = `${renderMode}|${wells.map(w => `${w.id}:${getDeepwellMapStatus(w)}:${w.latitude}:${w.longitude}:${(w.months || []).map(m => m.month).join(',')}`).join('|')}`;
 
     // Update empty states
-    const hasMapped = wells.some(w => !isNaN(parseDmsCoordinate(w.latitude)) && !isNaN(parseDmsCoordinate(w.longitude)));
+    const hasMapped = getMappedDeepwells(wells).length > 0;
     if (elements.dashDeepwellMapEmpty) elements.dashDeepwellMapEmpty.style.display = hasMapped ? 'none' : 'block';
     if (elements.deepwellMapModalEmpty) elements.deepwellMapModalEmpty.style.display = hasMapped ? 'none' : 'block';
 
+    if (!window.L) {
+      dashDeepwellMapPreview = destroyMap(dashDeepwellMapPreview, previewEl);
+      renderStaticDeepwellMap(previewEl, wells, false);
+      dashDeepwellMapPreviewSignature = signature;
+      return;
+    }
+
     const refitBounds = () => {
       if (!dashDeepwellMapPreview) return;
-      const bounds = wells.map(w => [parseDmsCoordinate(w.latitude), parseDmsCoordinate(w.longitude)]).filter(b => !isNaN(b[0]) && !isNaN(b[1]));
+      const bounds = getMappedDeepwells(wells).map(item => [item.lat, item.lng]);
       if (bounds.length > 0) {
         try { dashDeepwellMapPreview.fitBounds(bounds, { padding: [15, 15], maxZoom: 13 }); } catch (_) {}
       }
@@ -2398,7 +2485,11 @@
     // Wait for the container to be painted with correct dimensions
     requestAnimationFrame(() => {
       dashDeepwellMapPreview = createMap(previewEl, false);
-      if (!dashDeepwellMapPreview) return;
+      if (!dashDeepwellMapPreview) {
+        renderStaticDeepwellMap(previewEl, wells, false);
+        dashDeepwellMapPreviewSignature = signature;
+        return;
+      }
       addMapMarkers(dashDeepwellMapPreview, wells, false);
       dashDeepwellMapPreviewSignature = signature;
       // Multiple invalidateSize and refitBounds passes
@@ -2414,16 +2505,24 @@
    */
   function renderDeepwellMapDetail() {
     const detailEl = elements.deepwellMapDetail;
-    if (!detailEl || !window.L) return;
+    if (!detailEl) return;
 
     const wells = DeepwellsFeatureInstance.getDeepwells();
 
     // Destroy any existing detail map and recreate from scratch
     dashDeepwellMapDetail = destroyMap(dashDeepwellMapDetail, detailEl);
 
+    if (!window.L) {
+      renderStaticDeepwellMap(detailEl, wells, true);
+      return;
+    }
+
     requestAnimationFrame(() => {
       dashDeepwellMapDetail = createMap(detailEl, true);
-      if (!dashDeepwellMapDetail) return;
+      if (!dashDeepwellMapDetail) {
+        renderStaticDeepwellMap(detailEl, wells, true);
+        return;
+      }
       addMapMarkers(dashDeepwellMapDetail, wells, true);
       // Multiple invalidateSize passes
       setTimeout(() => { try { dashDeepwellMapDetail.invalidateSize(); } catch(_){} }, 50);
@@ -3174,6 +3273,8 @@
     const msgInput = document.getElementById('chatInput');
     const msgSend = document.getElementById('chatSend');
     const contactsList = document.getElementById('contactsList');
+    const contactSearch = document.getElementById('messengerUserSearch');
+    const contactCount = document.getElementById('messengerContactCount');
     const messengerClear = document.getElementById('messengerClear');
     const chatLoadOlderBtn = document.getElementById('chatLoadOlderBtn');
     const chatLoadOlderSpinner = document.getElementById('chatLoadOlderSpinner');
@@ -3181,6 +3282,36 @@
     let currentChat = 'all';
     let currentChatTitle = 'General Chat';
     let currentChatAvatar = 'fa-users';
+    let currentChatStatus = 'Everyone can see these messages';
+
+    function chatEscape(value) {
+      if (window.AppUtils?.escapeHtml) return window.AppUtils.escapeHtml(value);
+      return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function displayUserName(user) {
+      return (user.fullName || user.name || user.email || 'User').trim();
+    }
+
+    function userContactPreview(user) {
+      const parts = [user.designation, user.department].filter(Boolean);
+      return parts.length ? parts.join(' / ') : (user.email || 'Click to start private chat');
+    }
+
+    function contactSearchText(user) {
+      return [
+        user.fullName,
+        user.name,
+        user.email,
+        user.designation,
+        user.department
+      ].filter(Boolean).join(' ').toLowerCase();
+    }
 
     // updateBadge is defined later in this scope (single consolidated implementation)
     // Update General Chat badge in the contacts header
@@ -3205,7 +3336,7 @@
       messengerSidebar.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       // Clear unread for the currently open chat and refresh view
-      try { switchChat(currentChat, currentChatTitle, currentChatAvatar); } catch (_) { }
+      try { switchChat(currentChat, currentChatTitle, currentChatAvatar, currentChatStatus); } catch (_) { }
     }
 
     function hideMessenger() {
@@ -3213,10 +3344,11 @@
       document.body.style.overflow = '';
     }
 
-    function switchChat(chatId, title, avatar) {
+    function switchChat(chatId, title, avatar, statusText) {
       currentChat = chatId;
       currentChatTitle = title;
       currentChatAvatar = avatar;
+      currentChatStatus = statusText || (chatId === 'all' ? 'Everyone can see these messages' : 'Private conversation');
 
       // Update active contact
       document.querySelectorAll('.contact-item').forEach(item => {
@@ -3226,8 +3358,16 @@
       // Update chat header
       const chatTitle = document.querySelector('.chat-title');
       const chatAvatar = document.querySelector('.chat-avatar i');
+      const chatAvatarWrap = document.querySelector('.chat-avatar');
+      const chatStatus = document.querySelector('.chat-status');
       if (chatTitle) chatTitle.textContent = title;
       if (chatAvatar) chatAvatar.className = `fa ${avatar}`;
+      if (chatAvatarWrap) {
+        chatAvatarWrap.classList.toggle('is-admin', avatar === 'fa-crown');
+        chatAvatarWrap.classList.toggle('is-user', avatar === 'fa-user');
+      }
+      if (chatStatus) chatStatus.textContent = currentChatStatus;
+      if (msgInput) msgInput.placeholder = chatId === 'all' ? 'Message General Chat...' : `Message ${title}...`;
 
       // Clear unread count for this chat (both UID and possible email key)
       if (unreadCounts[chatId]) unreadCounts[chatId] = 0;
@@ -3411,73 +3551,89 @@
 
     // Update contacts list with unread counts
     function updateContactsList() {
-      if (!approvedUsers) return;
+      if (!contactsList || !approvedUsers) return;
 
       contactsList.innerHTML = '';
+      const query = (contactSearch?.value || '').trim().toLowerCase();
+      let rendered = 0;
       // Ensure General Chat is present at top
       (function addGeneralChat() {
+        if (query && !'general chat everyone broadcasts group'.includes(query)) return;
         const genUnread = unreadCounts['all'] || 0;
         const genItem = document.createElement('div');
         genItem.className = 'contact-item';
         genItem.dataset.chat = 'all';
         genItem.innerHTML = `
-        <div class="contact-avatar">
+        <div class="contact-avatar is-group">
           <i class="fa fa-users"></i>
         </div>
         <div class="contact-info">
           <div class="contact-name">General Chat</div>
-          <div class="contact-preview">Broadcasts</div>
+          <div class="contact-preview">Everyone can see these messages</div>
         </div>
         ${genUnread > 0 ? `<div class="contact-badge">${genUnread}</div>` : ''}
       `;
         if (currentChat === 'all') { genItem.classList.add('active'); }
         genItem.addEventListener('click', () => {
-          switchChat('all', 'General Chat', 'fa-users');
+          switchChat('all', 'General Chat', 'fa-users', 'Everyone can see these messages');
         });
         contactsList.appendChild(genItem);
+        rendered += 1;
       })();
 
-      approvedUsers.forEach(user => {
+      const currentUid = auth.currentUser?.uid;
+      const currentEmail = (auth.currentUser?.email || '').trim().toLowerCase();
+      const userList = approvedUsers
+        .filter(user => user && user.id !== currentUid && (user.email || '').trim().toLowerCase() !== currentEmail)
+        .filter(user => !query || contactSearchText(user).includes(query))
+        .sort((a, b) => displayUserName(a).localeCompare(displayUserName(b)));
+
+      userList.forEach(user => {
         const contactItem = document.createElement('div');
         contactItem.className = 'contact-item';
         contactItem.dataset.chat = user.id;
 
         const emailKey = (user.email || '').toLowerCase();
         const unreadCount = unreadCounts[user.id] || unreadCounts[emailKey] || 0;
+        const name = displayUserName(user);
+        const isAdminContact = emailKey === ADMIN_EMAIL_LOWER;
+        const preview = isAdminContact ? 'Administrator' : userContactPreview(user);
 
         contactItem.innerHTML = `
-        <div class="contact-avatar">
-          <i class="fa fa-user"></i>
+        <div class="contact-avatar ${isAdminContact ? 'is-admin' : 'is-user'}">
+          <i class="fa ${isAdminContact ? 'fa-crown' : 'fa-user'}"></i>
         </div>
         <div class="contact-info">
-          <div class="contact-name">${user.email}</div>
-          <div class="contact-preview">Click to start private chat</div>
+          <div class="contact-name">${chatEscape(name)}</div>
+          <div class="contact-preview">${chatEscape(preview)}</div>
         </div>
         ${unreadCount > 0 ? `<div class="contact-badge">${unreadCount}</div>` : ''}
       `;
 
         if (user.id === currentChat) { contactItem.classList.add('active'); }
         contactItem.addEventListener('click', () => {
-          switchChat(user.id, user.email, 'fa-user');
+          switchChat(user.id, name, isAdminContact ? 'fa-crown' : 'fa-user', isAdminContact ? 'Administrator' : (user.email || 'Private conversation'));
         });
 
         contactsList.appendChild(contactItem);
+        rendered += 1;
       });
 
       // Add admin contact if not already present
-      if (![...approvedUsers].some(u => u.email.toLowerCase() === ADMIN_EMAIL_LOWER)) {
+      const adminPresent = [...approvedUsers].some(u => (u.email || '').toLowerCase() === ADMIN_EMAIL_LOWER);
+      const adminMatches = !query || `${ADMIN_EMAIL} administrator admin`.toLowerCase().includes(query);
+      if (!adminPresent && adminMatches && ADMIN_EMAIL_LOWER !== currentEmail) {
         const adminContact = document.createElement('div');
         adminContact.className = 'contact-item';
         adminContact.dataset.chat = ADMIN_EMAIL_LOWER;
-
         const adminUnread = Math.max(unreadCounts[ADMIN_EMAIL_LOWER] || 0, (ADMIN_UID && unreadCounts[ADMIN_UID]) || 0);
 
         adminContact.innerHTML = `
-        <div class="contact-avatar">
+        <div class="contact-avatar is-admin">
           <i class="fa fa-crown"></i>
         </div>
         <div class="contact-info">
-          <div class="contact-name">${ADMIN_EMAIL}</div>
+          <div class="contact-name">${chatEscape(ADMIN_EMAIL)}</div>
           <div class="contact-preview">Administrator</div>
         </div>
         ${adminUnread > 0 ? `<div class="contact-badge">${adminUnread}</div>` : ''}
@@ -3485,10 +3641,24 @@
 
         if (ADMIN_EMAIL_LOWER === currentChat) { adminContact.classList.add('active'); }
         adminContact.addEventListener('click', () => {
-          switchChat(ADMIN_EMAIL_LOWER, ADMIN_EMAIL, 'fa-crown');
+          switchChat(ADMIN_EMAIL_LOWER, ADMIN_EMAIL, 'fa-crown', 'Administrator');
         });
 
         contactsList.appendChild(adminContact);
+        rendered += 1;
+      }
+
+      if (contactCount) {
+        contactCount.textContent = query
+          ? `${rendered} result${rendered === 1 ? '' : 's'} found`
+          : `${rendered} chat${rendered === 1 ? '' : 's'} available`;
+      }
+
+      if (!rendered) {
+        contactsList.innerHTML = `<div class="contact-empty">
+          <i class="fa fa-search mb-2 d-block"></i>
+          No users found.
+        </div>`;
       }
     }
 
@@ -3497,11 +3667,13 @@
       const uid = auth.currentUser.uid;
       const userEmail = auth.currentUser.email?.toLowerCase();
       msgContainer.innerHTML = '';
+      let rendered = 0;
 
       allMessages.forEach(m => {
         if (currentChat === 'all') {
           if (!m.toId) { // broadcast only
             appendMsg(m, m.fromId === uid);
+            rendered += 1;
           }
         } else {
           // Private thread between current user and selected recipient
@@ -3520,6 +3692,7 @@
 
           if (a || b) {
             appendMsg(m, m.fromId === uid);
+            rendered += 1;
             // mark as read using sender UID; also clear email key if any
             if (m.fromId) { unreadCounts[m.fromId] = 0; }
             if (m.fromEmail) { unreadCounts[m.fromEmail.toLowerCase()] = 0; }
@@ -3528,6 +3701,15 @@
           }
         }
       });
+
+      if (!rendered) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-empty-state';
+        empty.innerHTML = `<i class="fa fa-comments mb-2 d-block"></i>
+          <strong>No messages yet</strong><br>
+          <span>${currentChat === 'all' ? 'Start a broadcast conversation.' : 'Send a private message to begin this thread.'}</span>`;
+        msgContainer.appendChild(empty);
+      }
     }
 
     // (Removed legacy single-image openPhotoViewer; using list-aware viewer defined earlier)
@@ -3730,6 +3912,12 @@
     msgInput.addEventListener('input', autoResize);
     // Initialize height
     autoResize();
+
+    if (contactSearch) {
+      contactSearch.addEventListener('input', () => {
+        updateContactsList();
+      });
+    }
 
     // Load older button handler with spinner and scroll position preservation
     function setOlderLoading(on) {
@@ -5581,59 +5769,162 @@
     container.innerHTML = html;
   }
 
+  function surFmt2(value) {
+    const n = Number(value || 0);
+    return (Math.round(n * 100) / 100).toFixed(2);
+  }
+
+  function surDetailValue(value, fallback = 'Not specified') {
+    const raw = (value === undefined || value === null) ? '' : String(value).trim();
+    return raw ? escapeHtml(raw) : `<span class="text-muted">${fallback}</span>`;
+  }
+
+  function surDetailField(label, value, { html = false, wide = false } = {}) {
+    const display = html ? (value || '<span class="text-muted">Not specified</span>') : surDetailValue(value);
+    return `<div class="service-update-detail-field${wide ? ' is-wide' : ''}">
+      <div class="service-update-detail-label">${escapeHtml(label)}</div>
+      <div class="service-update-detail-value">${display}</div>
+    </div>`;
+  }
+
+  function surSection(icon, title, fields, subtitle = '') {
+    const fieldHtml = (fields || []).filter(Boolean).map(field => surDetailField(field.label, field.value, field)).join('');
+    if (!fieldHtml) return '';
+    return `<section class="service-update-detail-section">
+      <div class="service-update-section-heading">
+        <div>
+          <h6><i class="${icon} me-2"></i>${escapeHtml(title)}</h6>
+          ${subtitle ? `<p>${escapeHtml(subtitle)}</p>` : ''}
+        </div>
+      </div>
+      <div class="service-update-detail-grid">${fieldHtml}</div>
+    </section>`;
+  }
+
+  function renderSurPlantDetailsTableHtml(plants) {
+    const list = Array.isArray(plants) ? plants : [];
+    if (!list.length) {
+      return '<div class="service-update-empty-state">No per-plant metrics recorded.</div>';
+    }
+    const rows = list.map(p => `<tr>
+      <td>${escapeHtml(p.name || '')}</td>
+      <td class="text-end">${surFmt2(p.inflow)}</td>
+      <td class="text-end">${surFmt2(p.production)}</td>
+    </tr>`).join('');
+    return `<div class="table-responsive service-update-table-wrap">
+      <table class="table table-sm service-update-record-table">
+        <thead>
+          <tr>
+            <th>Plant</th>
+            <th class="text-end">Raw Inflows (MLD)</th>
+            <th class="text-end">Daily Production (MLD)</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  function surAuditSection(history) {
+    const hist = Array.isArray(history) ? [...history] : [];
+    hist.sort((a, b) => {
+      const at = a.timestamp || '';
+      const bt = b.timestamp || '';
+      return (at > bt ? -1 : at < bt ? 1 : 0);
+    });
+    const rows = hist.length ? hist.map(h => {
+      const when = h.timestamp ? new Date(h.timestamp).toLocaleString() : '';
+      const who = h.fullName || h.email || 'Unknown user';
+      const act = h.action || 'update';
+      return `<div class="service-update-audit-item">
+        <i class="fa-regular fa-clock"></i>
+        <div>
+          <div><strong>${escapeHtml(act)}</strong> by ${escapeHtml(who)}</div>
+          <time>${escapeHtml(when)}</time>
+        </div>
+      </div>`;
+    }).join('') : '<div class="service-update-empty-state">No edits yet.</div>';
+    return `<section class="service-update-detail-section">
+      <div class="service-update-section-heading">
+        <div>
+          <h6><i class="fa-regular fa-clock me-2"></i>Edit History</h6>
+          <p>Administrative activity log.</p>
+        </div>
+      </div>
+      <div class="service-update-audit-list">${rows}</div>
+    </section>`;
+  }
+
   function viewServiceUpdateDetails(id) {
     const s = serviceUpdates.find(x => x.id === id);
     if (!s) return;
-    // Fill basic fields
-    const el = (id) => document.getElementById(id);
-    if (el('surDetDate')) el('surDetDate').textContent = s.date || '';
-    if (el('surDetProvider')) el('surDetProvider').textContent = s.provider || '';
-    if (el('surDetDamDate')) el('surDetDamDate').textContent = s.date || '';
-    if (el('surDetDamAsOf')) el('surDetDamAsOf').textContent = s.damAsOf ? `(${s.damAsOf})` : '';
-    if (el('surDetPlantsDate')) el('surDetPlantsDate').textContent = s.date || '';
-    // Plants table
+    const body = document.getElementById('serviceUpdateDetailsBody');
+    if (!body) return;
     const plantsData = Array.isArray(s.plants) ? s.plants : [];
-    renderSurPlantDetailsTable(plantsData);
-    // Totals and dams
     const sumIn = (Array.isArray(plantsData) ? plantsData : []).reduce((a, p) => a + (p.inflow || 0), 0);
     const sumPr = (Array.isArray(plantsData) ? plantsData : []).reduce((a, p) => a + (p.production || 0), 0);
     const inflows = (typeof s.inflows === 'number') ? s.inflows : sumIn;
     const production = (typeof s.production === 'number') ? s.production : sumPr;
-    const fmt2 = (n) => (Math.round((n || 0) * 100) / 100).toFixed(2);
-    if (el('surDetInflows')) el('surDetInflows').textContent = fmt2(inflows);
-    if (el('surDetProduction')) el('surDetProduction').textContent = fmt2(production);
-    if (el('surDetSupplyAug')) el('surDetSupplyAug').textContent = fmt2(s.supplyAug || 0);
-    if (el('surDetAngat')) el('surDetAngat').textContent = fmt2(s.angat || 0);
-    if (el('surDetIpo')) el('surDetIpo').textContent = fmt2(s.ipo || 0);
-    if (el('surDetLaMesa')) el('surDetLaMesa').textContent = fmt2(s.laMesa || 0);
-    if (el('surDetRemarks')) el('surDetRemarks').textContent = s.remarks || '';
-    // History
-    const histEl = el('surDetHistory');
-    if (histEl) {
-      const hist = Array.isArray(s.history) ? [...s.history] : [];
-      hist.sort((a, b) => {
-        const at = a.timestamp || '';
-        const bt = b.timestamp || '';
-        return (at > bt ? -1 : at < bt ? 1 : 0);
-      });
-      if (hist.length === 0) {
-        histEl.innerHTML = '<span class="text-muted">No edits yet.</span>';
-      } else {
-        const rows = hist.map(h => {
-          const when = h.timestamp ? new Date(h.timestamp).toLocaleString() : '';
-          const who = h.email || 'Unknown user';
-          const act = h.action || 'update';
-          return `<div class="d-flex align-items-start gap-2 py-1">
-          <i class="fa-regular fa-clock mt-1 text-muted"></i>
+    const reportDate = window.AppUtils?.formatDateUI ? window.AppUtils.formatDateUI(s.date) : (s.date || '');
+    const damAsOf = s.damAsOf ? `${reportDate} (${s.damAsOf})` : reportDate;
+    body.innerHTML = `<div class="service-update-record">
+      <div class="service-update-record-hero">
+        <div class="service-update-record-seal"><i class="fa-solid fa-droplet"></i></div>
+        <div class="service-update-record-title">
+          <div class="service-update-record-kicker">MWSS Service Update Report</div>
+          <h5>${surDetailValue(`${s.provider || 'Concessionaire'} Service Update`)}</h5>
+          <p>Report Date: ${surDetailValue(reportDate)}</p>
+        </div>
+        <div class="service-update-record-status">
+          <span class="service-update-status-badge">${surDetailValue(s.provider || 'Report')}</span>
+        </div>
+      </div>
+
+      <div class="service-update-summary-grid">
+        <div class="service-update-summary-metric">
+          <span>Total Raw Water Inflows</span>
+          <strong>${surFmt2(inflows)} MLD</strong>
+        </div>
+        <div class="service-update-summary-metric">
+          <span>Treatment Production</span>
+          <strong>${surFmt2(production)} MLD</strong>
+        </div>
+        <div class="service-update-summary-metric">
+          <span>Supply Augmentation</span>
+          <strong>${surFmt2(s.supplyAug)} MLD</strong>
+        </div>
+        <div class="service-update-summary-metric">
+          <span>Plant Records</span>
+          <strong>${plantsData.length || 0}</strong>
+        </div>
+      </div>
+
+      ${surSection('fa-regular fa-file-lines', 'Report Information', [
+        { label: 'Date', value: reportDate },
+        { label: 'Concessionaire', value: s.provider },
+        { label: 'Plant Metrics Date', value: `${reportDate || 'Not specified'} (same as report date)`, wide: true },
+        { label: 'Remarks', value: s.remarks || '', wide: true }
+      ], 'Official report metadata and remarks.')}
+
+      <section class="service-update-detail-section">
+        <div class="service-update-section-heading">
           <div>
-            <div><strong>${act}</strong> by ${who}</div>
-            <div class="text-muted small">${when}</div>
+            <h6><i class="fa-solid fa-industry me-2"></i>Treatment Plant Metrics</h6>
+            <p>Raw inflows and daily treatment production per plant.</p>
           </div>
-        </div>`;
-        }).join('');
-        histEl.innerHTML = rows;
-      }
-    }
+        </div>
+        ${renderSurPlantDetailsTableHtml(plantsData)}
+      </section>
+
+      ${surSection('fa-solid fa-water', 'Dam Levels', [
+        { label: 'Dam Levels As Of', value: damAsOf, wide: true },
+        { label: 'Angat Dam', value: `${surFmt2(s.angat)} masl` },
+        { label: 'Ipo Dam', value: `${surFmt2(s.ipo)} masl` },
+        { label: 'La Mesa Dam', value: `${surFmt2(s.laMesa)} masl`, wide: true }
+      ], 'Recorded reservoir elevations for the report date.')}
+
+      ${surAuditSection(s.history)}
+    </div>`;
     // Show read-only modal
     if (elements.serviceUpdateDetailsModal) elements.serviceUpdateDetailsModal.show();
   }

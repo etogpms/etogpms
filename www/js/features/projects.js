@@ -40,6 +40,34 @@
       if (!p.revisedCompletion && today > p.originalCompletion) return 'Delayed';
       return 'On-going';
     }
+    function formatPeso(value) {
+      return `₱${Number(value || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+    function formatPercentValue(value) {
+      return `${Number(value || 0).toFixed(2)}%`;
+    }
+    function detailField(label, value, icon = 'fa-regular fa-circle') {
+      const displayValue = value || '<span class="text-muted">Not specified</span>';
+      return `<div class="project-detail-field">
+        <div class="project-detail-icon"><i class="${icon}"></i></div>
+        <div>
+          <div class="project-detail-label">${label}</div>
+          <div class="project-detail-value">${displayValue}</div>
+        </div>
+      </div>`;
+    }
+    function statusBadge(status) {
+      const cls = status === 'Delayed' ? 'is-delayed' : status === 'Completed' ? 'is-completed' : 'is-ongoing';
+      return `<span class="project-status-badge ${cls}">${status}</span>`;
+    }
+    function sectionTitle(icon, title, subtitle = '') {
+      return `<div class="project-section-heading">
+        <div>
+          <h6><i class="${icon} me-2"></i>${title}</h6>
+          ${subtitle ? `<p>${subtitle}</p>` : ''}
+        </div>
+      </div>`;
+    }
 
     function createBillingRow(data = {}) {
       const billingContainer = document.getElementById('billingContainer');
@@ -370,9 +398,9 @@
       const p = projects.find(proj => proj.id === id); if (!p) return;
       window.__prCurrentItem = p; // Store for export
       const photos = (p.photos && p.photos.length) ? p.photos : (p.sCurveDataUrl ? [p.sCurveDataUrl] : []);
-      const billingHtml = (p.progressBilling && p.progressBilling.length) ? `<h6 class="mt-3">Billing Details</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th>Amount (PHP)</th><th>Description</th></tr></thead><tbody>${p.progressBilling.map(b => `<tr><td>${formatDateUI(b.date)}</td><td>₱${Number(b.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td><td>${b.desc || ''}</td></tr>`).join('')}</tbody></table></div>` : '';
+      const billingHtml = (p.progressBilling && p.progressBilling.length) ? `<section class="project-detail-section">${sectionTitle('fa-solid fa-receipt', 'Billing Details', 'Recorded progress billing transactions.')}<div class="table-responsive project-table-wrap"><table class="table table-sm project-record-table"><thead><tr><th>Date</th><th>Amount (PHP)</th><th>Description</th></tr></thead><tbody>${p.progressBilling.map(b => `<tr><td>${formatDateUI(b.date)}</td><td class="text-nowrap fw-semibold">${formatPeso(b.amount)}</td><td>${b.desc || ''}</td></tr>`).join('')}</tbody></table></div></section>` : '';
       const gridCls = (photos.length <= 2) ? 'photo-grid single mb-3' : 'photo-grid mb-3';
-      const photosHtml = photos.length ? `<div class="${gridCls}">` + photos.slice(0, 3).map((url, i) => `<div class="photo-tile" aria-label="Project photo ${i + 1}"><img src="${url}" data-full="${url}" data-index="${i}" alt="Project photo ${i + 1}" class="photo-img" loading="lazy"></div>`).join('') + `</div>` : '';
+      const photosHtml = photos.length ? `<section class="project-detail-section">${sectionTitle('fa-regular fa-image', 'Project Documentation', 'Latest uploaded project photos and visual records.')}<div class="${gridCls}">` + photos.slice(0, 3).map((url, i) => `<div class="photo-tile" aria-label="Project photo ${i + 1}"><img src="${url}" data-full="${url}" data-index="${i}" alt="Project photo ${i + 1}" class="photo-img" loading="lazy"></div>`).join('') + `</div></section>` : '';
       const accompSorted = (p.accomplishments || []).slice().sort((a, b) => new Date(b.date) - new Date(a.date));
       const seenKeys = new Set();
       const accompDedup = accompSorted.filter(a => {
@@ -384,46 +412,102 @@
       const editHistorySorted = (p.history || []).slice().sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       const body = document.getElementById('detailsBody');
       if (!body) return;
-      body.innerHTML = `<h5 class="fw-bold mb-2">${p.name}</h5><p><strong>Implementing Agency:</strong> ${p.implementingAgency}</p><p><strong>Contractor:</strong> ${p.contractor}</p>
-<p><strong>Location:</strong> ${p.location || ''}</p><p><strong>Contract Amount:</strong> ₱${Number(p.contractAmount || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>${p.revisedContractAmount ? `<p><strong>Revised Contract Amount:</strong> ₱${Number(p.revisedContractAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>` : ''}<p><strong>Status:</strong> ${getProjectStatus(p)}</p><p><strong>NTP:</strong> ${formatDateUI(p.ntpDate)}</p><p><strong>Duration:</strong> ${p.originalDuration} days ${p.timeExtension ? "+" + p.timeExtension : ""}</p><p><strong>Target Completion:</strong> ${formatDateUI(p.revisedCompletion) || formatDateUI(p.originalCompletion)}</p>${p.otherDetails ? `<p><strong>Details:</strong> ${p.otherDetails}</p>` : ''}${p.contractDocsLink ? `<p><strong>Contract Docs:</strong> ${elevatedAccessRef() ? `<a href="${p.contractDocsLink}" target="_blank">Open</a>` : `<span class="text-muted">No authority to access</span>`}</p>` : ''}<h6 class="mt-3">Accomplishment History</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>Date</th><th class="percent-col">Planned %</th><th class="percent-col">Previous %</th><th class="percent-col">To Date %</th><th class="percent-col">Variance %</th><th class="w-25">Activities</th><th class="w-20">Issue</th><th class="w-20">Action Taken</th><th class="w-25">Remarks</th></tr></thead><tbody>${accompDedup.map(a => `<tr><td class="date-col">${formatDateUI(a.date)}</td><td class="percent-col">${(a.plannedPercent ?? 0).toFixed(2)}%</td><td class="percent-col">${(a.prevPercent ?? 0).toFixed(2)}%</td><td class="percent-col">${(a.percent ?? 0).toFixed(2)}%</td><td class="percent-col">${a.variance >= 0 ? '+' : ''}${(a.variance ?? 0).toFixed(2)}%</td><td class="w-25">${(typeof bulletizeActivities === 'function') ? bulletizeActivities(a.activities) : (a.activities || '')}</td><td class="w-20">${a.issue || ''}</td><td class="w-20">${a.action || ''}</td><td class="w-25">${a.remarks || ''}</td></tr>`).join('')}</tbody></table></div>${billingHtml}${photosHtml}${editHistorySorted.length ? `<h6 class="mt-3">Edit History</h6><div class="table-responsive"><table class="table table-sm"><thead><tr><th>User</th><th>Timestamp</th><th>Action</th></tr></thead><tbody>${editHistorySorted.map(h => `<tr><td>${h.email}</td><td>${new Date(h.timestamp).toLocaleString()}</td><td>${h.action}</td></tr>`).join('')}</tbody></table></div>` : ''}`;
-      try {
-        const histHdr = Array.from(body.querySelectorAll('h6')).find(h => /edit history/i.test(h.textContent || ''));
-        const histWrap = histHdr ? histHdr.nextElementSibling : null;
-        if (histHdr && histWrap) {
-          if (!isAdminRef()) {
-            histHdr.remove();
-            histWrap.remove();
-          } else {
-            const rows = editHistorySorted.map(h => {
-              const when = h.timestamp ? new Date(h.timestamp).toLocaleString() : '';
-              const who = h.fullName || h.email || 'Unknown user';
-              const act = h.action || 'update';
-              return `<div class="d-flex align-items-start gap-2 py-1">
-              <i class="fa-regular fa-clock mt-1 text-muted"></i>
-              <div>
-                <div><strong>${act}</strong> by ${who}</div>
-                <div class="text-muted small">${when}</div>
-              </div>
-            </div>`;
-            }).join('');
-            histHdr.outerHTML = `<div class="small text-muted mt-3">Edit History</div>`;
-            const container = document.createElement('div');
-            container.innerHTML = `<div class="border rounded p-2 bg-light small">${rows}</div>`;
-            histWrap.replaceWith(container);
-            setTimeout(() => {
-              const photosGrid = body.querySelector('.photo-grid');
-              const histLabel = Array.from(body.querySelectorAll('div.small.text-muted')).find(d => /edit history/i.test(d.textContent || ''));
-              if (photosGrid && histLabel) {
-                const histContainer = histLabel.nextElementSibling;
-                if (histContainer) {
-                  photosGrid.insertAdjacentElement('afterend', histLabel);
-                  histLabel.insertAdjacentElement('afterend', histContainer);
-                }
-              }
-            }, 0);
-          }
-        }
-      } catch (_) { /* noop */ }
+      const latest = accompDedup[0] || {};
+      const status = getProjectStatus(p);
+      const targetCompletion = formatDateUI(p.revisedCompletion) || formatDateUI(p.originalCompletion);
+      const duration = `${p.originalDuration || 0} days${p.timeExtension ? ` + ${p.timeExtension}` : ''}`;
+      const docsHtml = p.contractDocsLink ? (elevatedAccessRef() ? `<a class="btn btn-sm btn-outline-primary project-docs-link" href="${p.contractDocsLink}" target="_blank" rel="noopener"><i class="fa-regular fa-folder-open me-1"></i>Open Contract Documents</a>` : `<span class="text-muted">No authority to access</span>`) : '<span class="text-muted">No document link provided</span>';
+      const accomplishRows = accompDedup.length ? accompDedup.map(a => `<tr>
+        <td class="date-col">${formatDateUI(a.date)}</td>
+        <td class="percent-col">${formatPercentValue(a.plannedPercent)}</td>
+        <td class="percent-col">${formatPercentValue(a.prevPercent)}</td>
+        <td class="percent-col fw-semibold">${formatPercentValue(a.percent)}</td>
+        <td class="percent-col ${Number(a.variance || 0) < 0 ? 'project-variance-bad' : 'project-variance-good'}">${Number(a.variance || 0) >= 0 ? '+' : ''}${formatPercentValue(a.variance)}</td>
+        <td>${(typeof bulletizeActivities === 'function') ? bulletizeActivities(a.activities) : (a.activities || '')}</td>
+        <td>${a.issue || '<span class="text-muted">n/a</span>'}</td>
+        <td>${a.action || ''}</td>
+        <td>${a.remarks || ''}</td>
+      </tr>`).join('') : `<tr><td colspan="9" class="text-center text-muted py-4">No accomplishment entries recorded.</td></tr>`;
+      const editHistoryHtml = (isAdminRef() && editHistorySorted.length) ? `<section class="project-detail-section">${sectionTitle('fa-regular fa-clock', 'Edit History', 'Administrative activity log.')}<div class="project-audit-list">${editHistorySorted.map(h => {
+        const when = h.timestamp ? new Date(h.timestamp).toLocaleString() : '';
+        const who = h.fullName || h.email || 'Unknown user';
+        const act = h.action || 'update';
+        return `<div class="project-audit-item">
+          <i class="fa-regular fa-clock"></i>
+          <div>
+            <div><strong>${act}</strong> by ${who}</div>
+            <time>${when}</time>
+          </div>
+        </div>`;
+      }).join('')}</div></section>` : '';
+      body.innerHTML = `<div class="project-record">
+        <div class="project-record-hero">
+          <div class="project-record-seal"><i class="fa-solid fa-building-columns"></i></div>
+          <div class="project-record-title">
+            <div class="project-record-kicker">MWSS Project Monitoring Record</div>
+            <h5>${p.name || 'Untitled Project'}</h5>
+            <p>${p.implementingAgency || 'Implementing agency not specified'}</p>
+          </div>
+          <div class="project-record-status">${statusBadge(status)}</div>
+        </div>
+
+        <div class="project-summary-grid">
+          <div class="project-summary-metric">
+            <span>Contract Amount</span>
+            <strong>${formatPeso(p.contractAmount)}</strong>
+          </div>
+          ${p.revisedContractAmount ? `<div class="project-summary-metric">
+            <span>Revised Amount</span>
+            <strong>${formatPeso(p.revisedContractAmount)}</strong>
+          </div>` : ''}
+          <div class="project-summary-metric">
+            <span>Physical Accomplishment</span>
+            <strong>${formatPercentValue(latest.percent)}</strong>
+          </div>
+          <div class="project-summary-metric">
+            <span>Target Completion</span>
+            <strong>${targetCompletion || 'Not specified'}</strong>
+          </div>
+        </div>
+
+        <section class="project-detail-section">
+          ${sectionTitle('fa-regular fa-file-lines', 'Project Information', 'Official contract and implementation details.')}
+          <div class="project-detail-grid">
+            ${detailField('Contractor', p.contractor, 'fa-regular fa-building')}
+            ${detailField('Location', p.location, 'fa-solid fa-location-dot')}
+            ${detailField('Notice to Proceed', formatDateUI(p.ntpDate), 'fa-regular fa-calendar-check')}
+            ${detailField('Duration', duration, 'fa-regular fa-hourglass-half')}
+            ${detailField('Contract Documents', docsHtml, 'fa-regular fa-folder-open')}
+            ${p.otherDetails ? detailField('Other Details', p.otherDetails, 'fa-regular fa-note-sticky') : ''}
+          </div>
+        </section>
+
+        <section class="project-detail-section">
+          ${sectionTitle('fa-solid fa-chart-line', 'Accomplishment History', 'Progress updates, issues, actions taken, and remarks.')}
+          <div class="table-responsive project-table-wrap">
+            <table class="table table-sm project-record-table project-accomplishment-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th class="percent-col">Planned %</th>
+                  <th class="percent-col">Previous %</th>
+                  <th class="percent-col">To Date %</th>
+                  <th class="percent-col">Variance %</th>
+                  <th>Activities</th>
+                  <th>Issue</th>
+                  <th>Action Taken</th>
+                  <th>Remarks</th>
+                </tr>
+              </thead>
+              <tbody>${accomplishRows}</tbody>
+            </table>
+          </div>
+        </section>
+
+        ${billingHtml}
+        ${photosHtml}
+        ${editHistoryHtml}
+      </div>`;
       document.getElementById('detailsModal')?.classList.add('show');
       const modal = window.bootstrap ? window.bootstrap.Modal.getOrCreateInstance(document.getElementById('detailsModal')) : null;
       modal && modal.show();
