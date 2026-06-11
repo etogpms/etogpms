@@ -20,6 +20,14 @@
     let deepwells = [];
     let deepwellsPage = 1;
     let dwMonthlyChart = null;
+    const DEEPWELL_STATUS_OPTIONS = [
+      'Active',
+      'Standby (Ready to Operate)',
+      'Standby (Under Maintenance)',
+      'Under Development',
+      'Abandoned',
+      'Others'
+    ];
 
     function getDmsDigits(raw, maxDigits) {
       return String(raw || '').replace(/\D/g, '').slice(0, maxDigits);
@@ -197,20 +205,40 @@
       const s = raw.toLowerCase();
       const c = s.replace(/[^a-z0-9]/g, '');
       if (!s) return '';
-      if (c === 'inactive' || c === 'notactive' || c === 'nonactive' || s.includes('inactive')) return 'inactive';
-      if (c === 'standby' || c === 'rto' || c === 'rfo' || c === 'ud' || s.includes('standby')) return 'standby';
+      if (c === 'abandoned' || c === 'abandon' || c === 'inactive' || c === 'notactive' || c === 'nonactive' || s.includes('abandon') || s.includes('inactive')) return 'abandoned';
+      if (c === 'underdevelopment' || c === 'ud' || s.includes('under development')) return 'underdevelopment';
+      if (c === 'standby' || c === 'rto' || c === 'rfo' || s.includes('standby') || s.includes('under maintenance')) return 'standby';
       if (s.includes('ready') && (s.includes('operate') || s.includes('operation') || s.includes('ops'))) return 'standby';
-      if ((s.includes('under') || s.includes('u/')) && (s.includes('dev') || s.includes('devel') || s.includes('devt'))) return 'standby';
       if (c === 'active' || s.includes('active')) return 'active';
-      return c || s;
+      if (c === 'others' || c === 'other') return 'others';
+      return 'others';
+    }
+
+    function getDeepwellStatusLabel(status) {
+      const raw = (status || '').toString().trim();
+      if (DEEPWELL_STATUS_OPTIONS.includes(raw)) return raw;
+      const normalized = normalizeDeepwellStatus(raw);
+      if (normalized === 'active') return 'Active';
+      if (normalized === 'standby') {
+        return raw.toLowerCase().includes('maintenance')
+          ? 'Standby (Under Maintenance)'
+          : 'Standby (Ready to Operate)';
+      }
+      if (normalized === 'underdevelopment') return 'Under Development';
+      if (normalized === 'abandoned') return 'Abandoned';
+      return 'Others';
+    }
+
+    function hasManualStatusOverride(dw) {
+      return !!(dw && (dw.manualStatus === true || dw.statusOverride === true || dw.statusSource === 'manual'));
     }
 
     /**
      * Determine the auto-computed status for a deepwell.
      * Rules are relative to latestMonth (global latest update):
      *  1. If months has data in ANY of the last 2 months from latestMonth → Active
-     *  2. If currently Active and NO data in the last 2 months → Standby
-     *  3. If currently Standby and NO data in the last 8 months → Inactive
+     *  2. If currently Active and NO data in the last 2 months → Standby (Ready to Operate)
+     *  3. If currently Standby and NO data in the last 8 months → Abandoned
      * Returns { status, changed } where changed is true if status differs.
      */
     function computeDeepwellAutoStatus(months, currentStatus, latestMonth) {
@@ -228,22 +256,22 @@
 
       // No recent data in last 2 months relative to latest update
       if (curNorm === 'active' || curNorm === '') {
-        return { status: 'Standby', changed: true };
+        return { status: 'Standby (Ready to Operate)', changed: true };
       }
 
       if (curNorm === 'standby') {
         const last8 = generateMonthKeys(8, latestMonth);
         const hasAnyIn8 = last8.some(k => monthSet.has(k));
         if (!hasAnyIn8) {
-          return { status: 'Inactive', changed: true };
+          return { status: 'Abandoned', changed: true };
         }
       }
 
-      if (curNorm === 'inactive') {
-        return { status: 'Inactive', changed: cur.toLowerCase() !== 'inactive' };
+      if (curNorm === 'abandoned') {
+        return { status: 'Abandoned', changed: getDeepwellStatusLabel(cur) !== 'Abandoned' };
       }
 
-      // If already Inactive or any other status (and no recent data), no auto-change needed
+      // If already Abandoned or any other status (and no recent data), no auto-change needed
       return { status: cur, changed: false };
     }
 
@@ -262,6 +290,7 @@
         const updates = [];
         const latestMonths = getLatestMonthsByProvider();
         deepwells.forEach(dw => {
+          if (hasManualStatusOverride(dw)) return;
           const prov = (dw.provider || '').toUpperCase();
           const latestMonth = latestMonths[prov] || latestMonths.MWCI; // Fallback
           const result = computeDeepwellAutoStatus(dw.months, dw.status, latestMonth);
@@ -405,7 +434,7 @@
         <td>${dw.name}</td>
         <td>${dw.provider}</td>
         <td>${dw.permit || ''}</td>
-        <td>${dw.status || ''}</td>
+        <td><span class="deepwell-status-pill ${getDeepwellStatusClass(dw.status)}">${getDeepwellStatusLabel(dw.status)}</span></td>
         <td>${fmtNum(dw.ratedYield)}</td>
         <td>${fmtNum(dw.avgProd)}</td>
         <td>${fmtNum(dw.totalProd)}</td>
@@ -468,7 +497,7 @@
       const status = elements.dwStatusFilter?.value;
       const query = (elements.dwSearchInput?.value || '').trim().toLowerCase();
       if (provider) list = list.filter(dw => dw.provider === provider);
-      if (status) list = list.filter(dw => dw.status === status);
+      if (status) list = list.filter(dw => getDeepwellStatusLabel(dw.status) === status);
       if (query) list = list.filter(dw => {
         const name = (dw.name || '').toLowerCase();
         const prov = (dw.provider || '').toLowerCase();
@@ -533,7 +562,8 @@
       const normalized = normalizeDeepwellStatus(status);
       if (normalized === 'active') return 'is-active';
       if (normalized === 'standby') return 'is-standby';
-      if (normalized === 'inactive') return 'is-inactive';
+      if (normalized === 'underdevelopment') return 'is-under-development';
+      if (normalized === 'abandoned') return 'is-abandoned';
       return 'is-other';
     }
 
@@ -551,7 +581,7 @@
       setDeepwellText('dwRecordProvider', dw.provider ? `${dw.provider} Concessionaire` : 'Concessionaire not specified');
       const statusEl = document.getElementById('dwRecordStatus');
       if (statusEl) {
-        const status = dw.status || 'Status';
+        const status = dw.status ? getDeepwellStatusLabel(dw.status) : 'Status';
         statusEl.textContent = status;
         statusEl.className = `deepwell-status-badge ${getDeepwellStatusClass(status)}`;
       }
@@ -651,7 +681,7 @@
       setVal('dwName', dw.name);
       setVal('dwProvider', dw.provider);
       setVal('dwPermit', dw.permit);
-      setVal('dwStatus', dw.status);
+      setVal('dwStatus', getDeepwellStatusLabel(dw.status));
       setVal('dwRatedYield', dw.ratedYield);
       setVal('dwAvgProd', dw.avgProd);
       setVal('dwTotalProd', dw.totalProd);
@@ -711,7 +741,7 @@
       const history = existingDw?.history ? [...existingDw.history] : [];
       history.push({ email: userEmail, fullName: userFullName, timestamp: new Date().toISOString(), action: existingDw ? 'edit' : 'create' });
       const months = gatherDwMonths();
-      let formStatus = (fd.get('dwStatus') || '').trim();
+      let formStatus = getDeepwellStatusLabel(fd.get('dwStatus'));
       const latitude = normalizeDmsValue(fd.get('dwLatitude'), 2, 90);
       const longitude = normalizeDmsValue(fd.get('dwLongitude'), 3, 180);
       const latitudeError = validateDmsValue(latitude, 90, 'Latitude');
@@ -727,9 +757,31 @@
       const prov = (fd.get('dwProvider') || '').toUpperCase();
       const latestMonths = getLatestMonthsByProvider(months);
       const latestMonth = latestMonths[prov] || latestMonths.MWCI;
-      const autoResult = computeDeepwellAutoStatus(months, formStatus, latestMonth);
-      if (autoResult.changed) {
-        const prevStatus = formStatus || '(none)';
+      const previousStatus = existingDw?.status || '';
+      const autoResult = computeDeepwellAutoStatus(months, previousStatus || formStatus, latestMonth);
+      const formStatusNorm = normalizeDeepwellStatus(formStatus);
+      const previousStatusNorm = normalizeDeepwellStatus(previousStatus);
+      const autoStatusNorm = normalizeDeepwellStatus(autoResult.status);
+      const manualStatusChanged = existingDw
+        ? formStatusNorm !== previousStatusNorm
+        : !!formStatusNorm && formStatusNorm !== autoStatusNorm;
+      let manualStatus = hasManualStatusOverride(existingDw);
+
+      if (manualStatusChanged) {
+        manualStatus = formStatusNorm !== autoStatusNorm;
+        const prevStatus = previousStatus || '(none)';
+        history.push({
+          email: userEmail,
+          fullName: userFullName,
+          timestamp: new Date().toISOString(),
+          action: `manual-status: ${prevStatus} → ${formStatus || '(none)'}`
+        });
+      } else if (manualStatus && !formStatus) {
+        formStatus = previousStatus || autoResult.status;
+      }
+
+      if (!manualStatus && autoResult.changed) {
+        const prevStatus = formStatus || previousStatus || '(none)';
         formStatus = autoResult.status;
         history.push({
           email: 'system',
@@ -745,6 +797,8 @@
         provider: fd.get('dwProvider'),
         permit: (fd.get('dwPermit') || '').trim(),
         status: formStatus,
+        manualStatus,
+        statusSource: manualStatus ? 'manual' : 'auto',
         ratedYield: parseFloat(fd.get('dwRatedYield')) || 0,
         months,
         avgProd: parseFloat(fd.get('dwAvgProd')) || 0,
@@ -849,6 +903,9 @@
       getDeepwells,
       getLatestMonthsByProvider,
       computeDeepwellAutoStatus,
+      hasManualStatusOverride,
+      getDeepwellStatusLabel,
+      normalizeDeepwellStatus,
       generateMonthKeys,
       renderDeepwells,
       renderDeepwellMonthlyChart,

@@ -3,12 +3,30 @@
     "public": ".",
     "ignore": [
       "firebase.json",
+      ".git",
+      ".git/**",
+      ".agents",
+      ".agents/**",
+      ".codex",
+      ".codex/**",
+      ".DS_Store",
+      "**/.DS_Store",
       "**/.*",
+      "**/.*/**",
       "**/node_modules/**"
     ],
     "headers": [
       {
         "source": "/index.html",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache, no-store, must-revalidate"
+          }
+        ]
+      },
+      {
+        "source": "/opcr-form.html",
         "headers": [
           {
             "key": "Cache-Control",

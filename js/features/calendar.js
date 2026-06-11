@@ -303,6 +303,30 @@
         return `${h12}:${m} ${ampm}`;
     }
 
+    function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, char => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        })[char]);
+    }
+
+    function getEventTypeName(type) {
+        const normalized = type || 'activity';
+        return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+    }
+
+    function getEventTimeMeta(ev) {
+        if (ev.allDay) return 'All day';
+        if (!ev.startTime) return 'Time not set';
+
+        let timeMeta = formatTime12(ev.startTime);
+        if (ev.endTime) timeMeta += ` - ${formatTime12(ev.endTime)}`;
+        return timeMeta;
+    }
+
     // --- Day View Modal ---
 
     let dayModal = null;
@@ -358,21 +382,15 @@
         } else {
             if (emptyEl) emptyEl.style.display = 'none';
 
-            let html = '';
+            let html = '<div class="calendar-day-records">';
             dayEvents.forEach(ev => {
-                const safeTitle = (ev.title || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const safeDesc = (ev.description || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                const typeName = (ev.type || 'activity').charAt(0).toUpperCase() + (ev.type || 'activity').slice(1);
+                const safeTitle = escapeHtml(ev.title || 'Untitled event');
+                const safeDesc = escapeHtml(ev.description || '');
+                const safeOwner = escapeHtml(ev.ownerName || 'Unknown');
+                const safeDocLink = escapeHtml(ev.docLink || '');
+                const typeName = getEventTypeName(ev.type);
                 const typeClass = `type-${ev.type || 'activity'}`;
-
-                // Time display
-                let timeMeta = '';
-                if (ev.allDay) {
-                    timeMeta = '<i class="fa-regular fa-clock me-1"></i>All Day';
-                } else if (ev.startTime) {
-                    timeMeta = `<i class="fa-regular fa-clock me-1"></i>${formatTime12(ev.startTime)}`;
-                    if (ev.endTime) timeMeta += ` – ${formatTime12(ev.endTime)}`;
-                }
+                const timeMeta = escapeHtml(getEventTimeMeta(ev));
 
                 // Owner check for edit/delete buttons
                 const isOwner = currentUser && (ev.ownerUid === currentUser.uid);
@@ -381,32 +399,35 @@
                 let actionsHtml = '';
                 if (canManage) {
                     actionsHtml = `
-                        <button class="btn btn-sm btn-outline-primary py-0 px-2" onclick="window.Calendar.editEvent('${ev.id}')" title="Edit">
+                        <button class="btn btn-sm btn-outline-primary" onclick="window.Calendar.editEvent('${ev.id}')" title="Edit" aria-label="Edit event">
                             <i class="fa fa-pencil"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="window.Calendar.deleteEvent('${ev.id}')" title="Delete">
+                        <button class="btn btn-sm btn-outline-danger" onclick="window.Calendar.deleteEvent('${ev.id}')" title="Delete" aria-label="Delete event">
                             <i class="fa fa-trash"></i>
                         </button>`;
                 }
 
                 html += `
                 <div class="day-view-item">
-                    <div class="day-view-type-dot ${typeClass}"></div>
+                    <div class="day-view-type-band ${typeClass}"></div>
                     <div class="day-view-info">
-                        <div class="day-view-title">${safeTitle}</div>
-                        <div class="day-view-meta">
-                            <span class="badge bg-${ev.type === 'meeting' ? 'primary' : ev.type === 'leave' ? 'warning text-dark' : 'success'} me-1" style="font-size:0.7rem;">${typeName}</span>
-                            ${timeMeta}
+                        <div class="day-view-title-row">
+                            <span class="day-view-type-pill ${typeClass}">${typeName}</span>
+                            <span class="day-view-time"><i class="fa-regular fa-clock"></i>${timeMeta}</span>
                         </div>
+                        <div class="day-view-title">${safeTitle}</div>
                         ${safeDesc ? `<div class="day-view-desc">${safeDesc}</div>` : ''}
-                        ${ev.docLink ? `<div class="day-view-doc-link"><i class="fa-solid fa-link me-1"></i><a href="${ev.docLink}" target="_blank" rel="noopener noreferrer">View Document</a></div>` : ''}
-                        <div class="day-view-owner"><i class="fa-regular fa-user me-1"></i>${ev.ownerName || 'Unknown'}</div>
+                        <div class="day-view-record-meta">
+                            <span><i class="fa-regular fa-user"></i>${safeOwner}</span>
+                            ${safeDocLink ? `<a href="${safeDocLink}" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-link"></i>View Document</a>` : ''}
+                        </div>
                     </div>
                     <div class="day-view-actions">
                         ${actionsHtml}
                     </div>
                 </div>`;
             });
+            html += '</div>';
 
             if (listEl) listEl.innerHTML = html;
         }

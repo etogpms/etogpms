@@ -24,7 +24,7 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="styles.css?v=7" />
+  <link rel="stylesheet" href="styles.css?v=10" />
   <link rel="stylesheet" href="style-modern.css" />
   <!-- SheetJS for Excel parsing -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -183,43 +183,91 @@
         <div class="modal fade" id="usersModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-xl modal-dialog-scrollable modal-fullscreen-sm-down">
             <div class="modal-content">
-              <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">Manage Users</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <div class="modal-header users-modal-header text-white">
+                <div>
+                  <div class="users-modal-kicker">System Administration</div>
+                  <h5 class="modal-title">Manage Users</h5>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                  aria-label="Close"></button>
               </div>
-              <div class="modal-body">
-                <div class="table-responsive">
-                  <table class="table table-sm" id="pendingUsersTable">
-                    <thead>
-                      <tr>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Designation</th>
-                        <th>Department</th>
-                        <th>Date Created</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody></tbody>
-                  </table>
-                  <hr />
-                  <h6>Approved Accounts</h6>
-                  <div class="table-responsive">
-                    <table class="table table-sm" id="approvedUsersTable">
-                      <thead>
-                        <tr>
-                          <th>Full Name</th>
-                          <th>Email</th>
-                          <th>Designation</th>
-                          <th>Department</th>
-                          <th>Date Approved</th>
-                          <th>Access Level</th>
-                          <th>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody></tbody>
-                    </table>
+              <div class="modal-body users-modal-body">
+                <div class="users-admin-panel">
+                  <div class="users-admin-summary" aria-label="User account summary">
+                    <div class="users-admin-stat">
+                      <span>Pending Review</span>
+                      <strong id="usersPendingCount">0</strong>
+                    </div>
+                    <div class="users-admin-stat">
+                      <span>Approved Accounts</span>
+                      <strong id="usersApprovedCount">0</strong>
+                    </div>
+                    <div class="users-admin-stat">
+                      <span>Administrators</span>
+                      <strong id="usersAdminCount">1</strong>
+                    </div>
                   </div>
+
+                  <div class="users-admin-toolbar">
+                    <div>
+                      <h6>User Access Registry</h6>
+                      <p>Review account requests and maintain approved MWSS system users.</p>
+                    </div>
+                    <div class="users-search-wrap">
+                      <i class="fa-solid fa-magnifying-glass"></i>
+                      <input type="search" class="form-control" id="usersSearchInput"
+                        placeholder="Search name, email, department..." aria-label="Search users" />
+                    </div>
+                  </div>
+
+                  <section class="users-table-section">
+                    <div class="users-section-heading">
+                      <div>
+                        <span>For Review</span>
+                        <h6>Pending Accounts</h6>
+                      </div>
+                    </div>
+                    <div class="table-responsive users-table-wrap">
+                      <table class="table table-sm users-admin-table" id="pendingUsersTable">
+                        <thead>
+                          <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Designation</th>
+                            <th>Department</th>
+                            <th>Date Created</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody></tbody>
+                      </table>
+                    </div>
+                  </section>
+
+                  <section class="users-table-section">
+                    <div class="users-section-heading">
+                      <div>
+                        <span>Authorized Users</span>
+                        <h6>Approved Accounts</h6>
+                      </div>
+                    </div>
+                    <div class="table-responsive users-table-wrap">
+                      <table class="table table-sm users-admin-table" id="approvedUsersTable">
+                        <thead>
+                          <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Designation</th>
+                            <th>Department</th>
+                            <th>Date Approved</th>
+                            <th>Access Level</th>
+                            <th>Action</th>
+                          </tr>
+                        </thead>
+                        <tbody></tbody>
+                      </table>
+                    </div>
+                  </section>
                 </div>
               </div>
             </div>
@@ -370,18 +418,28 @@
                   <div class="mt-3">
                     <div class="d-flex justify-content-between align-items-center small">
                       <span class="d-inline-flex align-items-center gap-2 text-muted"><span
-                          class="status-dot dot-green"></span>Active</span>
+                          class="status-dot dot-blue"></span>Active</span>
                       <span class="fw-bold text-dark" id="dashDeepwellsActive">—</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center small">
                       <span class="d-inline-flex align-items-center gap-2 text-muted"><span
-                          class="status-dot dot-gray"></span>Inactive</span>
-                      <span class="fw-bold text-dark" id="dashDeepwellsInactive">—</span>
+                          class="status-dot dot-green"></span>Standby</span>
+                      <span class="fw-bold text-dark" id="dashDeepwellsStandby">—</span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center small">
                       <span class="d-inline-flex align-items-center gap-2 text-muted"><span
-                          class="status-dot dot-amber"></span>Standby</span>
-                      <span class="fw-bold text-dark" id="dashDeepwellsStandby">—</span>
+                          class="status-dot dot-amber"></span>Under Development</span>
+                      <span class="fw-bold text-dark" id="dashDeepwellsUnderDevelopment">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center small">
+                      <span class="d-inline-flex align-items-center gap-2 text-muted"><span
+                          class="status-dot dot-red"></span>Abandoned</span>
+                      <span class="fw-bold text-dark" id="dashDeepwellsAbandoned">—</span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center small">
+                      <span class="d-inline-flex align-items-center gap-2 text-muted"><span
+                          class="status-dot dot-gray"></span>Others</span>
+                      <span class="fw-bold text-dark" id="dashDeepwellsOther">—</span>
                     </div>
                   </div>
                   <!-- YTD Production Section -->
@@ -514,8 +572,9 @@
                 <div class="d-flex flex-wrap gap-3 mt-3 small text-muted align-items-center justify-content-center">
                   <span class="d-flex align-items-center"><span class="map-legend-dot dot-active"></span>Active</span>
                   <span class="d-flex align-items-center"><span class="map-legend-dot dot-standby"></span>Standby</span>
-                  <span class="d-flex align-items-center"><span class="map-legend-dot dot-inactive"></span>Inactive</span>
-                  <span class="d-flex align-items-center"><span class="map-legend-dot dot-other"></span>Other</span>
+                  <span class="d-flex align-items-center"><span class="map-legend-dot dot-under-development"></span>Under Development</span>
+                  <span class="d-flex align-items-center"><span class="map-legend-dot dot-abandoned"></span>Abandoned</span>
+                  <span class="d-flex align-items-center"><span class="map-legend-dot dot-other"></span>Others</span>
                 </div>
                 <div id="dashDeepwellMapEmpty" class="text-muted small mt-2 text-center" style="display:none;">
                   <i class="fa-solid fa-earth-asia me-1"></i>No mapped deepwells available.
@@ -693,8 +752,11 @@
                 <select class="form-select form-select-sm" id="dwStatusFilter">
                   <option value="">All</option>
                   <option value="Active">Active</option>
-                  <option value="Standby">Standby</option>
-                  <option value="Inactive">Inactive</option>
+                  <option value="Standby (Ready to Operate)">Standby (Ready to Operate)</option>
+                  <option value="Standby (Under Maintenance)">Standby (Under Maintenance)</option>
+                  <option value="Under Development">Under Development</option>
+                  <option value="Abandoned">Abandoned</option>
+                  <option value="Others">Others</option>
                 </select>
               </div>
               <div class="col-md-2">
@@ -1832,9 +1894,9 @@
 
         <!-- Calendar Day View Modal -->
         <div class="modal fade" id="calendarDayModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-md modal-dialog-scrollable">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
-              <div class="modal-header bg-primary text-white">
+              <div class="modal-header calendar-day-modal-header text-white">
                 <h5 class="modal-title">
                   <i class="fa-solid fa-calendar-day me-2"></i>
                   <span id="dayViewDateLabel">Events</span>
@@ -1842,16 +1904,17 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                   aria-label="Close"></button>
               </div>
-              <div class="modal-body p-0">
+              <div class="modal-body calendar-day-modal-body">
                 <div id="dayViewEventsList" class="day-view-events-list">
                   <!-- Events will be injected here -->
                 </div>
-                <div id="dayViewEmpty" class="text-center py-4 text-muted" style="display:none;">
-                  <i class="fa-regular fa-calendar-xmark fa-2x mb-2 d-block"></i>
-                  No events scheduled for this day.
+                <div id="dayViewEmpty" class="calendar-day-empty" style="display:none;">
+                  <i class="fa-regular fa-calendar-xmark"></i>
+                  <strong>No events scheduled</strong>
+                  <span>This date has no registered activities, meetings, or leave records.</span>
                 </div>
               </div>
-              <div class="modal-footer justify-content-between">
+              <div class="modal-footer calendar-day-modal-footer">
                 <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                 <button type="button" class="btn btn-primary btn-sm" id="dayViewAddBtn">
                   <i class="fa-solid fa-plus me-1"></i>Add Event
@@ -2656,27 +2719,42 @@
         <div class="modal fade" id="deepwellMapModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-fullscreen-lg-down modal-xl modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg">
-              <div class="modal-header bg-primary text-white border-0">
-                <h5 class="modal-title d-flex align-items-center">
+              <div class="modal-header bg-primary text-white border-0 d-flex align-items-center justify-content-between">
+                <h5 class="modal-title d-flex align-items-center mb-0">
                   <i class="fa-solid fa-map-location-dot me-2"></i>Detailed Deepwell Map
                 </h5>
-                <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"
-                  aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-2">
+                  <select id="deepwellMapProviderFilter" class="form-select form-select-sm" style="width: 100px;" aria-label="Filter deepwells by concessionaire">
+                    <option value="">All</option>
+                    <option value="MWCI">MWCI</option>
+                    <option value="MWSI">MWSI</option>
+                  </select>
+                  <button type="button" class="btn-close btn-close-white shadow-none" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+                </div>
               </div>
               <div class="modal-body p-0 position-relative">
-                <div class="map-modal-overlay p-3 d-flex flex-wrap align-items-center gap-3">
-                  <span class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1">
+                <div class="map-modal-overlay p-3 d-flex flex-wrap align-items-center gap-3" aria-label="Filter deepwell map by status">
+                  <button type="button" class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1 deepwell-map-filter"
+                    data-status-filter="active" aria-pressed="true" title="Show or hide active deepwells">
                     <span class="map-legend-dot dot-active"></span>Active
-                  </span>
-                  <span class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1">
+                  </button>
+                  <button type="button" class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1 deepwell-map-filter"
+                    data-status-filter="standby" aria-pressed="true" title="Show or hide standby deepwells">
                     <span class="map-legend-dot dot-standby"></span>Standby
-                  </span>
-                  <span class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1">
-                    <span class="map-legend-dot dot-inactive"></span>Inactive
-                  </span>
-                  <span class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1">
-                    <span class="map-legend-dot dot-other"></span>Other
-                  </span>
+                  </button>
+                  <button type="button" class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1 deepwell-map-filter"
+                    data-status-filter="under-development" aria-pressed="true" title="Show or hide under development deepwells">
+                    <span class="map-legend-dot dot-under-development"></span>Under Development
+                  </button>
+                  <button type="button" class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1 deepwell-map-filter"
+                    data-status-filter="abandoned" aria-pressed="true" title="Show or hide abandoned deepwells">
+                    <span class="map-legend-dot dot-abandoned"></span>Abandoned
+                  </button>
+                  <button type="button" class="badge bg-white text-dark shadow-sm d-flex align-items-center gap-1 deepwell-map-filter"
+                    data-status-filter="other" aria-pressed="true" title="Show or hide other deepwells">
+                    <span class="map-legend-dot dot-other"></span>Others
+                  </button>
                 </div>
                 <div id="deepwellMapDetail" class="deepwell-map-detail" aria-label="Detailed deepwell map"></div>
                 <div id="deepwellMapModalEmpty" class="position-absolute top-50 start-50 translate-middle text-muted small bg-white p-3 rounded shadow-sm" style="display:none;">
@@ -2752,7 +2830,14 @@
                       </div>
                       <div class="col-md-6">
                         <label class="form-label">Status</label>
-                        <input type="text" class="form-control" id="dwStatus" name="dwStatus" />
+                        <select class="form-select" id="dwStatus" name="dwStatus" required>
+                          <option value="Active">Active</option>
+                          <option value="Standby (Ready to Operate)">Standby (Ready to Operate)</option>
+                          <option value="Standby (Under Maintenance)">Standby (Under Maintenance)</option>
+                          <option value="Under Development">Under Development</option>
+                          <option value="Abandoned">Abandoned</option>
+                          <option value="Others">Others</option>
+                        </select>
                       </div>
                       <div class="col-md-4">
                         <label class="form-label">Rated Yield (cu.m/day)</label>
@@ -3486,12 +3571,20 @@
             background: #16a34a;
           }
 
+          .dot-blue {
+            background: #2563eb;
+          }
+
           .dot-gray {
             background: #cbd5e1;
           }
 
           .dot-amber {
             background: #f59e0b;
+          }
+
+          .dot-red {
+            background: #5b2f1d;
           }
 
           .bg-accent {
@@ -3731,10 +3824,11 @@
             transform: translate(-50%, -50%);
           }
 
-          .deepwell-static-marker.dot-active { background: #10b981; }
-          .deepwell-static-marker.dot-standby { background: #f59e0b; }
-          .deepwell-static-marker.dot-inactive { background: #64748b; }
-          .deepwell-static-marker.dot-other { background: #3b82f6; }
+          .deepwell-static-marker.dot-active { background: #2563eb; }
+          .deepwell-static-marker.dot-standby { background: #16a34a; }
+          .deepwell-static-marker.dot-under-development { background: #f59e0b; }
+          .deepwell-static-marker.dot-abandoned { background: #5b2f1d; }
+          .deepwell-static-marker.dot-other { background: #64748b; }
 
           .deepwell-static-tooltip {
             display: none;
@@ -3795,17 +3889,40 @@
             border: 1px solid rgba(255,255,255,0.8);
           }
 
-          .dot-active { background: #10b981; box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
-          .dot-standby { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
-          .dot-inactive { background: #64748b; box-shadow: 0 0 8px rgba(100, 116, 139, 0.4); }
-          .dot-other { background: #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.4); }
+          .dot-active { background: #2563eb; box-shadow: 0 0 8px rgba(37, 99, 235, 0.4); }
+          .dot-standby { background: #16a34a; box-shadow: 0 0 8px rgba(22, 163, 74, 0.4); }
+          .dot-under-development { background: #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+          .dot-abandoned { background: #5b2f1d; box-shadow: 0 0 8px rgba(91, 47, 29, 0.4); }
+          .dot-other { background: #64748b; box-shadow: 0 0 8px rgba(100, 116, 139, 0.4); }
 
           .map-modal-overlay {
             position: absolute;
             top: 12px;
             right: 12px;
             z-index: 1000;
-            pointer-events: none;
+            pointer-events: auto;
+          }
+
+          .deepwell-map-filter {
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            cursor: pointer;
+            font: inherit;
+            transition: opacity 0.18s ease, filter 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+          }
+
+          .deepwell-map-filter:hover {
+            transform: translateY(-1px);
+            border-color: rgba(14, 67, 112, 0.35);
+          }
+
+          .deepwell-map-filter:focus-visible {
+            outline: 3px solid rgba(37, 99, 235, 0.25);
+            outline-offset: 2px;
+          }
+
+          .deepwell-map-filter.is-muted {
+            opacity: 0.42;
+            filter: grayscale(0.45);
           }
 
           .deepwell-custom-marker {
@@ -3816,10 +3933,11 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.3);
           }
 
-          .marker-active { background: #10b981; }
-          .marker-standby { background: #f59e0b; }
-          .marker-inactive { background: #64748b; }
-          .marker-other { background: #3b82f6; }
+          .marker-active { background: #2563eb; }
+          .marker-standby { background: #16a34a; }
+          .marker-under-development { background: #f59e0b; }
+          .marker-abandoned { background: #5b2f1d; }
+          .marker-other { background: #64748b; }
 
           .leaflet-popup-content-wrapper {
             border-radius: 12px;
@@ -3891,7 +4009,7 @@
         <script src="js/services/users.js?v=1" defer></script>
         <script src="js/services/messaging.js?v=1" defer></script>
         <script src="js/features/projects.js?v=1" defer></script>
-        <script src="js/features/deepwells.js?v=2" defer></script>
+        <script src="js/features/deepwells.js?v=4" defer></script>
 
         <script src="js/features/service-updates.js?v=1" defer></script>
         <script src="js/features/presentations.js?v=5" defer></script>
@@ -3899,14 +4017,14 @@
         <script src="js/features/messenger.js?v=1" defer></script>
         <script src="js/features/opcr.js?v=1" defer></script>
         <script src="js/features/ipcr.js?v=1" defer></script>
-        <script src="js/features/calendar.js?v=3" defer></script>
+        <script src="js/features/calendar.js?v=4" defer></script>
         <script src="js/features/notifications.js?v=1" defer></script>
         <script src="js/ui/sidebar.js?v=1" defer></script>
         <script src="js/ui/scroll.js?v=1" defer></script>
         <script src="js/ui/toast.js?v=1" defer></script>
         <script src="export.js?v=7" defer></script>
         <script src="docreg.js" defer></script>
-        <script src="script.js?v=17" defer></script>
+        <script src="script.js?v=21" defer></script>
       </div> <!-- end mainContent -->
     </div> <!-- end flex -->
   </div> <!-- end appWrapper -->

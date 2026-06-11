@@ -24,6 +24,326 @@
             padding-top: env(safe-area-inset-top, 0px);
         }
 
+        .opcr-update-modal {
+            background: rgba(15, 23, 42, 0.62);
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            backdrop-filter: blur(3px);
+        }
+
+        .opcr-update-modal:not(.hidden) {
+            display: flex;
+        }
+
+        .opcr-update-modal.hidden {
+            display: none;
+        }
+
+        .opcr-update-dialog {
+            width: min(760px, calc(100vw - 32px));
+            max-height: min(86vh, 760px);
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 24px 70px rgba(15, 23, 42, 0.35);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+
+        .opcr-update-header {
+            background: linear-gradient(135deg, #0e4370 0%, #123f65 100%);
+            color: #ffffff;
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 5px solid #f8d24b;
+        }
+
+        .opcr-update-icon {
+            width: 54px;
+            height: 54px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            font-size: 22px;
+        }
+
+        .opcr-update-kicker {
+            margin: 0 0 2px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0;
+            text-transform: uppercase;
+            color: #dbeafe;
+        }
+
+        .opcr-update-title {
+            margin: 0;
+            font-size: 22px;
+            line-height: 1.2;
+            font-weight: 800;
+        }
+
+        .opcr-update-quarter {
+            margin-top: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            padding: 5px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .opcr-update-close {
+            margin-left: auto;
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            color: #ffffff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.18s ease, transform 0.18s ease;
+        }
+
+        .opcr-update-close:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .opcr-update-body {
+            padding: 22px 26px;
+            overflow-y: auto;
+            background: #f3f6fa;
+        }
+
+        .opcr-update-panel {
+            background: #ffffff;
+            border: 1px solid #dbe3ed;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 10px 22px rgba(15, 23, 42, 0.06);
+        }
+
+        .opcr-update-panel + .opcr-update-panel {
+            margin-top: 16px;
+        }
+
+        .opcr-update-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+            color: #23364d;
+            font-size: 13px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        .opcr-update-label i {
+            color: #0e4370;
+        }
+
+        .opcr-update-textarea {
+            width: 100%;
+            min-height: 150px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 14px 15px;
+            color: #0f172a;
+            background: #ffffff;
+            resize: vertical;
+            line-height: 1.55;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .opcr-update-textarea:focus,
+        .opcr-evidence-input:focus {
+            outline: none;
+            border-color: #0e4370;
+            box-shadow: 0 0 0 4px rgba(14, 67, 112, 0.12);
+        }
+
+        .opcr-evidence-list {
+            display: grid;
+            gap: 10px;
+        }
+
+        .opcr-evidence-row {
+            display: grid;
+            grid-template-columns: minmax(110px, 150px) minmax(0, 1fr) 38px;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .opcr-evidence-input {
+            width: 100%;
+            border: 1px solid #d6dee8;
+            border-radius: 9px;
+            padding: 10px 12px;
+            color: #0f172a;
+            background: #ffffff;
+            font-size: 14px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .opcr-evidence-input.border-red-500 {
+            border-color: #ef4444;
+        }
+
+        .opcr-evidence-delete {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #b91c1c;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            transition: background 0.18s ease, transform 0.18s ease;
+        }
+
+        .opcr-evidence-delete:hover {
+            background: #ffe4e6;
+            transform: translateY(-1px);
+        }
+
+        .opcr-update-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .opcr-update-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-weight: 700;
+            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
+        }
+
+        .opcr-update-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .opcr-update-btn.secondary {
+            color: #0e4370;
+            background: #eef6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .opcr-update-btn.danger {
+            color: #b91c1c;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+        }
+
+        .opcr-update-footer {
+            padding: 16px 26px;
+            background: #ffffff;
+            border-top: 1px solid #dbe3ed;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .opcr-footer-btn {
+            min-width: 112px;
+            border-radius: 10px;
+            padding: 11px 18px;
+            font-size: 14px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .opcr-footer-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .opcr-footer-btn.cancel {
+            color: #475569;
+            background: #f8fafc;
+            border: 1px solid #dbe3ed;
+        }
+
+        .opcr-footer-btn.save {
+            color: #ffffff;
+            background: #0e4370;
+            box-shadow: 0 12px 24px rgba(14, 67, 112, 0.22);
+        }
+
+        .opcr-footer-btn.save:hover {
+            background: #0b365b;
+        }
+
+        @media (max-width: 640px) {
+            .opcr-update-modal {
+                padding: 12px;
+                align-items: flex-end;
+            }
+
+            .opcr-update-dialog {
+                width: 100%;
+                max-height: calc(100vh - 24px);
+                border-radius: 16px 16px 0 0;
+            }
+
+            .opcr-update-header,
+            .opcr-update-body,
+            .opcr-update-footer {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
+            .opcr-update-title {
+                font-size: 20px;
+            }
+
+            .opcr-update-icon {
+                width: 46px;
+                height: 46px;
+            }
+
+            .opcr-evidence-row {
+                grid-template-columns: 1fr 38px;
+            }
+
+            .opcr-evidence-row .link-label {
+                grid-column: 1 / -1;
+            }
+
+            .opcr-update-footer {
+                flex-direction: column-reverse;
+            }
+
+            .opcr-footer-btn {
+                width: 100%;
+            }
+        }
+
         @media print {
             @page {
                 size: landscape;
@@ -1455,37 +1775,62 @@
         </div>
 
         <!-- Accomplishment Modal -->
-        <div id="accomplishmentModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
-            <div class="bg-white rounded-lg shadow-xl p-6 w-[550px] max-h-[80vh] overflow-y-auto">
-                <h3 class="font-bold text-lg mb-2">Update Accomplishment</h3>
-                <p class="text-sm text-gray-500 mb-4" id="accomplishmentQuarter">Quarter: Q1</p>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Accomplishment Text</label>
-                    <textarea id="accomplishmentText" rows="4" class="w-full border rounded px-3 py-2"
-                        placeholder="Enter accomplishments for this quarter..."></textarea>
+        <div id="accomplishmentModal" class="opcr-update-modal fixed inset-0 hidden z-50">
+            <div class="opcr-update-dialog" role="dialog" aria-modal="true" aria-labelledby="accomplishmentModalTitle">
+                <div class="opcr-update-header">
+                    <div class="opcr-update-icon" aria-hidden="true">
+                        <i class="fa-solid fa-file-pen"></i>
+                    </div>
+                    <div>
+                        <p class="opcr-update-kicker">MWSS OPCR Performance Record</p>
+                        <h3 class="opcr-update-title" id="accomplishmentModalTitle">Update Accomplishment</h3>
+                        <p class="opcr-update-quarter" id="accomplishmentQuarter">
+                            <i class="fa-regular fa-calendar-check"></i>
+                            Quarter: Q1
+                        </p>
+                    </div>
+                    <button type="button" class="opcr-update-close" onclick="closeAccomplishmentModal()"
+                        aria-label="Close accomplishment modal">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Evidence Links (Google Drive,
-                        etc.)</label>
-                    <div id="evidenceLinksContainer" class="space-y-2">
+                <div class="opcr-update-body">
+                    <section class="opcr-update-panel">
+                        <label class="opcr-update-label" for="accomplishmentText">
+                            <i class="fa-solid fa-align-left"></i>
+                            Accomplishment Text
+                        </label>
+                        <textarea id="accomplishmentText" rows="5" class="opcr-update-textarea"
+                            placeholder="Enter accomplishments for this quarter..."></textarea>
+                    </section>
+                    <section class="opcr-update-panel">
+                        <label class="opcr-update-label">
+                            <i class="fa-solid fa-link"></i>
+                            Evidence Links
+                        </label>
+                        <div id="evidenceLinksContainer" class="opcr-evidence-list">
                         <!-- Links will be added dynamically -->
-                    </div>
-                    <div class="flex gap-2 mt-2">
-                        <button type="button" onclick="addEvidenceLink()"
-                            class="px-3 py-1.5 text-sm bg-gray-100 hover:bg-gray-200 rounded flex items-center gap-1">
-                            <i class="fa-solid fa-plus text-xs"></i> Add Evidence Link
-                        </button>
-                        <button type="button" onclick="clearAllEvidenceLinks()"
-                            class="px-3 py-1.5 text-sm bg-red-50 hover:bg-red-100 text-red-600 rounded flex items-center gap-1">
-                            <i class="fa-solid fa-trash text-xs"></i> Clear All Links
-                        </button>
-                    </div>
+                        </div>
+                        <div id="evidenceDuplicateWarning"
+                            class="hidden mt-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                        </div>
+                        <div class="opcr-update-actions">
+                            <button type="button" onclick="addEvidenceLink()" class="opcr-update-btn secondary">
+                                <i class="fa-solid fa-plus"></i> Add Evidence Link
+                            </button>
+                            <button type="button" onclick="clearAllEvidenceLinks()" class="opcr-update-btn danger">
+                                <i class="fa-solid fa-trash-can"></i> Clear All Links
+                            </button>
+                        </div>
+                    </section>
                 </div>
-                <div class="flex justify-end gap-2">
-                    <button onclick="closeAccomplishmentModal()"
-                        class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">Cancel</button>
-                    <button onclick="saveAccomplishment()"
-                        class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Save</button>
+                <div class="opcr-update-footer">
+                    <button type="button" onclick="closeAccomplishmentModal()" class="opcr-footer-btn cancel">
+                        Cancel
+                    </button>
+                    <button type="button" id="accomplishmentSaveBtn" onclick="saveAccomplishment()" class="opcr-footer-btn save">
+                        <i class="fa-solid fa-floppy-disk"></i> Save
+                    </button>
                 </div>
             </div>
         </div>
@@ -1557,6 +1902,115 @@
                 addDataRow();
                 addSectionRow('C. General Administrative Services (GAS)');
                 addDataRow();
+            }
+
+            function hasTextValue(value) {
+                return String(value || '').trim().length > 0;
+            }
+
+            function itemHasMeaningfulData(item) {
+                if (!item || item.type !== 'row') return false;
+                return [
+                    item.indicator,
+                    item.budget,
+                    item.targets,
+                    item.responsible,
+                    item.ratingQ,
+                    item.ratingE,
+                    item.ratingT,
+                    item.ratingAve,
+                    item.accQ1,
+                    item.accQ2,
+                    item.accQ3,
+                    item.accQ4,
+                ].some(hasTextValue)
+                    || ['linksQ1', 'linksQ2', 'linksQ3', 'linksQ4'].some(key => Array.isArray(item[key]) && item[key].length > 0);
+            }
+
+            function hasMeaningfulOpcrItems(items) {
+                return Array.isArray(items) && items.some(itemHasMeaningfulData);
+            }
+
+            function findLatestMeaningfulVersion(versions) {
+                if (!Array.isArray(versions)) return null;
+                for (let i = versions.length - 1; i >= 0; i--) {
+                    const snapshot = versions[i]?.snapshot;
+                    if (snapshot && hasMeaningfulOpcrItems(snapshot.items)) {
+                        return versions[i];
+                    }
+                }
+                return null;
+            }
+
+            function notifyOpcrIssue(message, tone = 'warning') {
+                let notice = document.getElementById('opcrLoadNotice');
+                if (!notice) {
+                    notice = document.createElement('div');
+                    notice.id = 'opcrLoadNotice';
+                    notice.className = 'fixed top-20 left-1/2 -translate-x-1/2 z-[9998] max-w-2xl rounded-lg border px-4 py-3 text-sm shadow-lg no-print';
+                    document.body.appendChild(notice);
+                }
+                const toneClass = tone === 'danger'
+                    ? 'border-red-200 bg-red-50 text-red-800'
+                    : 'border-amber-200 bg-amber-50 text-amber-800';
+                notice.className = `fixed top-20 left-1/2 -translate-x-1/2 z-[9998] max-w-2xl rounded-lg border px-4 py-3 text-sm shadow-lg no-print ${toneClass}`;
+                notice.textContent = message;
+            }
+
+            function disableOpcrSave(message) {
+                const saveBtn = document.getElementById('saveOpcrBtn');
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.title = message;
+                }
+            }
+
+            function restoreSignatureValueSafely(boxId, value, nameId) {
+                try {
+                    if (typeof globalThis.setSignatureValue === 'function') {
+                        globalThis.setSignatureValue(boxId, value, nameId);
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('Signature helper failed, using local restore:', err);
+                }
+
+                const box = document.getElementById(boxId);
+                if (!box) return;
+                const val = typeof value === 'string' ? value : '';
+
+                if (val === 'cursive') {
+                    const nameSource = document.getElementById(nameId);
+                    let name = nameSource ? (nameSource.innerText || nameSource.textContent || '').trim() : 'Signatory';
+                    if (name === '...' || !name) name = 'Signed';
+                    box.setAttribute('data-signed', 'true');
+                    box.setAttribute('data-sig-value', 'cursive');
+                    box.innerHTML = `
+                        <div class="flex flex-col items-center justify-center leading-none">
+                            <span class="text-blue-800 text-[11px] font-bold tracking-wide select-none" style="font-family: 'Brush Script MT', 'Courier New', cursive, sans-serif; transform: rotate(-2deg); margin-bottom: 2px;">
+                                ${escapeHtml(name)}
+                            </span>
+                            <span class="text-[6.5px] text-green-600 font-bold flex items-center justify-center gap-0.5 no-print">
+                                <i class="fa-solid fa-circle-check text-[7px]"></i> Digitally Signed
+                            </span>
+                        </div>
+                    `;
+                } else if (val.startsWith('data:image/')) {
+                    box.setAttribute('data-signed', 'true');
+                    box.setAttribute('data-sig-value', val);
+                    box.innerHTML = `
+                        <div class="flex flex-col items-center justify-center w-full h-full relative p-0.5">
+                            <img src="${escapeAttr(val)}" class="max-h-8 max-w-full object-contain pointer-events-none" style="filter: drop-shadow(0px 1px 1px rgba(0,0,0,0.1));">
+                            <span class="text-[6.5px] text-green-600 font-bold flex items-center justify-center gap-0.5 mt-0.5 no-print">
+                                <i class="fa-solid fa-circle-check text-[7px]"></i> Digitally Signed
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    box.setAttribute('data-signed', 'false');
+                    box.removeAttribute('data-sig-value');
+                    box.innerHTML = `<span class="text-blue-400/80 italic font-medium text-[7.5px] tracking-wide signature-status">Signature Pending</span>`;
+                }
             }
 
             // Sync department field
@@ -1816,14 +2270,22 @@
                 return div.innerHTML;
             }
 
+            function escapeAttr(value) {
+                return escapeHtml(value || '').replace(/'/g, '&#39;');
+            }
+
+            function encodeLinksAttr(links) {
+                return escapeAttr(JSON.stringify(canonicalizeEvidenceLinks(links)));
+            }
+
             // Helper function to build quarter content with clickable links
             function buildQuarterContent(accText, links) {
                 // Escape HTML to prevent embedded links/HTML from rendering
                 const text = escapeHtml(accText || '');
                 let html = `<span class="acc-text">${text}</span>`;
 
-                // Filter to only include links with valid URLs
-                const validLinks = (links || []).filter(link => link && link.url && link.url.trim());
+                // Filter and deduplicate links so each quarter renders one evidence block.
+                const validLinks = canonicalizeEvidenceLinks(links);
 
                 if (validLinks.length > 0) {
                     html += `<div class="evidence-links mt-1 pt-1 border-t border-gray-200">`;
@@ -1854,19 +2316,19 @@
                     <div class="flex flex-col divide-y divide-gray-300">
                         <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q1')">
                             <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q1</span>
-                            <p class="text-[7px] acc-q1" data-links='${JSON.stringify(data.linksQ1 || [])}'>${buildQuarterContent(data.accQ1, data.linksQ1)}</p>
+                            <p class="text-[7px] acc-q1" data-links='${encodeLinksAttr(data.linksQ1)}'>${buildQuarterContent(data.accQ1, data.linksQ1)}</p>
                         </div>
                         <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q2')">
                             <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q2</span>
-                            <p class="text-[7px] acc-q2" data-links='${JSON.stringify(data.linksQ2 || [])}'>${buildQuarterContent(data.accQ2, data.linksQ2)}</p>
+                            <p class="text-[7px] acc-q2" data-links='${encodeLinksAttr(data.linksQ2)}'>${buildQuarterContent(data.accQ2, data.linksQ2)}</p>
                         </div>
                         <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q3')">
                             <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q3</span>
-                            <p class="text-[7px] acc-q3" data-links='${JSON.stringify(data.linksQ3 || [])}'>${buildQuarterContent(data.accQ3, data.linksQ3)}</p>
+                            <p class="text-[7px] acc-q3" data-links='${encodeLinksAttr(data.linksQ3)}'>${buildQuarterContent(data.accQ3, data.linksQ3)}</p>
                         </div>
                         <div class="quarter-box p-0.5 relative cursor-pointer hover:bg-yellow-50" onclick="openAccomplishmentModal('${rowId}', 'Q4')">
                             <span class="absolute top-0 right-0.5 text-[6px] text-gray-400 font-bold">Q4</span>
-                            <p class="text-[7px] acc-q4" data-links='${JSON.stringify(data.linksQ4 || [])}'>${buildQuarterContent(data.accQ4, data.linksQ4)}</p>
+                            <p class="text-[7px] acc-q4" data-links='${encodeLinksAttr(data.linksQ4)}'>${buildQuarterContent(data.accQ4, data.linksQ4)}</p>
                         </div>
                     </div>
                 </td>
@@ -1978,34 +2440,295 @@
             // Accomplishment Modal
             let currentEvidenceLinks = [];
 
+            function normalizeEvidenceUrl(url) {
+                const trimmed = (url || '').trim();
+                if (!trimmed) return '';
+
+                try {
+                    const parsed = new URL(trimmed);
+                    parsed.hash = '';
+                    parsed.protocol = parsed.protocol.toLowerCase();
+                    parsed.hostname = parsed.hostname.toLowerCase();
+                    parsed.pathname = parsed.pathname.replace(/\/+$/, '');
+                    return parsed.toString().replace(/\/+$/, '');
+                } catch (e) {
+                    return trimmed.replace(/\/+$/, '').toLowerCase();
+                }
+            }
+
+            function normalizeEvidenceLabel(label) {
+                return (label || '').trim().toLowerCase();
+            }
+
+            function canonicalizeEvidenceLinks(links) {
+                const input = Array.isArray(links) ? links : [];
+                const byKey = new Map();
+
+                input.forEach(link => {
+                    const label = (link?.label || '').trim();
+                    const url = (link?.url || '').trim();
+                    if (!url) return;
+
+                    const normalizedLabel = normalizeEvidenceLabel(label);
+                    const normalizedUrl = normalizeEvidenceUrl(url);
+                    const key = normalizedLabel ? `label:${normalizedLabel}` : `url:${normalizedUrl}`;
+                    byKey.set(key, { label: label || 'Evidence', url });
+                });
+
+                const seenUrls = new Set();
+                return Array.from(byKey.values()).filter(link => {
+                    const normalizedUrl = normalizeEvidenceUrl(link.url);
+                    if (seenUrls.has(normalizedUrl)) return false;
+                    seenUrls.add(normalizedUrl);
+                    return true;
+                });
+            }
+
+            function collectEvidenceLinksFromModal() {
+                const linkDivs = document.querySelectorAll('#evidenceLinksContainer > div');
+                const links = [];
+                const seen = new Map();
+                const duplicates = [];
+
+                linkDivs.forEach((div, index) => {
+                    const labelInput = div.querySelector('.link-label');
+                    const urlInput = div.querySelector('.link-url');
+                    const label = labelInput?.value?.trim() || '';
+                    const url = urlInput?.value?.trim() || '';
+
+                    urlInput?.classList.remove('border-red-500', 'bg-red-50');
+                    if (!url) return;
+
+                    const normalizedUrl = normalizeEvidenceUrl(url);
+                    if (seen.has(normalizedUrl)) {
+                        const firstMatch = seen.get(normalizedUrl);
+                        duplicates.push({
+                            url,
+                            firstIndex: firstMatch.nodeIndex + 1,
+                            duplicateIndex: index + 1
+                        });
+                        urlInput?.classList.add('border-red-500', 'bg-red-50');
+                        const firstInput = linkDivs[firstMatch.nodeIndex]?.querySelector('.link-url');
+                        firstInput?.classList.add('border-red-500', 'bg-red-50');
+                        return;
+                    }
+
+                    seen.set(normalizedUrl, { nodeIndex: index });
+                    links.push({ label: label || 'Evidence', url });
+                });
+
+                return { links: canonicalizeEvidenceLinks(links), duplicates };
+            }
+
+            function updateDuplicateEvidenceWarning() {
+                const warning = document.getElementById('evidenceDuplicateWarning');
+                if (!warning) return false;
+
+                const { duplicates } = collectEvidenceLinksFromModal();
+                if (duplicates.length === 0) {
+                    warning.classList.add('hidden');
+                    warning.textContent = '';
+                    return false;
+                }
+
+                warning.classList.remove('hidden');
+                warning.textContent = `Duplicate evidence link detected. Please remove or change duplicate link ${duplicates[0].duplicateIndex} before saving.`;
+                return true;
+            }
+
             window.addEvidenceLink = function (url = '', label = '') {
                 const container = document.getElementById('evidenceLinksContainer');
-                const linkId = 'link_' + Date.now();
+                const linkId = 'link_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
                 const linkDiv = document.createElement('div');
                 linkDiv.id = linkId;
-                linkDiv.className = 'flex gap-2 items-center';
+                linkDiv.className = 'opcr-evidence-row';
                 linkDiv.innerHTML = `
-                    <input type="text" placeholder="Link Label (e.g., MOV 1)" value="${label}" 
-                        class="flex-shrink-0 w-24 border rounded px-2 py-1.5 text-sm link-label">
-                    <input type="url" placeholder="https://drive.google.com/..." value="${url}" 
-                        class="flex-1 border rounded px-2 py-1.5 text-sm link-url">
-                    <button type="button" onclick="removeEvidenceLink('${linkId}')" 
-                        class="p-1.5 text-red-500 hover:bg-red-50 rounded">
-                        <i class="fa-solid fa-trash-can text-xs"></i>
+                    <input type="text" placeholder="Link Label (e.g., MOV 1)" value="${escapeAttr(label)}"
+                        class="opcr-evidence-input link-label">
+                    <input type="url" placeholder="https://drive.google.com/..." value="${escapeAttr(url)}"
+                        class="opcr-evidence-input link-url">
+                    <button type="button" onclick="removeEvidenceLink('${linkId}')"
+                        class="opcr-evidence-delete" aria-label="Remove evidence link">
+                        <i class="fa-solid fa-trash-can"></i>
                     </button>
                 `;
                 container.appendChild(linkDiv);
+                linkDiv.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('input', updateDuplicateEvidenceWarning);
+                });
+                updateDuplicateEvidenceWarning();
             };
 
             window.removeEvidenceLink = function (linkId) {
                 document.getElementById(linkId)?.remove();
+                updateDuplicateEvidenceWarning();
             };
+
+            function getCurrentAccomplishmentElement() {
+                if (!currentAccomplishmentRowId || !currentQuarter) return null;
+                const row = document.getElementById(currentAccomplishmentRowId);
+                return row?.querySelector(`.acc-${currentQuarter.toLowerCase()}`) || null;
+            }
+
+            function renderAccomplishmentCell(accElement, text, links) {
+                if (!accElement) return;
+                const cleanLinks = canonicalizeEvidenceLinks(links);
+                const textSpan = document.createElement('span');
+                textSpan.className = 'acc-text';
+                textSpan.textContent = text || '';
+
+                const replacementNodes = [textSpan];
+
+                if (cleanLinks.length > 0) {
+                    const linksDiv = document.createElement('div');
+                    linksDiv.className = 'evidence-links mt-1 pt-1 border-t border-gray-200';
+                    cleanLinks.forEach(link => {
+                        const linkDiv = document.createElement('div');
+                        linkDiv.className = 'text-[6px]';
+                        linkDiv.innerHTML = `<a href="${escapeAttr(link.url)}" target="_blank" class="text-blue-600 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-link mr-0.5"></i>${escapeHtml(link.label)}</a>`;
+                        linksDiv.appendChild(linkDiv);
+                    });
+                    replacementNodes.push(linksDiv);
+                }
+
+                accElement.replaceChildren(...replacementNodes);
+                accElement.setAttribute('data-links', JSON.stringify(cleanLinks));
+            }
+
+            function collectOpcrItemsFromDom() {
+                const items = [];
+                const rows = document.querySelectorAll('#opcrTbody tr');
+
+                rows.forEach(row => {
+                    if (row.classList.contains('opcr-section')) {
+                        items.push({
+                            type: 'section',
+                            title: row.querySelector('input')?.value || ''
+                        });
+                    } else if (row.classList.contains('opcr-subsection1')) {
+                        items.push({
+                            type: 'subsection1',
+                            title: row.querySelector('input')?.value || ''
+                        });
+                    } else if (row.classList.contains('opcr-subsection2')) {
+                        items.push({
+                            type: 'subsection2',
+                            title: row.querySelector('input')?.value || ''
+                        });
+                    } else if (row.classList.contains('opcr-data-row')) {
+                        const tds = row.querySelectorAll('td');
+
+                        const getAccText = (el) => {
+                            if (!el) return '';
+                            const textSpan = el.querySelector('.acc-text');
+                            if (textSpan) return textSpan.textContent?.trim() || '';
+
+                            const clone = el.cloneNode(true);
+                            const linksDiv = clone.querySelector('.evidence-links');
+                            if (linksDiv) linksDiv.remove();
+                            const icon = clone.querySelector('i');
+                            if (icon) icon.remove();
+                            return clone.textContent?.trim() || '';
+                        };
+
+                        const getLinks = (el) => {
+                            try {
+                                const linksData = el?.getAttribute('data-links');
+                                if (linksData && linksData !== '[]') {
+                                    const links = canonicalizeEvidenceLinks(JSON.parse(linksData));
+                                    el.setAttribute('data-links', JSON.stringify(links));
+                                    return links;
+                                }
+                            } catch (e) {
+                                console.error('Error parsing links:', e);
+                            }
+                            el?.setAttribute('data-links', '[]');
+                            return [];
+                        };
+
+                        items.push({
+                            type: 'row',
+                            indicator: tds[0]?.querySelector('textarea')?.value || '',
+                            budget: tds[1]?.querySelector('textarea')?.value || '',
+                            targets: tds[2]?.querySelector('textarea')?.value || '',
+                            responsible: tds[3]?.querySelector('textarea')?.value || '',
+                            ratingQ: row.querySelector('.rating-q')?.textContent || '',
+                            ratingE: row.querySelector('.rating-e')?.textContent || '',
+                            ratingT: row.querySelector('.rating-t')?.textContent || '',
+                            ratingAve: row.querySelector('.rating-ave')?.textContent || '',
+                            accQ1: getAccText(row.querySelector('.acc-q1')),
+                            accQ2: getAccText(row.querySelector('.acc-q2')),
+                            accQ3: getAccText(row.querySelector('.acc-q3')),
+                            accQ4: getAccText(row.querySelector('.acc-q4')),
+                            linksQ1: getLinks(row.querySelector('.acc-q1')),
+                            linksQ2: getLinks(row.querySelector('.acc-q2')),
+                            linksQ3: getLinks(row.querySelector('.acc-q3')),
+                            linksQ4: getLinks(row.querySelector('.acc-q4'))
+                        });
+                    }
+                });
+
+                return items;
+            }
+
+            async function persistAccomplishmentUpdate(items, quarter) {
+                if (!opcrId) {
+                    throw new Error('No OPCR ID provided. Cannot save this quarter.');
+                }
+                if (!currentUser) {
+                    throw new Error('You are not logged in. Please log in from the main dashboard first, then try again.');
+                }
+
+                const docRef = doc(db, 'opcr_entries', opcrId);
+                const existingDoc = await getDoc(docRef);
+                const existingData = existingDoc.exists() ? existingDoc.data() : {};
+                const existingLogs = existingData.editLogs || [];
+                const existingVersions = existingData.versions || [];
+                const currentHasMeaningfulRows = hasMeaningfulOpcrItems(items);
+                const existingHasMeaningfulRows = hasMeaningfulOpcrItems(existingData.items);
+                const recoverableVersion = findLatestMeaningfulVersion(existingVersions);
+
+                if (!currentHasMeaningfulRows && (existingHasMeaningfulRows || recoverableVersion)) {
+                    throw new Error('Quarter save blocked because the current OPCR table appears blank while Firestore still has recoverable entries. Please refresh the OPCR form before saving.');
+                }
+
+                const newLog = {
+                    action: `${quarter || 'Quarter'} accomplishment saved`,
+                    user: currentUser.email || 'anonymous',
+                    timestamp: new Date().toISOString()
+                };
+
+                const versionSnapshot = {
+                    versionId: 'v' + Date.now(),
+                    timestamp: new Date().toISOString(),
+                    user: currentUser.email || 'anonymous',
+                    action: `${quarter || 'Quarter'} accomplishment saved`,
+                    snapshot: {
+                        department: document.getElementById('opcrDepartment')?.value || existingData.department || '',
+                        year: Number(document.getElementById('opcrYear')?.value || existingData.year || new Date().getFullYear()),
+                        periodStart: document.getElementById('periodStart')?.value || existingData.periodStart || '',
+                        periodEnd: document.getElementById('periodEnd')?.value || existingData.periodEnd || '',
+                        items
+                    }
+                };
+
+                await updateDoc(docRef, {
+                    items,
+                    editLogs: [...existingLogs, newLog],
+                    versions: [...existingVersions, versionSnapshot].slice(-5),
+                    updatedAt: serverTimestamp(),
+                    updatedBy: currentUser.email || 'anonymous'
+                });
+            }
 
             window.clearAllEvidenceLinks = function () {
                 const container = document.getElementById('evidenceLinksContainer');
                 container.innerHTML = '';
+                const text = document.getElementById('accomplishmentText')?.value || '';
+                renderAccomplishmentCell(getCurrentAccomplishmentElement(), text, []);
                 // Add one empty link field
                 addEvidenceLink();
+                updateDuplicateEvidenceWarning();
             };
 
             window.openAccomplishmentModal = function (rowId, quarter) {
@@ -2025,7 +2748,7 @@
                     const linksData = accElement?.getAttribute('data-links');
                     console.log('Loading links for', quarter, '- raw data:', linksData);
                     if (linksData && linksData !== '[]' && linksData.trim()) {
-                        storedLinks = JSON.parse(linksData);
+                        storedLinks = canonicalizeEvidenceLinks(JSON.parse(linksData));
                         console.log('Parsed links:', storedLinks);
                     }
                 } catch (e) {
@@ -2049,6 +2772,7 @@
                 } else {
                     addEvidenceLink(); // Add one empty link field
                 }
+                updateDuplicateEvidenceWarning();
 
                 document.getElementById('accomplishmentModal').classList.remove('hidden');
             };
@@ -2059,61 +2783,44 @@
                 currentQuarter = null;
             };
 
-            window.saveAccomplishment = function () {
-                const row = document.getElementById(currentAccomplishmentRowId);
+            window.saveAccomplishment = async function () {
                 const text = document.getElementById('accomplishmentText').value;
-                const accElement = row.querySelector(`.acc-${currentQuarter.toLowerCase()}`);
+                const accElement = getCurrentAccomplishmentElement();
+                const saveBtn = document.getElementById('accomplishmentSaveBtn');
 
-                // Get all evidence links from the modal
-                const linkDivs = document.querySelectorAll('#evidenceLinksContainer > div');
-                const linksMap = new Map(); // Use Map to deduplicate by URL
+                const { links, duplicates } = collectEvidenceLinksFromModal();
+                if (duplicates.length > 0) {
+                    updateDuplicateEvidenceWarning();
+                    alert('Duplicate evidence link detected. Please remove or change the duplicate link before saving.');
+                    return;
+                }
 
-                linkDivs.forEach(div => {
-                    const label = div.querySelector('.link-label')?.value?.trim() || '';
-                    const url = div.querySelector('.link-url')?.value?.trim() || '';
-                    if (url) {
-                        // Use URL as key to deduplicate - latest entry wins (overwrites previous)
-                        linksMap.set(url, { label: label || 'Evidence', url: url });
-                    }
-                });
-
-                // Convert Map back to array
-                const links = Array.from(linksMap.values());
                 console.log('Saving links:', links);
-
-                // Completely clear and rebuild the content (overwrite, not append)
-                accElement.innerHTML = '';
-
-                // Store links in data attribute (fresh, not appending to existing)
-                accElement.setAttribute('data-links', JSON.stringify(links));
 
                 // Debug: log what we're saving
                 console.log('Saving text:', JSON.stringify(text));
                 console.log('Text has newlines:', text.includes('\n'));
+                renderAccomplishmentCell(accElement, text, links);
 
-                // Create span and set textContent to preserve newlines
-                const textSpan = document.createElement('span');
-                textSpan.className = 'acc-text';
-                textSpan.textContent = text; // textContent preserves newlines
+                try {
+                    if (saveBtn) {
+                        saveBtn.disabled = true;
+                        saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+                    }
 
-                // Clear and add the text span
-                accElement.innerHTML = '';
-                accElement.appendChild(textSpan);
+                    const items = collectOpcrItemsFromDom();
+                    await persistAccomplishmentUpdate(items, currentQuarter);
 
-                // Add links if any
-                if (links.length > 0) {
-                    const linksDiv = document.createElement('div');
-                    linksDiv.className = 'evidence-links mt-1 pt-1 border-t border-gray-200';
-                    links.forEach(link => {
-                        const linkDiv = document.createElement('div');
-                        linkDiv.className = 'text-[6px]';
-                        linkDiv.innerHTML = `<a href="${link.url}" target="_blank" class="text-blue-600 hover:underline" onclick="event.stopPropagation()"><i class="fa-solid fa-link mr-0.5"></i>${link.label}</a>`;
-                        linksDiv.appendChild(linkDiv);
-                    });
-                    accElement.appendChild(linksDiv);
+                    closeAccomplishmentModal();
+                } catch (err) {
+                    console.error('Error saving accomplishment:', err);
+                    alert('Failed to save quarter accomplishment: ' + err.message);
+                } finally {
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save';
+                    }
                 }
-
-                closeAccomplishmentModal();
             };
 
             // Load from Firestore
@@ -2197,15 +2904,15 @@
 
                         // Restore signature states
                         if (data.signatureStates) {
-                            setSignatureValue('sigCommittingBox', data.signatureStates.sigCommitting, 'sigCommitting');
-                            setSignatureValue('sig1ReviewerBox', data.signatureStates.sig1Reviewer, 'sig1Reviewer');
-                            setSignatureValue('sig1PMTBox', data.signatureStates.sig1PMT, 'sig1PMT');
-                            setSignatureValue('sig1ApproverBox', data.signatureStates.sig1Approver, 'sig1Approver');
+                            restoreSignatureValueSafely('sigCommittingBox', data.signatureStates.sigCommitting, 'sigCommitting');
+                            restoreSignatureValueSafely('sig1ReviewerBox', data.signatureStates.sig1Reviewer, 'sig1Reviewer');
+                            restoreSignatureValueSafely('sig1PMTBox', data.signatureStates.sig1PMT, 'sig1PMT');
+                            restoreSignatureValueSafely('sig1ApproverBox', data.signatureStates.sig1Approver, 'sig1Approver');
 
-                            setSignatureValue('footerPreparedBox', data.signatureStates.footerPrepared, 'footerPrepared');
-                            setSignatureValue('footerReviewerBox', data.signatureStates.footerReviewer, 'footerReviewer');
-                            setSignatureValue('footerRecommenderBox', data.signatureStates.footerRecommender, 'footerRecommender');
-                            setSignatureValue('footerApproverBox', data.signatureStates.footerApprover, 'footerApprover');
+                            restoreSignatureValueSafely('footerPreparedBox', data.signatureStates.footerPrepared, 'footerPrepared');
+                            restoreSignatureValueSafely('footerReviewerBox', data.signatureStates.footerReviewer, 'footerReviewer');
+                            restoreSignatureValueSafely('footerRecommenderBox', data.signatureStates.footerRecommender, 'footerRecommender');
+                            restoreSignatureValueSafely('footerApproverBox', data.signatureStates.footerApprover, 'footerApprover');
                         }
 
                         // Populate rows
@@ -2215,10 +2922,21 @@
                         console.log('📦 Full data object keys:', Object.keys(data));
                         console.log('📦 data.items exists?', !!data.items, 'Is array?', Array.isArray(data.items));
 
-                        if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-                            console.log('📊 Loading items:', data.items.length, 'rows');
-                            console.log('📊 First item:', JSON.stringify(data.items[0]));
-                            data.items.forEach((item, index) => {
+                        let itemsToLoad = Array.isArray(data.items) ? data.items : [];
+                        const recoveredVersion = !hasMeaningfulOpcrItems(itemsToLoad)
+                            ? findLatestMeaningfulVersion(data.versions)
+                            : null;
+
+                        if (recoveredVersion) {
+                            itemsToLoad = recoveredVersion.snapshot.items;
+                            notifyOpcrIssue('The current OPCR record appears blank, so the latest meaningful saved version was loaded for review. Click Save only after confirming the restored entries are correct.');
+                            console.warn('⚠️ Loaded OPCR rows from recovery snapshot:', recoveredVersion.versionId, recoveredVersion.timestamp);
+                        }
+
+                        if (itemsToLoad.length > 0) {
+                            console.log('📊 Loading items:', itemsToLoad.length, 'rows');
+                            console.log('📊 First item:', JSON.stringify(itemsToLoad[0]));
+                            itemsToLoad.forEach((item, index) => {
                                 console.log(`  Item ${index}:`, item.type, item.title || item.indicator || '(no title/indicator)');
                                 if (item.type === 'section') {
                                     addSectionRow(item.title || '');
@@ -2231,7 +2949,7 @@
                                 }
                             });
                         } else {
-                            console.warn('⚠️ No items array found or empty, initializing defaults. data.items =', data.items);
+                            console.info('ℹ️ OPCR has no saved rows yet. Loading editable default template.', data.items);
                             initializeDefaultSections();
                         }
 
@@ -2257,11 +2975,13 @@
                         }
                     } else {
                         console.warn('❌ No OPCR document found for ID:', id);
-                        initializeDefaultSections();
+                        notifyOpcrIssue('This OPCR record was not found in Firestore. Save is disabled to prevent creating a blank replacement.', 'danger');
+                        disableOpcrSave('Save disabled because the OPCR document was not found.');
                     }
                 } catch (err) {
                     console.error('Error loading OPCR:', err);
-                    initializeDefaultSections();
+                    notifyOpcrIssue(`The OPCR record could not be loaded. Save is disabled to prevent overwriting existing entries. Error: ${err.message || err}`, 'danger');
+                    disableOpcrSave('Save disabled because the OPCR record did not load.');
                 }
             }
 
@@ -2720,81 +3440,7 @@
 
                 console.log('Saving OPCR... User:', currentUser.email);
 
-                // Gather all data
-                const items = [];
-                const rows = document.querySelectorAll('#opcrTbody tr');
-                rows.forEach(row => {
-                    if (row.classList.contains('opcr-section')) {
-                        items.push({
-                            type: 'section',
-                            title: row.querySelector('input').value
-                        });
-                    } else if (row.classList.contains('opcr-subsection1')) {
-                        items.push({
-                            type: 'subsection1',
-                            title: row.querySelector('input').value
-                        });
-                    } else if (row.classList.contains('opcr-subsection2')) {
-                        items.push({
-                            type: 'subsection2',
-                            title: row.querySelector('input').value
-                        });
-                    } else if (row.classList.contains('opcr-data-row')) {
-                        const tds = row.querySelectorAll('td');
-
-                        // Helper function to get ONLY the accomplishment text (not link labels)
-                        const getAccText = (el) => {
-                            if (!el) return '';
-                            // Look for the acc-text span first
-                            const textSpan = el.querySelector('.acc-text');
-                            if (textSpan) {
-                                // Use textContent to get plain text without HTML
-                                return textSpan.textContent?.trim() || '';
-                            }
-                            // Fallback: get text content excluding evidence-links div
-                            const clone = el.cloneNode(true);
-                            const linksDiv = clone.querySelector('.evidence-links');
-                            if (linksDiv) linksDiv.remove();
-                            const icon = clone.querySelector('i');
-                            if (icon) icon.remove();
-                            return clone.textContent?.trim() || '';
-                        };
-
-                        // Helper to get links from data attribute
-                        const getLinks = (el) => {
-                            try {
-                                const linksData = el?.getAttribute('data-links');
-                                if (linksData && linksData !== '[]') {
-                                    return JSON.parse(linksData);
-                                }
-                            } catch (e) {
-                                console.error('Error parsing links:', e);
-                            }
-                            return [];
-                        };
-
-                        items.push({
-                            type: 'row',
-                            indicator: tds[0].querySelector('textarea').value,
-                            budget: tds[1].querySelector('textarea').value,
-                            targets: tds[2].querySelector('textarea').value,
-                            responsible: tds[3].querySelector('textarea').value,
-                            ratingQ: row.querySelector('.rating-q')?.textContent || '',
-                            ratingE: row.querySelector('.rating-e')?.textContent || '',
-                            ratingT: row.querySelector('.rating-t')?.textContent || '',
-                            ratingAve: row.querySelector('.rating-ave')?.textContent || '',
-                            accQ1: getAccText(row.querySelector('.acc-q1')),
-                            accQ2: getAccText(row.querySelector('.acc-q2')),
-                            accQ3: getAccText(row.querySelector('.acc-q3')),
-                            accQ4: getAccText(row.querySelector('.acc-q4')),
-                            // Evidence links for each quarter
-                            linksQ1: getLinks(row.querySelector('.acc-q1')),
-                            linksQ2: getLinks(row.querySelector('.acc-q2')),
-                            linksQ3: getLinks(row.querySelector('.acc-q3')),
-                            linksQ4: getLinks(row.querySelector('.acc-q4'))
-                        });
-                    }
-                });
+                const items = collectOpcrItemsFromDom();
 
                 try {
                     const docRef = doc(db, 'opcr_entries', opcrId);
@@ -2804,6 +3450,13 @@
                     const existingData = existingDoc.exists() ? existingDoc.data() : {};
                     const existingLogs = existingData.editLogs || [];
                     const existingVersions = existingData.versions || [];
+                    const currentHasMeaningfulRows = hasMeaningfulOpcrItems(items);
+                    const existingHasMeaningfulRows = hasMeaningfulOpcrItems(existingData.items);
+                    const recoverableVersion = findLatestMeaningfulVersion(existingVersions);
+
+                    if (!currentHasMeaningfulRows && (existingHasMeaningfulRows || recoverableVersion)) {
+                        throw new Error('Save blocked because the current OPCR table appears blank while Firestore still has recoverable entries. Please refresh the OPCR form before saving.');
+                    }
 
                     // Add new edit log entry
                     const newLog = {
@@ -3628,41 +4281,8 @@
                 box.innerHTML = `<span class="text-blue-400/80 italic font-medium text-[7.5px] tracking-wide signature-status">Signature Pending</span>`;
             }
 
-            // Auto-sync signatures with same name
-            syncMatchingSignatures(boxId, val, nameId);
-        }
-
-        function syncMatchingSignatures(sourceBoxId, val, sourceNameId) {
-            const sourceNameSource = document.getElementById(sourceNameId);
-            if (!sourceNameSource) return;
-            const sourceName = (sourceNameSource.innerText || sourceNameSource.textContent).trim().toLowerCase();
-            if (!sourceName || sourceName === '...' || sourceName === 'name of employee' || sourceName === 'ratee') return;
-
-            const sigMappings = [
-                { boxId: 'sigCommittingBox', nameId: 'sigCommitting' },
-                { boxId: 'sig1ReviewerBox', nameId: 'sig1Reviewer' },
-                { boxId: 'sig1PMTBox', nameId: 'sig1PMT' },
-                { boxId: 'sig1ApproverBox', nameId: 'sig1Approver' },
-                { boxId: 'footerPreparedBox', nameId: 'footerPrepared' },
-                { boxId: 'footerReviewerBox', nameId: 'footerReviewer' },
-                { boxId: 'footerRecommenderBox', nameId: 'footerRecommender' },
-                { boxId: 'footerApproverBox', nameId: 'footerApprover' }
-            ];
-
-            sigMappings.forEach(mapping => {
-                if (mapping.boxId === sourceBoxId) return;
-
-                const targetNameSource = document.getElementById(mapping.nameId);
-                if (!targetNameSource) return;
-                const targetName = (targetNameSource.innerText || targetNameSource.textContent).trim().toLowerCase();
-
-                if (targetName === sourceName) {
-                    const targetBox = document.getElementById(mapping.boxId);
-                    if (targetBox && targetBox.getAttribute('data-sig-value') !== (val || '')) {
-                        setSignatureValue(mapping.boxId, val, mapping.nameId);
-                    }
-                }
-            });
+            // Each signature box is intentionally independent. Part I covers
+            // planning approval, while Part II covers post-monitoring approval.
         }
 
         function refreshCursiveSignatures() {
