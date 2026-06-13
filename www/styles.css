@@ -74,6 +74,461 @@ body {
   scrollbar-color: #6c757d #e9ecef;
 }
 
+/* --- OPCR / IPCR Entry Modals: Government Form Layout --- */
+#opcrModal .opcr-entry-modal,
+#ipcrModal .ipcr-entry-modal {
+  border: 0;
+  border-radius: 8px;
+  color: #172033;
+  overflow: hidden;
+  box-shadow: 0 24px 60px -32px rgba(15, 23, 42, 0.65);
+}
+
+.opcr-entry-modal-header,
+.ipcr-entry-modal-header {
+  align-items: center;
+  background: #0d3b66;
+  border-bottom: 4px solid #f4d35e;
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.opcr-entry-header-icon,
+.ipcr-entry-header-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  display: flex;
+  flex: 0 0 auto;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
+}
+
+.opcr-entry-header-icon i,
+.ipcr-entry-header-icon i {
+  font-size: 1.25rem;
+}
+
+.opcr-entry-kicker,
+.ipcr-entry-kicker {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.opcr-entry-modal-header .modal-title,
+.ipcr-entry-modal-header .modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.opcr-entry-subtitle,
+.ipcr-entry-subtitle {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  margin-top: 0.15rem;
+}
+
+.opcr-entry-modal-body,
+.ipcr-entry-modal-body {
+  background: #f5f7fb;
+  padding: 1rem;
+}
+
+.opcr-entry-section,
+.ipcr-entry-section {
+  background: #ffffff;
+  border: 1px solid #d8e0ea;
+  border-left: 6px solid #0d3b66;
+  border-radius: 8px;
+  margin-bottom: 0.9rem;
+  padding: 1rem;
+}
+
+.opcr-entry-section:last-child,
+.ipcr-entry-section:last-child {
+  margin-bottom: 0;
+}
+
+.opcr-entry-section-title,
+.ipcr-entry-section-title {
+  align-items: flex-start;
+  border-bottom: 1px solid #e5ebf2;
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+}
+
+.opcr-entry-section-title i,
+.ipcr-entry-section-title i {
+  align-items: center;
+  background: #eef4fb;
+  border: 1px solid #cbd8e8;
+  border-radius: 50%;
+  color: #0d3b66;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.opcr-entry-section-title h6,
+.ipcr-entry-section-title h6 {
+  color: #0d2742;
+  font-size: 0.98rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.opcr-entry-section-title p,
+.ipcr-entry-section-title p {
+  color: #64748b;
+  font-size: 0.8rem;
+  margin: 0.15rem 0 0;
+}
+
+#opcrModal .form-label,
+#ipcrModal .form-label {
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+#opcrModal .form-control,
+#opcrModal .form-select,
+#ipcrModal .form-control,
+#ipcrModal .form-select {
+  border-color: #cfd8e3;
+  border-radius: 8px;
+  color: #172033;
+  min-height: 44px;
+}
+
+#opcrModal .form-control:focus,
+#opcrModal .form-select:focus,
+#ipcrModal .form-control:focus,
+#ipcrModal .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+.opcr-entry-modal-footer,
+.ipcr-entry-modal-footer {
+  background: #ffffff;
+  border-top: 1px solid #d8e0ea;
+  gap: 0.65rem;
+  padding: 0.85rem 1.25rem;
+}
+
+.opcr-entry-modal-footer .btn,
+.ipcr-entry-modal-footer .btn {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-width: 7rem;
+  padding: 0.55rem 1.1rem;
+}
+
+/* --- Generate IPCR from OPCR Wizard: Government Form Layout --- */
+#generateIpcrModal .generate-ipcr-modal {
+  border: 0;
+  border-radius: 8px;
+  color: #172033;
+  overflow: hidden;
+  box-shadow: 0 24px 60px -32px rgba(15, 23, 42, 0.65);
+}
+
+.generate-ipcr-modal-header {
+  align-items: center;
+  background: #0d3b66;
+  border-bottom: 4px solid #f4d35e;
+  display: flex;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem;
+}
+
+.generate-ipcr-header-icon {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 50%;
+  display: flex;
+  flex: 0 0 auto;
+  height: 48px;
+  justify-content: center;
+  width: 48px;
+}
+
+.generate-ipcr-header-icon i {
+  font-size: 1.22rem;
+}
+
+.generate-ipcr-kicker {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.generate-ipcr-modal-header .modal-title {
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.generate-ipcr-subtitle {
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.86rem;
+  margin-top: 0.15rem;
+}
+
+.generate-ipcr-modal-body {
+  background: #f5f7fb;
+  padding: 1rem;
+}
+
+.generate-ipcr-stepper {
+  background: #ffffff;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  margin-bottom: 0.9rem;
+  padding: 0.75rem;
+}
+
+.generate-ipcr-stepper-track {
+  align-items: center;
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+#generateIpcrModal .gen-step-badge {
+  align-items: center;
+  border: 1px solid transparent;
+  display: inline-flex;
+  font-size: 0.84rem;
+  font-weight: 800;
+  min-height: 34px;
+}
+
+#generateIpcrModal .gen-step-badge.bg-info {
+  background-color: #0d3b66 !important;
+  border-color: #0d3b66;
+  color: #ffffff !important;
+}
+
+#generateIpcrModal .gen-step-badge.bg-secondary {
+  background-color: #eef4fb !important;
+  border-color: #cbd8e8;
+  color: #475569 !important;
+}
+
+.generate-ipcr-section {
+  background: #ffffff;
+  border: 1px solid #d8e0ea;
+  border-left: 6px solid #0d3b66;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.generate-ipcr-section-title {
+  align-items: flex-start;
+  border-bottom: 1px solid #e5ebf2;
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.8rem;
+}
+
+.generate-ipcr-section-title>i {
+  align-items: center;
+  background: #eef4fb;
+  border: 1px solid #cbd8e8;
+  border-radius: 50%;
+  color: #0d3b66;
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.generate-ipcr-section-title h6 {
+  color: #0d2742;
+  font-size: 1rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.generate-ipcr-section-title p {
+  color: #64748b;
+  font-size: 0.82rem;
+  margin: 0.15rem 0 0;
+}
+
+.generate-ipcr-list {
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#generateIpcrModal .list-group-item {
+  border-color: #e5ebf2;
+  color: #172033;
+  padding: 1rem;
+}
+
+#generateIpcrModal .list-group-item-action:hover,
+#generateIpcrModal .list-group-item-action:focus {
+  background: #f1f6fb;
+  color: #0d2742;
+}
+
+#generateIpcrModal .list-group-item .text-info,
+#generateIpcrModal .list-group-item .text-primary {
+  color: #0d3b66 !important;
+}
+
+#generateIpcrModal .list-group-item .rounded-circle.bg-info {
+  background-color: #0d3b66 !important;
+}
+
+#generateIpcrModal .badge.bg-success {
+  background-color: #198754 !important;
+}
+
+#generateIpcrModal .badge.bg-primary,
+#generateIpcrModal .badge.bg-info {
+  background-color: #0d3b66 !important;
+}
+
+#generateIpcrModal .badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+.generate-ipcr-empty {
+  align-items: center;
+  color: #64748b;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9rem;
+  gap: 0.5rem;
+  justify-content: center;
+  min-height: 140px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.generate-ipcr-empty i {
+  color: #94a3b8;
+  font-size: 1.75rem;
+}
+
+.generate-ipcr-note {
+  align-items: flex-start;
+  background: #eef4fb;
+  border: 1px solid #cbd8e8;
+  border-radius: 8px;
+  color: #334155;
+  display: flex;
+  font-size: 0.86rem;
+  gap: 0.55rem;
+  margin-bottom: 0.9rem;
+  padding: 0.75rem;
+}
+
+.generate-ipcr-note i {
+  color: #0d3b66;
+  margin-top: 0.1rem;
+}
+
+.generate-ipcr-subsection {
+  background: #ffffff;
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  margin-bottom: 0.9rem;
+  padding: 0.85rem;
+}
+
+.generate-ipcr-subsection-title {
+  color: #0d2742;
+  font-size: 0.84rem;
+  font-weight: 800;
+  margin-bottom: 0.65rem;
+  text-transform: uppercase;
+}
+
+#generateIpcrModal .form-label {
+  color: #334155;
+  font-size: 0.72rem;
+  font-weight: 800;
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+}
+
+#generateIpcrModal .form-control,
+#generateIpcrModal .form-select {
+  border-color: #cfd8e3;
+  border-radius: 8px;
+  color: #172033;
+  min-height: 38px;
+}
+
+#generateIpcrModal .form-control:focus,
+#generateIpcrModal .form-select:focus {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.12);
+}
+
+.generate-ipcr-table-wrap {
+  border: 1px solid #d8e0ea;
+  border-radius: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.generate-ipcr-table-wrap table {
+  border-color: #d8e0ea;
+}
+
+.generate-ipcr-table-wrap thead {
+  background: #0d3b66;
+  color: #ffffff;
+}
+
+.generate-ipcr-table-wrap th,
+.generate-ipcr-table-wrap td {
+  border-color: #d8e0ea;
+}
+
+.generate-ipcr-modal-footer {
+  background: #ffffff;
+  border-top: 1px solid #d8e0ea;
+  gap: 0.65rem;
+  padding: 0.85rem 1.25rem;
+}
+
+.generate-ipcr-modal-footer .btn {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  font-weight: 700;
+  justify-content: center;
+  min-width: 7rem;
+  padding: 0.55rem 1.1rem;
+}
+
 #loginScreen {
   position: relative;
   isolation: isolate;
@@ -1444,6 +1899,141 @@ body {
 }
 
 @media (max-width: 575.98px) {
+  #opcrModal .modal-dialog,
+  #ipcrModal .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: calc(100% - 1rem);
+  }
+
+  .opcr-entry-modal-header,
+  .ipcr-entry-modal-header {
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .opcr-entry-header-icon,
+  .ipcr-entry-header-icon {
+    height: 42px;
+    width: 42px;
+  }
+
+  .opcr-entry-modal-header .modal-title,
+  .ipcr-entry-modal-header .modal-title {
+    font-size: 1.15rem;
+  }
+
+  .opcr-entry-subtitle,
+  .ipcr-entry-subtitle {
+    font-size: 0.78rem;
+  }
+
+  .opcr-entry-modal-body,
+  .ipcr-entry-modal-body {
+    padding: 0.75rem;
+  }
+
+  .opcr-entry-section,
+  .ipcr-entry-section {
+    padding: 0.85rem;
+  }
+
+  .opcr-entry-modal-footer,
+  .ipcr-entry-modal-footer {
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    min-height: 0;
+    padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .opcr-entry-modal-footer .btn,
+  .ipcr-entry-modal-footer .btn {
+    flex: 0 1 auto;
+    font-size: 0.92rem;
+    line-height: 1.2;
+    min-width: 6.25rem;
+    padding: 0.55rem 0.85rem;
+  }
+
+  #generateIpcrModal .modal-dialog {
+    margin: 0.5rem auto;
+    max-width: calc(100% - 1rem);
+  }
+
+  .generate-ipcr-modal-header {
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .generate-ipcr-header-icon {
+    height: 42px;
+    width: 42px;
+  }
+
+  .generate-ipcr-modal-header .modal-title {
+    font-size: 1.15rem;
+  }
+
+  .generate-ipcr-subtitle {
+    font-size: 0.78rem;
+  }
+
+  .generate-ipcr-modal-body {
+    padding: 0.75rem;
+  }
+
+  .generate-ipcr-stepper {
+    padding: 0.65rem;
+  }
+
+  .generate-ipcr-stepper-track {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.45rem;
+  }
+
+  .generate-ipcr-stepper-track>i {
+    display: none;
+  }
+
+  #generateIpcrModal .gen-step-badge {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .generate-ipcr-section,
+  .generate-ipcr-subsection {
+    padding: 0.85rem;
+  }
+
+  .generate-ipcr-section-title {
+    gap: 0.6rem;
+  }
+
+  .generate-ipcr-section-title h6 {
+    font-size: 0.95rem;
+  }
+
+  .generate-ipcr-table-wrap {
+    max-height: 280px;
+  }
+
+  .generate-ipcr-modal-footer {
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: flex-end;
+    min-height: 0;
+    padding: 0.6rem 0.75rem calc(0.6rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .generate-ipcr-modal-footer .btn {
+    flex: 0 1 auto;
+    font-size: 0.92rem;
+    line-height: 1.2;
+    min-width: 6.25rem;
+    padding: 0.55rem 0.85rem;
+  }
+
   #detailsModal .modal-dialog {
     height: calc(100vh - 1rem);
     height: calc(100dvh - 1rem);

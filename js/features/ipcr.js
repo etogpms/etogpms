@@ -294,7 +294,8 @@
             const periodEnd = document.getElementById('ipcrFormPeriodEnd')?.value || 'DECEMBER';
             const status = document.getElementById('ipcrFormStatus')?.value || 'Draft';
             const raterName = document.getElementById('ipcrFormRaterName')?.value || '';
-            const endorserName = document.getElementById('ipcrFormEndorserName')?.value || '';
+            const reviewerName = document.getElementById('ipcrFormEndorserName')?.value || '';
+            const recommenderName = document.getElementById('ipcrFormRecommenderName')?.value || '';
             const approverName = document.getElementById('ipcrFormApproverName')?.value || '';
             const remarks = document.getElementById('ipcrFormRemarks')?.value || '';
 
@@ -310,8 +311,14 @@
                 periodEnd,
                 status,
                 raterName,
-                endorserName,
+                endorserName: reviewerName,
+                reviewerName,
+                recommenderName,
                 approverName,
+                sigRaterName: raterName,
+                sigReviewerName: reviewerName,
+                sigRecommenderName: recommenderName,
+                sigApproverName: approverName,
                 remarks,
                 updatedAt: serverTimestamp ? serverTimestamp() : new Date(),
                 updatedBy: user.email,
@@ -1004,7 +1011,9 @@
                 periodEnd: periodEnd,
                 status: 'Draft',
                 raterName: sigDeptManager,
-                endorserName: sigDeputyAdmin,
+                endorserName: sigDeptManager,
+                reviewerName: sigDeptManager,
+                recommenderName: sigDeputyAdmin,
                 approverName: sigAdmin,
                 // Signatory fields used by ipcr-form.html
                 sigRaterName: sigDeptManager,

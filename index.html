@@ -1452,95 +1452,151 @@
         <!-- IPCR Add/Edit Modal -->
         <div class="modal fade" id="ipcrModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-lg">
-            <div class="modal-content">
+            <div class="modal-content ipcr-entry-modal">
               <form id="ipcrForm">
-                <div class="modal-header bg-success text-white">
-                  <h5 class="modal-title"><i class="fa fa-user-check me-2"></i>Add / Edit IPCR Entry</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <input type="hidden" id="ipcrId" name="ipcrId" />
-                  <div class="row g-3">
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormRateeName">Employee Name</label>
-                      <input type="text" class="form-control" id="ipcrFormRateeName" placeholder="Full Name" required />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormRateePosition">Position / Title</label>
-                      <input type="text" class="form-control" id="ipcrFormRateePosition"
-                        placeholder="e.g. Principal Engineer C" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormDepartment">Department / Office</label>
-                      <input type="text" class="form-control" id="ipcrFormDepartment" placeholder="e.g. FOMD" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormRaterName">Rater / Supervisor</label>
-                      <input type="text" class="form-control" id="ipcrFormRaterName" placeholder="Supervisor Name" />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label" for="ipcrFormYear">Year</label>
-                      <input type="number" class="form-control" id="ipcrFormYear" min="2020" max="2035" required />
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label" for="ipcrFormPeriodStart">Period Start</label>
-                      <select class="form-select" id="ipcrFormPeriodStart">
-                        <option>JANUARY</option>
-                        <option>FEBRUARY</option>
-                        <option>MARCH</option>
-                        <option>APRIL</option>
-                        <option>MAY</option>
-                        <option>JUNE</option>
-                        <option selected>JULY</option>
-                        <option>AUGUST</option>
-                        <option>SEPTEMBER</option>
-                        <option>OCTOBER</option>
-                        <option>NOVEMBER</option>
-                        <option>DECEMBER</option>
-                      </select>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label" for="ipcrFormPeriodEnd">Period End</label>
-                      <select class="form-select" id="ipcrFormPeriodEnd">
-                        <option>JANUARY</option>
-                        <option>FEBRUARY</option>
-                        <option>MARCH</option>
-                        <option>APRIL</option>
-                        <option>MAY</option>
-                        <option>JUNE</option>
-                        <option>JULY</option>
-                        <option>AUGUST</option>
-                        <option>SEPTEMBER</option>
-                        <option>OCTOBER</option>
-                        <option>NOVEMBER</option>
-                        <option selected>DECEMBER</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormEndorserName">Endorsed By</label>
-                      <input type="text" class="form-control" id="ipcrFormEndorserName" placeholder="Endorser Name" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormApproverName">Approved and Rated By</label>
-                      <input type="text" class="form-control" id="ipcrFormApproverName" placeholder="Approver Name" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormStatus">Status</label>
-                      <select class="form-select" id="ipcrFormStatus">
-                        <option value="Draft" selected>Draft</option>
-                        <option value="Submitted">Submitted</option>
-                        <option value="Approved">Approved</option>
-                      </select>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label" for="ipcrFormRemarks">Remarks</label>
-                      <input type="text" class="form-control" id="ipcrFormRemarks" placeholder="Optional remarks" />
-                    </div>
+                <div class="modal-header ipcr-entry-modal-header text-white">
+                  <div class="ipcr-entry-header-icon">
+                    <i class="fa fa-user-check"></i>
                   </div>
+                  <div class="flex-grow-1">
+                    <div class="ipcr-entry-kicker">MWSS Individual Performance Record</div>
+                    <h5 class="modal-title mb-0">Add / Edit IPCR Entry</h5>
+                    <div class="ipcr-entry-subtitle">Employee profile, rating period, and review authority setup</div>
+                  </div>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-body ipcr-entry-modal-body">
+                  <input type="hidden" id="ipcrId" name="ipcrId" />
+                  <section class="ipcr-entry-section">
+                    <div class="ipcr-entry-section-title">
+                      <i class="fa fa-id-card"></i>
+                      <div>
+                        <h6>Employee Profile</h6>
+                        <p>Primary employee details for the individual performance commitment record.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label" for="ipcrFormRateeName">Employee Name</label>
+                        <input type="text" class="form-control" id="ipcrFormRateeName" placeholder="Full Name" required />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="ipcrFormRateePosition">Position / Title</label>
+                        <input type="text" class="form-control" id="ipcrFormRateePosition"
+                          placeholder="e.g. Principal Engineer C" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="ipcrFormDepartment">Department / Office</label>
+                        <input type="text" class="form-control" id="ipcrFormDepartment" placeholder="e.g. FOMD" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="ipcrFormRaterName">Rater / Supervisor</label>
+                        <input type="text" class="form-control" id="ipcrFormRaterName" placeholder="Supervisor Name" />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ipcr-entry-section">
+                    <div class="ipcr-entry-section-title">
+                      <i class="fa fa-calendar-check"></i>
+                      <div>
+                        <h6>Rating Period</h6>
+                        <p>Set the applicable year and coverage months for the IPCR entry.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <label class="form-label" for="ipcrFormYear">Year</label>
+                        <input type="number" class="form-control" id="ipcrFormYear" min="2020" max="2035" required />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="ipcrFormPeriodStart">Period Start</label>
+                        <select class="form-select" id="ipcrFormPeriodStart">
+                          <option>JANUARY</option>
+                          <option>FEBRUARY</option>
+                          <option>MARCH</option>
+                          <option>APRIL</option>
+                          <option>MAY</option>
+                          <option>JUNE</option>
+                          <option selected>JULY</option>
+                          <option>AUGUST</option>
+                          <option>SEPTEMBER</option>
+                          <option>OCTOBER</option>
+                          <option>NOVEMBER</option>
+                          <option>DECEMBER</option>
+                        </select>
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="ipcrFormPeriodEnd">Period End</label>
+                        <select class="form-select" id="ipcrFormPeriodEnd">
+                          <option>JANUARY</option>
+                          <option>FEBRUARY</option>
+                          <option>MARCH</option>
+                          <option>APRIL</option>
+                          <option>MAY</option>
+                          <option>JUNE</option>
+                          <option>JULY</option>
+                          <option>AUGUST</option>
+                          <option>SEPTEMBER</option>
+                          <option>OCTOBER</option>
+                          <option>NOVEMBER</option>
+                          <option selected>DECEMBER</option>
+                        </select>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ipcr-entry-section">
+                    <div class="ipcr-entry-section-title">
+                      <i class="fa fa-user-tie"></i>
+                      <div>
+                        <h6>Review Authorities</h6>
+                        <p>Identify the reviewing, recommending, and approving officials for this record.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-4">
+                        <label class="form-label" for="ipcrFormEndorserName">Reviewed By</label>
+                        <input type="text" class="form-control" id="ipcrFormEndorserName" placeholder="Reviewer Name" />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="ipcrFormRecommenderName">Recommended By</label>
+                        <input type="text" class="form-control" id="ipcrFormRecommenderName" placeholder="Recommender Name" />
+                      </div>
+                      <div class="col-md-4">
+                        <label class="form-label" for="ipcrFormApproverName">Approved and Rated By</label>
+                        <input type="text" class="form-control" id="ipcrFormApproverName" placeholder="Approver Name" />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="ipcr-entry-section">
+                    <div class="ipcr-entry-section-title">
+                      <i class="fa fa-clipboard-list"></i>
+                      <div>
+                        <h6>Administrative Status</h6>
+                        <p>Track the filing status and internal remarks for the IPCR entry.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label" for="ipcrFormStatus">Status</label>
+                        <select class="form-select" id="ipcrFormStatus">
+                          <option value="Draft" selected>Draft</option>
+                          <option value="Submitted">Submitted</option>
+                          <option value="Approved">Approved</option>
+                        </select>
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label" for="ipcrFormRemarks">Remarks</label>
+                        <input type="text" class="form-control" id="ipcrFormRemarks" placeholder="Optional remarks" />
+                      </div>
+                    </div>
+                  </section>
+                </div>
+                <div class="modal-footer ipcr-entry-modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-success"><i class="fa fa-save me-1"></i>Save Entry</button>
+                  <button type="submit" class="btn btn-primary"><i class="fa fa-save me-1"></i>Save Entry</button>
                 </div>
               </form>
             </div>
@@ -1609,16 +1665,23 @@
         <!-- Generate IPCR from OPCR Wizard Modal -->
         <div class="modal fade" id="generateIpcrModal" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content">
-              <div class="modal-header bg-info text-white">
-                <h5 class="modal-title"><i class="fa-solid fa-wand-magic-sparkles me-2"></i>Generate IPCR from OPCR</h5>
+            <div class="modal-content generate-ipcr-modal">
+              <div class="modal-header generate-ipcr-modal-header text-white">
+                <div class="generate-ipcr-header-icon">
+                  <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </div>
+                <div class="flex-grow-1">
+                  <div class="generate-ipcr-kicker">MWSS Performance Record Conversion</div>
+                  <h5 class="modal-title mb-0">Generate IPCR from OPCR</h5>
+                  <div class="generate-ipcr-subtitle">Select the OPCR source, employee record, and items to include.</div>
+                </div>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                   aria-label="Close"></button>
               </div>
-              <div class="modal-body">
+              <div class="modal-body generate-ipcr-modal-body">
                 <!-- Step Indicator -->
-                <div class="d-flex justify-content-center mb-4">
-                  <div class="d-flex align-items-center gap-2">
+                <div class="generate-ipcr-stepper">
+                  <div class="generate-ipcr-stepper-track">
                     <span class="badge rounded-pill bg-info text-white px-3 py-2 gen-step-badge" data-step="1">1.
                       Department</span>
                     <i class="fa-solid fa-chevron-right text-muted small"></i>
@@ -1632,141 +1695,163 @@
 
                 <!-- Step 1: Select Department -->
                 <div id="genStep1" class="gen-step">
-                  <h6 class="fw-semibold mb-3"><i class="fa-solid fa-building me-2 text-info"></i>Select a Department
-                    with OPCR</h6>
-                  <div id="genDeptLoading" class="text-center py-4">
-                    <div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span>
+                  <section class="generate-ipcr-section">
+                    <div class="generate-ipcr-section-title">
+                      <i class="fa-solid fa-building"></i>
+                      <div>
+                        <h6>Select a Department with OPCR</h6>
+                        <p>Choose the office record that will serve as source for the IPCR generation.</p>
+                      </div>
                     </div>
-                    <p class="mt-2 text-muted">Loading departments...</p>
+                    <div id="genDeptLoading" class="text-center py-4">
+                      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span>
+                      </div>
+                      <p class="mt-2 text-muted">Loading departments...</p>
+                    </div>
+                    <div id="genDeptList" class="list-group generate-ipcr-list" style="display:none;"></div>
+                    <div id="genDeptEmpty" class="generate-ipcr-empty" style="display:none;">
+                      <i class="fa-solid fa-folder-open"></i>
+                      <span>No OPCR entries found. Please create an OPCR first.</span>
+                    </div>
+                  </section>
                   </div>
-                  <div id="genDeptList" class="list-group" style="display:none;"></div>
-                  <div id="genDeptEmpty" class="text-center py-4 text-muted" style="display:none;">
-                    <i class="fa-solid fa-folder-open fa-2x mb-2 d-block"></i>
-                    No OPCR entries found. Please create an OPCR first.
-                  </div>
-                </div>
 
                 <!-- Step 2: Select Employee -->
                 <div id="genStep2" class="gen-step" style="display:none;">
-                  <h6 class="fw-semibold mb-1"><i class="fa-solid fa-users me-2 text-info"></i>Select an Employee</h6>
-                  <p class="text-muted small mb-3">Department: <strong id="genSelectedDept"></strong></p>
-                  <div id="genEmpLoading" class="text-center py-4" style="display:none;">
-                    <div class="spinner-border text-info" role="status"><span class="visually-hidden">Loading...</span>
+                  <section class="generate-ipcr-section">
+                    <div class="generate-ipcr-section-title">
+                      <i class="fa-solid fa-users"></i>
+                      <div>
+                        <h6>Select an Employee</h6>
+                        <p>Department: <strong id="genSelectedDept"></strong></p>
+                      </div>
                     </div>
-                  </div>
-                  <div id="genEmpList" class="list-group"></div>
-                  <div id="genEmpEmpty" class="text-center py-4 text-muted" style="display:none;">
-                    <i class="fa-solid fa-user-slash fa-2x mb-2 d-block"></i>
-                    No employees found for this OPCR. Please add employees in the OPCR Employee Management first.
-                  </div>
+                    <div id="genEmpLoading" class="text-center py-4" style="display:none;">
+                      <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span>
+                      </div>
+                    </div>
+                    <div id="genEmpList" class="list-group generate-ipcr-list"></div>
+                    <div id="genEmpEmpty" class="generate-ipcr-empty" style="display:none;">
+                      <i class="fa-solid fa-user-slash"></i>
+                      <span>No employees found for this OPCR. Please add employees in the OPCR Employee Management first.</span>
+                    </div>
+                  </section>
                 </div>
 
                 <!-- Step 3: Preview & Configure -->
                 <div id="genStep3" class="gen-step" style="display:none;">
-                  <h6 class="fw-semibold mb-1"><i class="fa-solid fa-eye me-2 text-info"></i>Preview IPCR Items</h6>
-                  <p class="text-muted small mb-2">Employee: <strong id="genSelectedEmp"></strong> | Department: <strong
-                      id="genSelectedDept2"></strong></p>
-                  <div class="alert alert-info small py-2 mb-3">
-                    <i class="fa-solid fa-circle-info me-1"></i>
-                    The following items from the OPCR will be included in the generated IPCR. Items where this employee
-                    is listed as a responsible individual are pre-selected.
-                  </div>
-                  <!-- IPCR metadata form -->
-                  <div class="row g-2 mb-3">
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold">Year</label>
-                      <input type="number" class="form-control form-control-sm" id="genIpcrYear" min="2020" max="2035">
+                  <section class="generate-ipcr-section">
+                    <div class="generate-ipcr-section-title">
+                      <i class="fa-solid fa-eye"></i>
+                      <div>
+                        <h6>Preview IPCR Items</h6>
+                        <p>Employee: <strong id="genSelectedEmp"></strong> | Department: <strong
+                            id="genSelectedDept2"></strong></p>
+                      </div>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold">Period Start</label>
-                      <select class="form-select form-select-sm" id="genIpcrPeriodStart">
-                        <option>JANUARY</option>
-                        <option>FEBRUARY</option>
-                        <option>MARCH</option>
-                        <option>APRIL</option>
-                        <option>MAY</option>
-                        <option>JUNE</option>
-                        <option selected>JULY</option>
-                        <option>AUGUST</option>
-                        <option>SEPTEMBER</option>
-                        <option>OCTOBER</option>
-                        <option>NOVEMBER</option>
-                        <option>DECEMBER</option>
-                      </select>
+                    <div class="generate-ipcr-note">
+                      <i class="fa-solid fa-circle-info"></i>
+                      <span>The following OPCR items will be included in the generated IPCR. Items where this employee is listed as a responsible individual are pre-selected.</span>
                     </div>
-                    <div class="col-md-4">
-                      <label class="form-label small fw-semibold">Period End</label>
-                      <select class="form-select form-select-sm" id="genIpcrPeriodEnd">
-                        <option>JANUARY</option>
-                        <option>FEBRUARY</option>
-                        <option>MARCH</option>
-                        <option>APRIL</option>
-                        <option>MAY</option>
-                        <option>JUNE</option>
-                        <option>JULY</option>
-                        <option>AUGUST</option>
-                        <option>SEPTEMBER</option>
-                        <option>OCTOBER</option>
-                        <option>NOVEMBER</option>
-                        <option selected>DECEMBER</option>
-                      </select>
-                    </div>
-                  </div>
-                  <!-- Signatory Fields -->
-                  <div class="card border-secondary mb-3">
-                    <div class="card-header bg-light py-2">
-                      <small class="fw-semibold"><i class="fa-solid fa-signature me-1 text-info"></i>Signatories</small>
-                    </div>
-                    <div class="card-body py-2">
+                    <!-- IPCR metadata form -->
+                    <div class="generate-ipcr-subsection">
+                      <div class="generate-ipcr-subsection-title">Rating Period</div>
                       <div class="row g-2">
                         <div class="col-md-4">
-                          <label class="form-label small fw-semibold mb-1">Department Manager</label>
-                          <input type="text" class="form-control form-control-sm" id="genSigDeptManager"
-                            placeholder="e.g. RYAN JAMES V. AYSON">
-                          <div class="form-text" style="font-size:10px;">Certifies commitments &amp; Reviewed by</div>
+                          <label class="form-label small fw-semibold">Year</label>
+                          <input type="number" class="form-control form-control-sm" id="genIpcrYear" min="2020" max="2035">
                         </div>
                         <div class="col-md-4">
-                          <label class="form-label small fw-semibold mb-1">Deputy Administrator</label>
-                          <input type="text" class="form-control form-control-sm" id="genSigDeputyAdmin"
-                            placeholder="e.g. JOSE D. DORADO, JR.">
-                          <div class="form-text" style="font-size:10px;">Recommended by</div>
+                          <label class="form-label small fw-semibold">Period Start</label>
+                          <select class="form-select form-select-sm" id="genIpcrPeriodStart">
+                            <option>JANUARY</option>
+                            <option>FEBRUARY</option>
+                            <option>MARCH</option>
+                            <option>APRIL</option>
+                            <option>MAY</option>
+                            <option>JUNE</option>
+                            <option selected>JULY</option>
+                            <option>AUGUST</option>
+                            <option>SEPTEMBER</option>
+                            <option>OCTOBER</option>
+                            <option>NOVEMBER</option>
+                            <option>DECEMBER</option>
+                          </select>
                         </div>
                         <div class="col-md-4">
-                          <label class="form-label small fw-semibold mb-1">Administrator</label>
-                          <input type="text" class="form-control form-control-sm" id="genSigAdmin"
-                            placeholder="e.g. LEONOR C. CLEOFAS, CESO IV">
-                          <div class="form-text" style="font-size:10px;">Approved and Rated by</div>
+                          <label class="form-label small fw-semibold">Period End</label>
+                          <select class="form-select form-select-sm" id="genIpcrPeriodEnd">
+                            <option>JANUARY</option>
+                            <option>FEBRUARY</option>
+                            <option>MARCH</option>
+                            <option>APRIL</option>
+                            <option>MAY</option>
+                            <option>JUNE</option>
+                            <option>JULY</option>
+                            <option>AUGUST</option>
+                            <option>SEPTEMBER</option>
+                            <option>OCTOBER</option>
+                            <option>NOVEMBER</option>
+                            <option selected>DECEMBER</option>
+                          </select>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  <!-- Preview items table -->
-                  <div class="table-responsive" style="max-height: 350px; overflow-y: auto;">
-                    <table class="table table-sm table-bordered align-middle small">
-                      <thead class="table-light sticky-top">
-                        <tr>
-                          <th style="width:5%;">
-                            <input type="checkbox" id="genSelectAll" checked title="Select/Deselect All">
-                          </th>
-                          <th>Type</th>
-                          <th>Content</th>
-                        </tr>
-                      </thead>
-                      <tbody id="genPreviewTbody"></tbody>
-                    </table>
-                  </div>
-                  <div id="genPreviewEmpty" class="text-center py-3 text-muted" style="display:none;">
-                    <i class="fa-solid fa-filter-circle-xmark fa-2x mb-2 d-block"></i>
-                    No matching OPCR items found for this employee. The IPCR will be created with default sections only.
-                  </div>
+                    <!-- Signatory Fields -->
+                    <div class="generate-ipcr-subsection">
+                      <div class="generate-ipcr-subsection-title"><i class="fa-solid fa-signature me-1"></i>Review Authorities</div>
+                      <div class="row g-2">
+                        <div class="col-md-4">
+                          <label class="form-label small fw-semibold mb-1">Reviewed By</label>
+                          <input type="text" class="form-control form-control-sm" id="genSigDeptManager"
+                            placeholder="e.g. RYAN JAMES V. AYSON">
+                          <div class="form-text" style="font-size:10px;">Reviewing official</div>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label small fw-semibold mb-1">Recommended By</label>
+                          <input type="text" class="form-control form-control-sm" id="genSigDeputyAdmin"
+                            placeholder="e.g. JOSE D. DORADO, JR.">
+                          <div class="form-text" style="font-size:10px;">Recommending official</div>
+                        </div>
+                        <div class="col-md-4">
+                          <label class="form-label small fw-semibold mb-1">Approved and Rated By</label>
+                          <input type="text" class="form-control form-control-sm" id="genSigAdmin"
+                            placeholder="e.g. LEONOR C. CLEOFAS, CESO IV">
+                          <div class="form-text" style="font-size:10px;">Approving official</div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Preview items table -->
+                    <div class="generate-ipcr-subsection mb-0">
+                      <div class="generate-ipcr-subsection-title">Included OPCR Items</div>
+                      <div class="table-responsive generate-ipcr-table-wrap">
+                        <table class="table table-sm table-bordered align-middle small mb-0">
+                          <thead class="sticky-top">
+                            <tr>
+                              <th style="width:5%;">
+                                <input type="checkbox" id="genSelectAll" checked title="Select/Deselect All">
+                              </th>
+                              <th>Type</th>
+                              <th>Content</th>
+                            </tr>
+                          </thead>
+                          <tbody id="genPreviewTbody"></tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div id="genPreviewEmpty" class="generate-ipcr-empty" style="display:none;">
+                      <i class="fa-solid fa-filter-circle-xmark"></i>
+                      <span>No matching OPCR items found for this employee. The IPCR will be created with default sections only.</span>
+                    </div>
+                  </section>
                 </div>
               </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary me-auto" id="genBackBtn" style="display:none;">
+              <div class="modal-footer generate-ipcr-modal-footer">
+                <button type="button" class="btn btn-outline-primary me-auto" id="genBackBtn" style="display:none;">
                   <i class="fa-solid fa-arrow-left me-1"></i>Back
                 </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-info text-white" id="genCreateBtn" style="display:none;">
+                <button type="button" class="btn btn-primary" id="genCreateBtn" style="display:none;">
                   <i class="fa-solid fa-wand-magic-sparkles me-1"></i>Generate IPCR
                 </button>
               </div>
@@ -2638,75 +2723,109 @@
           </div>
         </div> <!-- OPCR Add/Edit Modal -->
         <div class="modal fade" id="opcrModal" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog modal-md modal-dialog-scrollable">
-            <div class="modal-content">
+          <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content opcr-entry-modal">
               <form id="opcrForm">
-                <div class="modal-header bg-primary text-white">
-                  <h5 class="modal-title">OPCR Entry</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                  <input type="hidden" id="opcrId" name="opcrId" />
-                  <div class="row g-3">
-                    <div class="col-12">
-                      <label class="form-label">Group <span class="text-danger">*</span></label>
-                      <select class="form-select" id="opcrGroup" required>
-                        <option value="" disabled selected>Select group</option>
-                        <option value="Engineering and Technical Operations Group">Engineering and Technical Operations
-                          Group</option>
-                        <option value="Information Technology Group">Information Technology Group</option>
-                        <option value="Management Service Group">Management Service Group</option>
-                      </select>
-                    </div>
-                    <div class="col-12">
-                      <label class="form-label">Department <span class="text-danger">*</span></label>
-                      <input type="text" class="form-control" id="opcrDepartment"
-                        placeholder="Enter department name (e.g., Field Operations Management Department)" required />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">OPCR Year <span class="text-danger">*</span></label>
-                      <input type="number" class="form-control" id="opcrYear" placeholder="Enter year (e.g., 2025)"
-                        required min="2020" max="2099" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Status</label>
-                      <select class="form-select" id="opcrStatus">
-                        <option value="Draft">Draft</option>
-                        <option value="Submitted">Submitted</option>
-                        <option value="Approved">Approved</option>
-                      </select>
-                    </div>
-
-                    <!-- Signatory Fields -->
-                    <div class="col-12 mt-3">
-                      <h6 class="text-primary fw-semibold mb-2"><i class="fa fa-user-tie me-2"></i>Signatories</h6>
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Department Manager</label>
-                      <input type="text" class="form-control" id="opcrDeptManager" placeholder="Enter name" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Deputy Administrator</label>
-                      <input type="text" class="form-control" id="opcrDeputyAdmin" placeholder="Enter name" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">PMT Chairperson</label>
-                      <input type="text" class="form-control" id="opcrPmtChair" placeholder="Enter name" />
-                    </div>
-                    <div class="col-md-6">
-                      <label class="form-label">Administrator</label>
-                      <input type="text" class="form-control" id="opcrAdmin" placeholder="Enter name" />
-                    </div>
-
-                    <div class="col-12">
-                      <label class="form-label">Remarks</label>
-                      <textarea class="form-control" id="opcrRemarks" rows="2"></textarea>
-                    </div>
+                <div class="modal-header opcr-entry-modal-header text-white">
+                  <div class="opcr-entry-header-icon" aria-hidden="true">
+                    <i class="fa-solid fa-building-columns"></i>
                   </div>
+                  <div>
+                    <div class="opcr-entry-kicker">MWSS Performance Management Record</div>
+                    <h5 class="modal-title mb-0">OPCR Entry</h5>
+                    <p class="opcr-entry-subtitle mb-0">Office commitment profile, rating period, and signatory setup</p>
+                  </div>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-body opcr-entry-modal-body">
+                  <input type="hidden" id="opcrId" name="opcrId" />
+                  <section class="opcr-entry-section">
+                    <div class="opcr-entry-section-title">
+                      <i class="fa-solid fa-landmark"></i>
+                      <div>
+                        <h6>Office Information</h6>
+                        <p>Identify the accountable office and OPCR rating status.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-12">
+                        <label class="form-label">Group <span class="text-danger">*</span></label>
+                        <select class="form-select" id="opcrGroup" required>
+                          <option value="" disabled selected>Select group</option>
+                          <option value="Engineering and Technical Operations Group">Engineering and Technical Operations
+                            Group</option>
+                          <option value="Information Technology Group">Information Technology Group</option>
+                          <option value="Management Service Group">Management Service Group</option>
+                        </select>
+                      </div>
+                      <div class="col-12">
+                        <label class="form-label">Department <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="opcrDepartment"
+                          placeholder="Enter department name (e.g., Field Operations Management Department)" required />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">OPCR Year <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="opcrYear" placeholder="Enter year (e.g., 2025)"
+                          required min="2020" max="2099" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="opcrStatus">
+                          <option value="Draft">Draft</option>
+                          <option value="Submitted">Submitted</option>
+                          <option value="Approved">Approved</option>
+                        </select>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="opcr-entry-section">
+                    <div class="opcr-entry-section-title">
+                      <i class="fa-solid fa-signature"></i>
+                      <div>
+                        <h6>Signatory Setup</h6>
+                        <p>Assign officials for planning approval and post-monitoring review.</p>
+                      </div>
+                    </div>
+                    <div class="row g-3">
+                      <div class="col-md-6">
+                        <label class="form-label">Department Manager</label>
+                        <input type="text" class="form-control" id="opcrDeptManager" placeholder="Enter name" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Deputy Administrator</label>
+                        <input type="text" class="form-control" id="opcrDeputyAdmin" placeholder="Enter name" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">PMT Chairperson</label>
+                        <input type="text" class="form-control" id="opcrPmtChair" placeholder="Enter name" />
+                      </div>
+                      <div class="col-md-6">
+                        <label class="form-label">Administrator</label>
+                        <input type="text" class="form-control" id="opcrAdmin" placeholder="Enter name" />
+                      </div>
+                    </div>
+                  </section>
+
+                  <section class="opcr-entry-section">
+                    <div class="opcr-entry-section-title">
+                      <i class="fa-solid fa-note-sticky"></i>
+                      <div>
+                        <h6>Administrative Notes</h6>
+                        <p>Optional remarks for dashboard tracking and review context.</p>
+                      </div>
+                    </div>
+                    <label class="form-label">Remarks</label>
+                    <textarea class="form-control" id="opcrRemarks" rows="2"
+                      placeholder="Add remarks or internal notes if needed"></textarea>
+                  </section>
+                </div>
+                <div class="modal-footer opcr-entry-modal-footer">
                   <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                  <button type="submit" class="btn btn-primary">Save</button>
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>Save
+                  </button>
                 </div>
               </form>
             </div>
