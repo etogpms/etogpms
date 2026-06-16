@@ -3776,6 +3776,10 @@
     }
   }
 
+  function downloadIdentifier(item, fallback) {
+    return (item?.controlNo || item?.refNo || fallback || '').trim();
+  }
+
   // Outgoing Letter Word generation
   window.olGenerateFromTemplate = async function (item) {
     if (!item) { alert('No document data available.'); return; }
@@ -3814,7 +3818,7 @@
       };
 
       const blob = await generateFromTemplate(TEMPLATES.outgoing, data);
-      const filename = `Outgoing_${item.refNo || item.controlNo || 'Letter'}_${item.docDate || 'undated'}.docx`;
+      const filename = `Outgoing_${downloadIdentifier(item, 'Letter')}_${item.docDate || 'undated'}.docx`;
       downloadBlob(blob, filename.replace(/[\\/:*?"<>|]/g, '_'));
       console.log('Outgoing Letter downloaded successfully');
     } catch (err) {
@@ -3866,7 +3870,7 @@
       };
 
       const blob = await generateFromTemplate(TEMPLATES.memorandum, data);
-      const filename = `Memo_${item.refNo || 'Memorandum'}_${item.docDate || 'undated'}.docx`;
+      const filename = `Memo_${downloadIdentifier(item, 'Memorandum')}_${item.docDate || 'undated'}.docx`;
       downloadBlob(blob, filename.replace(/[\\/:*?"<>|]/g, '_'));
     } catch (err) {
       console.error('Error generating document:', err);
@@ -3912,7 +3916,7 @@
       };
 
       const blob = await generateFromTemplate(TEMPLATES.notice, data);
-      const filename = `Notice_${item.refNo || item.controlNo || 'Meeting'}_${item.meetDate || item.docDate || 'undated'}.docx`;
+      const filename = `Notice_${downloadIdentifier(item, 'Meeting')}_${item.meetDate || item.docDate || 'undated'}.docx`;
       downloadBlob(blob, filename.replace(/[\\/:*?"<>|]/g, '_'));
     } catch (err) {
       console.error('Error generating document:', err);
